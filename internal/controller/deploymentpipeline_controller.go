@@ -240,6 +240,18 @@ func (r *DeploymentPipelineReconciler) handlePhaseDeploying(ctx context.Context,
 		appDomain = app.Spec.Expose.Domain
 	}
 
+	if pipeline.Spec.PRNumber != nil && appDomain != "" {
+		if _, err := r.Reporter.CreateDeploymentSummary(ctx, domain.CreateDeploymentSummaryParams{
+			Owner:    pipeline.Spec.Owner,
+			Repo:     pipeline.Spec.Repo,
+			PrNumber: *pipeline.Spec.PRNumber,
+			Comment:  fmt.Sprintf("Preview URL: http://%s", appDomain),
+		}); err != nil {
+			// コメント作成失敗はデプロイ成功判定を止めない
+			log.Error(err, "Could not create preview comment")
+		}
+	}
+
 	if pipeline.Status.CheckRunID != 0 {
 		if err := r.Reporter.UpdateCommitStatus(ctx, domain.UpdateCommitStatusParams{
 			Owner:      pipeline.Spec.Owner,
