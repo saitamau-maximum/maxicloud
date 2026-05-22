@@ -60,6 +60,10 @@ func (s *stubApplicationRepo) ExistsByDomain(ctx context.Context, fqdn string) (
 	return false, nil
 }
 
+func (s *stubApplicationRepo) CreatePreviewApplication(ctx context.Context, originalApplicationID string, prNumber int) (*domain.Application, error) {
+	return nil, nil
+}
+
 type stubSourceService struct {
 	commit domain.Commit
 	err    error

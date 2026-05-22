@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/google/uuid"
 	maxicloudv1alpha1 "github.com/saitamau-maximum/maxicloud/api/v1alpha1"
 	"github.com/saitamau-maximum/maxicloud/internal/config"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
@@ -157,6 +158,66 @@ func (r *applicationRepository) ExistsByDomain(ctx context.Context, fqdn string)
 		}
 	}
 	return false, nil
+}
+
+func (r *applicationRepository) CreatePreviewApplication(ctx context.Context, originalApplicationID string, prNumber int) (*domain.Application, error) {
+	var list maxicloudv1alpha1.ApplicationList
+	if err := r.List(ctx, &list, client.MatchingLabels{labelApplicationID: originalApplicationID}); err != nil {
+		return nil, fmt.Errorf("list original application: %w", err)
+	}
+	if len(list.Items) == 0 {
+		return nil, fmt.Errorf("original application not found: %s", originalApplicationID)
+	}
+	orig := list.Items[0]
+	namespace := orig.Namespace
+
+	newID := uuid.New().String()
+	previewName := fmt.Sprintf("%s-pr-%d", orig.Name, prNumber)
+
+	// copy spec
+	newSpec := orig.Spec.DeepCopy()
+	// adjust expose domain if exists
+	if newSpec.Expose != nil {
+		root := orig.Annotations[annotationRootDomain]
+		if root == "" {
+			// fallback: keep original domain
+			newSpec.Expose.Domain = fmt.Sprintf("%s-pr-%d", orig.Spec.Expose.Domain, prNumber)
+		} else {
+			// derive subdomain
+			fqdn := orig.Spec.Expose.Domain
+			sub := strings.TrimSuffix(fqdn, "."+root)
+			if sub == fqdn { // didn't have suffix
+				sub = fqdn
+			}
+			newSub := fmt.Sprintf("%s-pr%d", sub, prNumber)
+			newSpec.Expose.Domain = newSub + "." + root
+		}
+	}
+
+	newCR := &maxicloudv1alpha1.Application{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      previewName,
+			Namespace: namespace,
+			Labels: map[string]string{
+				labelApplicationID:    newID,
+				labelApplicationName:  previewName,
+				labelApplicationOwner: orig.Labels[labelApplicationOwner],
+				labelSourceRepoOwner:  orig.Labels[labelSourceRepoOwner],
+				labelSourceRepoName:   orig.Labels[labelSourceRepoName],
+				labelSourceBranch:     normalizeBranchForLabel(fmt.Sprintf("pr-%d", prNumber)),
+			},
+			Annotations: map[string]string{
+				annotationSourceBranch: fmt.Sprintf("pr-%d", prNumber),
+				annotationRootDomain:   orig.Annotations[annotationRootDomain],
+			},
+		},
+		Spec: *newSpec,
+	}
+
+	if err := r.Create(ctx, newCR); err != nil {
+		return nil, fmt.Errorf("create preview application: %w", err)
+	}
+	return crToApplication(newCR), nil
 }
 
 func crToApplication(app *maxicloudv1alpha1.Application) *domain.Application {

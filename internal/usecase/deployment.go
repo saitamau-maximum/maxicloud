@@ -156,7 +156,34 @@ func (s *deploymentService) HandleGitHubEvent(ctx context.Context, event domain.
 		}
 		return s.handleRepoDeploymentEvent(ctx, event, event.PRNumber)
 	case domain.DeploymentEventTypePreviewDeleted:
-		// TODO: いつか実装する
+		if event.PRNumber == nil {
+			return domain.ValidationError{Message: "PR number is required for preview deletion"}
+		}
+		// find preview applications created for this PR and delete pipelines and apps
+		apps, err := s.appRepo.GetApplicationsByRepo(ctx, event.Repo.Owner, event.Repo.Name, fmt.Sprintf("pr-%d", *event.PRNumber))
+		if err != nil {
+			return fmt.Errorf("get preview applications: %w", err)
+		}
+		for _, app := range apps {
+			// delete pipelines associated with this preview application
+			if err := s.pipelineRepo.DeletePipelinesByPR(ctx, app.ID, *event.PRNumber); err != nil {
+				return fmt.Errorf("delete pipelines for preview app %s: %w", app.ID, err)
+			}
+			// delete any deployments recorded for this application
+			deps, err := s.deployRepo.ListDeploymentsByApplication(ctx, app.ID)
+			if err != nil {
+				return fmt.Errorf("list deployments for preview app %s: %w", app.ID, err)
+			}
+			for _, d := range deps {
+				if err := s.deployRepo.DeleteDeployment(ctx, d.ID); err != nil {
+					return fmt.Errorf("delete deployment %s: %w", d.ID, err)
+				}
+			}
+			// finally delete the preview application
+			if err := s.appRepo.DeleteApplication(ctx, app.ID); err != nil {
+				return fmt.Errorf("delete preview application %s: %w", app.ID, err)
+			}
+		}
 		return nil
 	default:
 		return domain.ValidationError{Message: fmt.Sprintf("unsupported deployment event type: %s", event.Type)}
@@ -169,15 +196,33 @@ func (s *deploymentService) handleRepoDeploymentEvent(ctx context.Context, event
 		return fmt.Errorf("get applications by repo: %w", err)
 	}
 	for _, app := range apps {
-		_, err := s.CreateDeployment(ctx, CreateDeploymentParams{
-			ApplicationID: app.ID,
-			OwnerUserID:   app.OwnerID,
-			Repo:          event.Repo,
-			Commit:        event.Commit,
-			PRNumber:      prNumber,
-		})
-		if err != nil {
-			return fmt.Errorf("create deployment for application %s: %w", app.ID, err)
+		if prNumber == nil {
+			_, err := s.CreateDeployment(ctx, CreateDeploymentParams{
+				ApplicationID: app.ID,
+				OwnerUserID:   app.OwnerID,
+				Repo:          event.Repo,
+				Commit:        event.Commit,
+				PRNumber:      prNumber,
+			})
+			if err != nil {
+				return fmt.Errorf("create deployment for application %s: %w", app.ID, err)
+			}
+		} else {
+			// create a preview application derived from the original
+			previewApp, err := s.appRepo.CreatePreviewApplication(ctx, app.ID, *prNumber)
+			if err != nil {
+				return fmt.Errorf("create preview application for %s: %w", app.ID, err)
+			}
+			_, err = s.CreateDeployment(ctx, CreateDeploymentParams{
+				ApplicationID: previewApp.ID,
+				OwnerUserID:   previewApp.OwnerID,
+				Repo:          event.Repo,
+				Commit:        event.Commit,
+				PRNumber:      prNumber,
+			})
+			if err != nil {
+				return fmt.Errorf("create deployment for preview application %s: %w", previewApp.ID, err)
+			}
 		}
 	}
 	return nil
