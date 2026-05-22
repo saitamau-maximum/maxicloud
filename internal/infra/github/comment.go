@@ -29,8 +29,16 @@ func (c *client) CreateDeploymentSummary(ctx context.Context, params domain.Crea
 		return 0, err
 	}
 
+	body := params.Comment
+	// Prepend embedded logo (SVG) as a markdown image if available and not already present
+	if logoDataURI != "" {
+		if !(len(body) > 0 && (body[0] == '!' || body[:5] == "<img ")) {
+			body = "![preview-icon](" + logoDataURI + ")\n\n" + body
+		}
+	}
+
 	result, _, err := ghClient.Issues.CreateComment(ctx, params.Owner, params.Repo, params.PrNumber, &gh.IssueComment{
-		Body: gh.Ptr(params.Comment),
+		Body: gh.Ptr(body),
 	})
 	if err != nil {
 		return 0, err
