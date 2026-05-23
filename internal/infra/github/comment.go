@@ -2,6 +2,7 @@ package github
 
 import (
 	"context"
+	"strings"
 
 	gh "github.com/google/go-github/v72/github"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
@@ -32,7 +33,7 @@ func (c *client) CreateDeploymentSummary(ctx context.Context, params domain.Crea
 	body := params.Comment
 	// Prepend embedded logo (SVG) as a markdown image if available and not already present
 	if logoDataURI != "" {
-		if !(len(body) > 0 && (body[0] == '!' || body[:5] == "<img ")) {
+		if len(body) == 0 || (body[0] != '!' && !strings.HasPrefix(body, "<img ")) {
 			body = "![preview-icon](" + logoDataURI + ")\n\n" + body
 		}
 	}

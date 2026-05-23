@@ -11,21 +11,21 @@ func TestToDeploymentEvent_PullRequestUsesBaseBranch(t *testing.T) {
 	branch := "main"
 	prNumber := 42
 	event, ok := toDeploymentEvent(&gh.PullRequestEvent{
-		Action: gh.String("opened"),
+		Action: gh.Ptr("opened"),
 		Repo: &gh.Repository{
-			Owner: &gh.User{Login: gh.String("octocat")},
-			Name:  gh.String("hello-world"),
+			Owner: &gh.User{Login: gh.Ptr("octocat")},
+			Name:  gh.Ptr("hello-world"),
 		},
 		PullRequest: &gh.PullRequest{
-			Number: gh.Int(prNumber),
-			Title:  gh.String("Add preview"),
-			User:   &gh.User{Login: gh.String("alice")},
+			Number: gh.Ptr(prNumber),
+			Title:  gh.Ptr("Add preview"),
+			User:   &gh.User{Login: gh.Ptr("alice")},
 			Head: &gh.PullRequestBranch{
-				Ref: gh.String("feature/preview"),
-				SHA: gh.String("head-sha"),
+				Ref: gh.Ptr("feature/preview"),
+				SHA: gh.Ptr("head-sha"),
 			},
 			Base: &gh.PullRequestBranch{
-				Ref: gh.String(branch),
+				Ref: gh.Ptr(branch),
 			},
 		},
 	})
