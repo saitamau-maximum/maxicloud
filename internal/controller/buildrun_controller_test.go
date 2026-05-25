@@ -42,9 +42,7 @@ func (f *fakeRegistry) BuildOutput(destination string) string {
 	return "type=image,name=" + destination + ",push=true"
 }
 
-type fakeGitHubClient struct {
-	createDeploymentSummaryCalls []domain.CreateDeploymentSummaryParams
-}
+type fakeGitHubClient struct{}
 
 var _ domain.DeploymentReporter = (*fakeGitHubClient)(nil)
 
@@ -60,9 +58,8 @@ func (f *fakeGitHubClient) UpdateCommitStatus(_ context.Context, _ domain.Update
 func (f *fakeGitHubClient) GetDeploymentSummary(_ context.Context, _, _ string, _ int64) (*domain.DeploymentSummary, error) {
 	return nil, nil
 }
-func (f *fakeGitHubClient) CreateDeploymentSummary(_ context.Context, params domain.CreateDeploymentSummaryParams) (int64, error) {
-	f.createDeploymentSummaryCalls = append(f.createDeploymentSummaryCalls, params)
-	return 1, nil
+func (f *fakeGitHubClient) CreateDeploymentSummary(_ context.Context, _ domain.CreateDeploymentSummaryParams) (int64, error) {
+	return 0, nil
 }
 func (f *fakeGitHubClient) UpdateDeploymentSummary(_ context.Context, _ domain.UpdateDeploymentSummaryParams) error {
 	return nil

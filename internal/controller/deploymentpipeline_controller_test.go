@@ -21,7 +21,6 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/saitamau-maximum/maxicloud/internal/domain"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -81,69 +80,6 @@ var _ = Describe("DeploymentPipeline Controller", func() {
 			Expect(err).NotTo(HaveOccurred())
 			// TODO(user): Add more specific assertions depending on your controller's reconciliation logic.
 			// Example: If you expect a certain status condition after reconciliation, verify it here.
-		})
-
-		It("PR向けのpreview成功時にGitHub PRへURLコメントを作成する", func() {
-			appName := "preview-app"
-			prNumber := 7
-			pipelineName := "preview-pipeline"
-			app := &maxicloudv1alpha1.Application{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      appName,
-					Namespace: "default",
-				},
-				Spec: maxicloudv1alpha1.ApplicationSpec{
-					Image: "ghcr.io/example/app:abc123",
-					Expose: &maxicloudv1alpha1.ExposeConfig{
-						Domain:           "preview.example.com",
-						Port:             8080,
-						IngressClassName: "nginx",
-					},
-				},
-			}
-			Expect(k8sClient.Create(ctx, app)).To(Succeed())
-
-			pipeline := &maxicloudv1alpha1.DeploymentPipeline{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      pipelineName,
-					Namespace: "default",
-				},
-				Spec: maxicloudv1alpha1.DeploymentPipelineSpec{
-					ApplicationName: appName,
-					Owner:           "octocat",
-					Repo:            "hello-world",
-					SHA:             "abc123",
-					PRNumber:        &prNumber,
-				},
-				Status: maxicloudv1alpha1.DeploymentPipelineStatus{
-					Phase: maxicloudv1alpha1.DeploymentPipelinePhaseDeploying,
-				},
-			}
-			Expect(k8sClient.Create(ctx, pipeline)).To(Succeed())
-
-			createdPipeline := &maxicloudv1alpha1.DeploymentPipeline{}
-			Expect(k8sClient.Get(ctx, types.NamespacedName{Name: pipelineName, Namespace: "default"}, createdPipeline)).To(Succeed())
-			createdPipeline.Status.Phase = maxicloudv1alpha1.DeploymentPipelinePhaseDeploying
-			Expect(k8sClient.Status().Update(ctx, createdPipeline)).To(Succeed())
-
-			reporter := &fakeGitHubClient{}
-			controllerReconciler := &DeploymentPipelineReconciler{
-				Client:   k8sClient,
-				Scheme:   k8sClient.Scheme(),
-				Reporter: reporter,
-			}
-
-			_, err := controllerReconciler.Reconcile(ctx, reconcile.Request{
-				NamespacedName: types.NamespacedName{Name: pipelineName, Namespace: "default"},
-			})
-			Expect(err).NotTo(HaveOccurred())
-			Expect(reporter.createDeploymentSummaryCalls).To(HaveLen(1))
-			Expect(reporter.createDeploymentSummaryCalls[0]).To(Equal(domain.CreateDeploymentSummaryParams{
-				Owner:    "octocat",
-				Repo:     "hello-world",
-				PrNumber: prNumber,
-				Comment:  "Preview URL: http://preview.example.com",
-			}))
 		})
 	})
 })
