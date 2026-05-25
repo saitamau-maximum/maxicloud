@@ -209,7 +209,8 @@ func (s *deploymentService) handleRepoDeploymentEvent(ctx context.Context, event
 			}
 		} else {
 			// create a preview application derived from the original
-			previewApp, err := s.appRepo.CreatePreviewApplication(ctx, app.ID, *prNumber)
+			previewAppID := uuid.New().String()
+			previewApp, err := s.appRepo.CreatePreviewApplication(ctx, app.ID, *prNumber, previewAppID)
 			if err != nil {
 				return fmt.Errorf("create preview application for %s: %w", app.ID, err)
 			}

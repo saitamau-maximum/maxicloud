@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/google/uuid"
 	maxicloudv1alpha1 "github.com/saitamau-maximum/maxicloud/api/v1alpha1"
 	"github.com/saitamau-maximum/maxicloud/internal/config"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
@@ -161,7 +160,7 @@ func (r *applicationRepository) ExistsByDomain(ctx context.Context, fqdn string)
 	return false, nil
 }
 
-func (r *applicationRepository) CreatePreviewApplication(ctx context.Context, originalApplicationID string, prNumber int) (*domain.Application, error) {
+func (r *applicationRepository) CreatePreviewApplication(ctx context.Context, originalApplicationID string, prNumber int, id string) (*domain.Application, error) {
 	var list maxicloudv1alpha1.ApplicationList
 	if err := r.List(ctx, &list, client.MatchingLabels{labelApplicationID: originalApplicationID}); err != nil {
 		return nil, fmt.Errorf("list original application: %w", err)
@@ -173,7 +172,7 @@ func (r *applicationRepository) CreatePreviewApplication(ctx context.Context, or
 	namespace := orig.Namespace
 
 	previewName := fmt.Sprintf("%s-pr-%d", orig.Name, prNumber)
-	desired := buildPreviewApplicationCR(orig, namespace, previewName, prNumber)
+	desired := buildPreviewApplicationCR(orig, namespace, previewName, prNumber, id)
 	if desired == nil {
 		return nil, fmt.Errorf("build preview application: nil desired CR")
 	}
@@ -212,8 +211,7 @@ func (r *applicationRepository) CreatePreviewApplication(ctx context.Context, or
 	return crToApplication(desired), nil
 }
 
-func buildPreviewApplicationCR(orig maxicloudv1alpha1.Application, namespace, previewName string, prNumber int) *maxicloudv1alpha1.Application {
-	newID := uuid.New().String()
+func buildPreviewApplicationCR(orig maxicloudv1alpha1.Application, namespace, previewName string, prNumber int, id string) *maxicloudv1alpha1.Application {
 	newSpec := orig.Spec.DeepCopy()
 	if newSpec.Expose != nil {
 		root := orig.Annotations[annotationRootDomain]
@@ -235,7 +233,7 @@ func buildPreviewApplicationCR(orig maxicloudv1alpha1.Application, namespace, pr
 			Name:      previewName,
 			Namespace: namespace,
 			Labels: map[string]string{
-				labelApplicationID:    newID,
+				labelApplicationID:    id,
 				labelApplicationName:  previewName,
 				labelApplicationOwner: orig.Labels[labelApplicationOwner],
 				labelSourceRepoOwner:  orig.Labels[labelSourceRepoOwner],

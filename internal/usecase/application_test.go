@@ -60,7 +60,7 @@ func (s *stubApplicationRepo) ExistsByDomain(ctx context.Context, fqdn string) (
 	return false, nil
 }
 
-func (s *stubApplicationRepo) CreatePreviewApplication(ctx context.Context, originalApplicationID string, prNumber int) (*domain.Application, error) {
+func (s *stubApplicationRepo) CreatePreviewApplication(ctx context.Context, originalApplicationID string, prNumber int, id string) (*domain.Application, error) {
 	return nil, nil
 }
 

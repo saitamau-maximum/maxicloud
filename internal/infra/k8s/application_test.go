@@ -136,11 +136,11 @@ func TestCreatePreviewApplication_IsIdempotent(t *testing.T) {
 	repo := &applicationRepository{Client: client, ingressClassName: "nginx"}
 
 	ctx := context.Background()
-	first, err := repo.CreatePreviewApplication(ctx, "app-001", 7)
+	first, err := repo.CreatePreviewApplication(ctx, "app-001", 7, "preview-1")
 	if err != nil {
 		t.Fatalf("first CreatePreviewApplication: %v", err)
 	}
-	second, err := repo.CreatePreviewApplication(ctx, "app-001", 7)
+	second, err := repo.CreatePreviewApplication(ctx, "app-001", 7, "preview-2")
 	if err != nil {
 		t.Fatalf("second CreatePreviewApplication: %v", err)
 	}
