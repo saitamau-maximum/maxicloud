@@ -2,7 +2,6 @@ package github
 
 import (
 	"context"
-	"strings"
 
 	gh "github.com/google/go-github/v72/github"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
@@ -30,16 +29,8 @@ func (c *client) CreateDeploymentSummary(ctx context.Context, params domain.Crea
 		return 0, err
 	}
 
-	body := params.Comment
-	// Prepend embedded logo (SVG) as a markdown image if available and not already present
-	if logoDataURI != "" {
-		if len(body) == 0 || (body[0] != '!' && !strings.HasPrefix(body, "<img ")) {
-			body = "![preview-icon](" + logoDataURI + ")\n\n" + body
-		}
-	}
-
 	result, _, err := ghClient.Issues.CreateComment(ctx, params.Owner, params.Repo, params.PrNumber, &gh.IssueComment{
-		Body: gh.Ptr(body),
+		Body: gh.Ptr(params.Comment),
 	})
 	if err != nil {
 		return 0, err
