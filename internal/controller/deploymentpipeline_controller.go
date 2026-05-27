@@ -245,7 +245,7 @@ func (r *DeploymentPipelineReconciler) handlePhaseDeploying(ctx context.Context,
 			Owner:    pipeline.Spec.Owner,
 			Repo:     pipeline.Spec.Repo,
 			PrNumber: *pipeline.Spec.PRNumber,
-			Comment:  fmt.Sprintf("Preview URL: http://%s", appDomain),
+			Comment:  fmt.Sprintf("Preview URL: http://%s:%d", appDomain, app.Spec.Expose.Port),
 		}); err != nil {
 			// コメント作成失敗はデプロイ成功判定を止めない
 			log.Error(err, "Could not create preview comment")
