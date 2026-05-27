@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha1"
 	"fmt"
+	"maps"
 	"regexp"
 	"strings"
 
@@ -251,9 +252,7 @@ func buildPreviewApplicationCR(orig maxicloudv1alpha1.Application, namespace, pr
 
 func previewLabelsWithExistingID(existingID string, desired map[string]string) map[string]string {
 	labels := make(map[string]string, len(desired))
-	for key, value := range desired {
-		labels[key] = value
-	}
+	maps.Copy(labels, desired)
 	if existingID != "" {
 		labels[labelApplicationID] = existingID
 	}
