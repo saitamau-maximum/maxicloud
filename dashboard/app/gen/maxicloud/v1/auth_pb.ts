@@ -2,288 +2,60 @@
 // @generated from file maxicloud/v1/auth.proto (package maxicloud.v1, syntax proto3)
 /* eslint-disable */
 
+import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { User } from "./user_pb";
+import { file_maxicloud_v1_user } from "./user_pb";
 import type { Message } from "@bufbuild/protobuf";
-import type {
-	GenEnum,
-	GenFile,
-	GenMessage,
-	GenService,
-} from "@bufbuild/protobuf/codegenv2";
-import {
-	enumDesc,
-	fileDesc,
-	messageDesc,
-	serviceDesc,
-} from "@bufbuild/protobuf/codegenv2";
 
 /**
  * Describes the file maxicloud/v1/auth.proto.
  */
-export const file_maxicloud_v1_auth: GenFile =
-	/*@__PURE__*/
-	fileDesc(
-		"ChdtYXhpY2xvdWQvdjEvYXV0aC5wcm90bxIMbWF4aWNsb3VkLnYxIo8BCgtVc2VyQWNjb3VudBIKCgJpZBgBIAEoCRISCgpkaXNwbGF5X2lkGAIgASgJEhQKDGRpc3BsYXlfbmFtZRgDIAEoCRINCgVlbWFpbBgEIAEoCRIoCgZzdGF0dXMYBSABKA4yGC5tYXhpY2xvdWQudjEuVXNlclN0YXR1cxIRCglqb2luZWRfYXQYBiABKAkiLAoVQ3JlYXRlTG9naW5VcmxSZXF1ZXN0EhMKC3JlZGlyZWN0X3RvGAEgASgJIjoKFkNyZWF0ZUxvZ2luVXJsUmVzcG9uc2USEQoJbG9naW5fdXJsGAEgASgJEg0KBXN0YXRlGAIgASgJIkoKFENvbXBsZXRlTG9naW5SZXF1ZXN0EgwKBGNvZGUYASABKAkSDQoFc3RhdGUYAiABKAkSFQoNY29kZV92ZXJpZmllchgDIAEoCSJAChVDb21wbGV0ZUxvZ2luUmVzcG9uc2USJwoEdXNlchgBIAEoCzIZLm1heGljbG91ZC52MS5Vc2VyQWNjb3VudCIXChVHZXRDdXJyZW50VXNlclJlcXVlc3QiQQoWR2V0Q3VycmVudFVzZXJSZXNwb25zZRInCgR1c2VyGAEgASgLMhkubWF4aWNsb3VkLnYxLlVzZXJBY2NvdW50Ig8KDUxvZ291dFJlcXVlc3QiEAoOTG9nb3V0UmVzcG9uc2UqdQoKVXNlclN0YXR1cxIbChdVU0VSX1NUQVRVU19VTlNQRUNJRklFRBAAEhYKElVTRVJfU1RBVFVTX0FDVElWRRABEhcKE1VTRVJfU1RBVFVTX0lOVklURUQQAhIZChVVU0VSX1NUQVRVU19TVVNQRU5ERUQQAzLmAgoLQXV0aFNlcnZpY2USWwoOQ3JlYXRlTG9naW5VcmwSIy5tYXhpY2xvdWQudjEuQ3JlYXRlTG9naW5VcmxSZXF1ZXN0GiQubWF4aWNsb3VkLnYxLkNyZWF0ZUxvZ2luVXJsUmVzcG9uc2USWAoNQ29tcGxldGVMb2dpbhIiLm1heGljbG91ZC52MS5Db21wbGV0ZUxvZ2luUmVxdWVzdBojLm1heGljbG91ZC52MS5Db21wbGV0ZUxvZ2luUmVzcG9uc2USWwoOR2V0Q3VycmVudFVzZXISIy5tYXhpY2xvdWQudjEuR2V0Q3VycmVudFVzZXJSZXF1ZXN0GiQubWF4aWNsb3VkLnYxLkdldEN1cnJlbnRVc2VyUmVzcG9uc2USQwoGTG9nb3V0EhsubWF4aWNsb3VkLnYxLkxvZ291dFJlcXVlc3QaHC5tYXhpY2xvdWQudjEuTG9nb3V0UmVzcG9uc2VCsgEKEGNvbS5tYXhpY2xvdWQudjFCCUF1dGhQcm90b1ABWkJnaXRodWIuY29tL3NhaXRhbWF1LW1heGltdW0vbWF4aWNsb3VkL2dlbi9tYXhpY2xvdWQvdjE7bWF4aWNsb3VkdjGiAgNNWFiqAgxNYXhpY2xvdWQuVjHKAgxNYXhpY2xvdWRcVjHiAhhNYXhpY2xvdWRcVjFcR1BCTWV0YWRhdGHqAg1NYXhpY2xvdWQ6OlYxYgZwcm90bzM",
-	);
+export const file_maxicloud_v1_auth: GenFile = /*@__PURE__*/
+  fileDesc("ChdtYXhpY2xvdWQvdjEvYXV0aC5wcm90bxIMbWF4aWNsb3VkLnYxIgsKCU1lUmVxdWVzdCIuCgpNZVJlc3BvbnNlEiAKBHVzZXIYASABKAsyEi5tYXhpY2xvdWQudjEuVXNlcjJGCgtBdXRoU2VydmljZRI3CgJNZRIXLm1heGljbG91ZC52MS5NZVJlcXVlc3QaGC5tYXhpY2xvdWQudjEuTWVSZXNwb25zZUKyAQoQY29tLm1heGljbG91ZC52MUIJQXV0aFByb3RvUAFaQmdpdGh1Yi5jb20vc2FpdGFtYXUtbWF4aW11bS9tYXhpY2xvdWQvZ2VuL21heGljbG91ZC92MTttYXhpY2xvdWR2MaICA01YWKoCDE1heGljbG91ZC5WMcoCDE1heGljbG91ZFxWMeICGE1heGljbG91ZFxWMVxHUEJNZXRhZGF0YeoCDU1heGljbG91ZDo6VjFiBnByb3RvMw", [file_maxicloud_v1_user]);
 
 /**
- * @generated from message maxicloud.v1.UserAccount
+ * @generated from message maxicloud.v1.MeRequest
  */
-export type UserAccount = Message<"maxicloud.v1.UserAccount"> & {
-	/**
-	 * @generated from field: string id = 1;
-	 */
-	id: string;
-
-	/**
-	 * @generated from field: string display_id = 2;
-	 */
-	displayId: string;
-
-	/**
-	 * @generated from field: string display_name = 3;
-	 */
-	displayName: string;
-
-	/**
-	 * @generated from field: string email = 4;
-	 */
-	email: string;
-
-	/**
-	 * @generated from field: maxicloud.v1.UserStatus status = 5;
-	 */
-	status: UserStatus;
-
-	/**
-	 * @generated from field: string joined_at = 6;
-	 */
-	joinedAt: string;
+export type MeRequest = Message<"maxicloud.v1.MeRequest"> & {
 };
 
 /**
- * Describes the message maxicloud.v1.UserAccount.
- * Use `create(UserAccountSchema)` to create a new message.
+ * Describes the message maxicloud.v1.MeRequest.
+ * Use `create(MeRequestSchema)` to create a new message.
  */
-export const UserAccountSchema: GenMessage<UserAccount> =
-	/*@__PURE__*/
-	messageDesc(file_maxicloud_v1_auth, 0);
+export const MeRequestSchema: GenMessage<MeRequest> = /*@__PURE__*/
+  messageDesc(file_maxicloud_v1_auth, 0);
 
 /**
- * @generated from message maxicloud.v1.CreateLoginUrlRequest
+ * @generated from message maxicloud.v1.MeResponse
  */
-export type CreateLoginUrlRequest =
-	Message<"maxicloud.v1.CreateLoginUrlRequest"> & {
-		/**
-		 * @generated from field: string redirect_to = 1;
-		 */
-		redirectTo: string;
-	};
+export type MeResponse = Message<"maxicloud.v1.MeResponse"> & {
+  /**
+   * @generated from field: maxicloud.v1.User user = 1;
+   */
+  user?: User | undefined;
+};
 
 /**
- * Describes the message maxicloud.v1.CreateLoginUrlRequest.
- * Use `create(CreateLoginUrlRequestSchema)` to create a new message.
+ * Describes the message maxicloud.v1.MeResponse.
+ * Use `create(MeResponseSchema)` to create a new message.
  */
-export const CreateLoginUrlRequestSchema: GenMessage<CreateLoginUrlRequest> =
-	/*@__PURE__*/
-	messageDesc(file_maxicloud_v1_auth, 1);
-
-/**
- * @generated from message maxicloud.v1.CreateLoginUrlResponse
- */
-export type CreateLoginUrlResponse =
-	Message<"maxicloud.v1.CreateLoginUrlResponse"> & {
-		/**
-		 * @generated from field: string login_url = 1;
-		 */
-		loginUrl: string;
-
-		/**
-		 * @generated from field: string state = 2;
-		 */
-		state: string;
-	};
-
-/**
- * Describes the message maxicloud.v1.CreateLoginUrlResponse.
- * Use `create(CreateLoginUrlResponseSchema)` to create a new message.
- */
-export const CreateLoginUrlResponseSchema: GenMessage<CreateLoginUrlResponse> =
-	/*@__PURE__*/
-	messageDesc(file_maxicloud_v1_auth, 2);
-
-/**
- * @generated from message maxicloud.v1.CompleteLoginRequest
- */
-export type CompleteLoginRequest =
-	Message<"maxicloud.v1.CompleteLoginRequest"> & {
-		/**
-		 * @generated from field: string code = 1;
-		 */
-		code: string;
-
-		/**
-		 * @generated from field: string state = 2;
-		 */
-		state: string;
-
-		/**
-		 * @generated from field: string code_verifier = 3;
-		 */
-		codeVerifier: string;
-	};
-
-/**
- * Describes the message maxicloud.v1.CompleteLoginRequest.
- * Use `create(CompleteLoginRequestSchema)` to create a new message.
- */
-export const CompleteLoginRequestSchema: GenMessage<CompleteLoginRequest> =
-	/*@__PURE__*/
-	messageDesc(file_maxicloud_v1_auth, 3);
-
-/**
- * @generated from message maxicloud.v1.CompleteLoginResponse
- */
-export type CompleteLoginResponse =
-	Message<"maxicloud.v1.CompleteLoginResponse"> & {
-		/**
-		 * @generated from field: maxicloud.v1.UserAccount user = 1;
-		 */
-		user?: UserAccount | undefined;
-	};
-
-/**
- * Describes the message maxicloud.v1.CompleteLoginResponse.
- * Use `create(CompleteLoginResponseSchema)` to create a new message.
- */
-export const CompleteLoginResponseSchema: GenMessage<CompleteLoginResponse> =
-	/*@__PURE__*/
-	messageDesc(file_maxicloud_v1_auth, 4);
-
-/**
- * @generated from message maxicloud.v1.GetCurrentUserRequest
- */
-export type GetCurrentUserRequest =
-	Message<"maxicloud.v1.GetCurrentUserRequest"> & {};
-
-/**
- * Describes the message maxicloud.v1.GetCurrentUserRequest.
- * Use `create(GetCurrentUserRequestSchema)` to create a new message.
- */
-export const GetCurrentUserRequestSchema: GenMessage<GetCurrentUserRequest> =
-	/*@__PURE__*/
-	messageDesc(file_maxicloud_v1_auth, 5);
-
-/**
- * @generated from message maxicloud.v1.GetCurrentUserResponse
- */
-export type GetCurrentUserResponse =
-	Message<"maxicloud.v1.GetCurrentUserResponse"> & {
-		/**
-		 * @generated from field: maxicloud.v1.UserAccount user = 1;
-		 */
-		user?: UserAccount | undefined;
-	};
-
-/**
- * Describes the message maxicloud.v1.GetCurrentUserResponse.
- * Use `create(GetCurrentUserResponseSchema)` to create a new message.
- */
-export const GetCurrentUserResponseSchema: GenMessage<GetCurrentUserResponse> =
-	/*@__PURE__*/
-	messageDesc(file_maxicloud_v1_auth, 6);
-
-/**
- * @generated from message maxicloud.v1.LogoutRequest
- */
-export type LogoutRequest = Message<"maxicloud.v1.LogoutRequest"> & {};
-
-/**
- * Describes the message maxicloud.v1.LogoutRequest.
- * Use `create(LogoutRequestSchema)` to create a new message.
- */
-export const LogoutRequestSchema: GenMessage<LogoutRequest> =
-	/*@__PURE__*/
-	messageDesc(file_maxicloud_v1_auth, 7);
-
-/**
- * @generated from message maxicloud.v1.LogoutResponse
- */
-export type LogoutResponse = Message<"maxicloud.v1.LogoutResponse"> & {};
-
-/**
- * Describes the message maxicloud.v1.LogoutResponse.
- * Use `create(LogoutResponseSchema)` to create a new message.
- */
-export const LogoutResponseSchema: GenMessage<LogoutResponse> =
-	/*@__PURE__*/
-	messageDesc(file_maxicloud_v1_auth, 8);
-
-/**
- * @generated from enum maxicloud.v1.UserStatus
- */
-export enum UserStatus {
-	/**
-	 * @generated from enum value: USER_STATUS_UNSPECIFIED = 0;
-	 */
-	UNSPECIFIED = 0,
-
-	/**
-	 * @generated from enum value: USER_STATUS_ACTIVE = 1;
-	 */
-	ACTIVE = 1,
-
-	/**
-	 * @generated from enum value: USER_STATUS_INVITED = 2;
-	 */
-	INVITED = 2,
-
-	/**
-	 * @generated from enum value: USER_STATUS_SUSPENDED = 3;
-	 */
-	SUSPENDED = 3,
-}
-
-/**
- * Describes the enum maxicloud.v1.UserStatus.
- */
-export const UserStatusSchema: GenEnum<UserStatus> =
-	/*@__PURE__*/
-	enumDesc(file_maxicloud_v1_auth, 0);
+export const MeResponseSchema: GenMessage<MeResponse> = /*@__PURE__*/
+  messageDesc(file_maxicloud_v1_auth, 1);
 
 /**
  * @generated from service maxicloud.v1.AuthService
  */
 export const AuthService: GenService<{
-	/**
-	 * @generated from rpc maxicloud.v1.AuthService.CreateLoginUrl
-	 */
-	createLoginUrl: {
-		methodKind: "unary";
-		input: typeof CreateLoginUrlRequestSchema;
-		output: typeof CreateLoginUrlResponseSchema;
-	};
-	/**
-	 * @generated from rpc maxicloud.v1.AuthService.CompleteLogin
-	 */
-	completeLogin: {
-		methodKind: "unary";
-		input: typeof CompleteLoginRequestSchema;
-		output: typeof CompleteLoginResponseSchema;
-	};
-	/**
-	 * @generated from rpc maxicloud.v1.AuthService.GetCurrentUser
-	 */
-	getCurrentUser: {
-		methodKind: "unary";
-		input: typeof GetCurrentUserRequestSchema;
-		output: typeof GetCurrentUserResponseSchema;
-	};
-	/**
-	 * @generated from rpc maxicloud.v1.AuthService.Logout
-	 */
-	logout: {
-		methodKind: "unary";
-		input: typeof LogoutRequestSchema;
-		output: typeof LogoutResponseSchema;
-	};
-}> = /*@__PURE__*/ serviceDesc(file_maxicloud_v1_auth, 0);
+  /**
+   * @generated from rpc maxicloud.v1.AuthService.Me
+   */
+  me: {
+    methodKind: "unary";
+    input: typeof MeRequestSchema;
+    output: typeof MeResponseSchema;
+  },
+}> = /*@__PURE__*/
+  serviceDesc(file_maxicloud_v1_auth, 0);
+

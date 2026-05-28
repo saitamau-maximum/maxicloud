@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql
+  namespace: system
+  labels:
+    app.kubernetes.io/name: maxicloud
+    app.kubernetes.io/managed-by: kustomize
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/component: postgresql
+    app.kubernetes.io/name: maxicloud
+  ports:
+    - name: posgtres
+      port: 5432
+      targetPort: 5432
+      protocol: TCP

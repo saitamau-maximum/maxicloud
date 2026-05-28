@@ -2,395 +2,357 @@
 // @generated from file maxicloud/v1/deployment.proto (package maxicloud.v1, syntax proto3)
 /* eslint-disable */
 
-import type { Message } from "@bufbuild/protobuf";
-import type {
-	GenEnum,
-	GenFile,
-	GenMessage,
-	GenService,
-} from "@bufbuild/protobuf/codegenv2";
-import {
-	enumDesc,
-	fileDesc,
-	messageDesc,
-	serviceDesc,
-} from "@bufbuild/protobuf/codegenv2";
+import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
-import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
+import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file maxicloud/v1/deployment.proto.
  */
-export const file_maxicloud_v1_deployment: GenFile =
-	/*@__PURE__*/
-	fileDesc(
-		"Ch1tYXhpY2xvdWQvdjEvZGVwbG95bWVudC5wcm90bxIMbWF4aWNsb3VkLnYxImoKBkNvbW1pdBILCgNzaGEYASABKAkSDwoHbWVzc2FnZRgCIAEoCRITCgthdXRob3JfbmFtZRgDIAEoCRItCgl0aW1lc3RhbXAYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIpMCCgpEZXBsb3ltZW50EgoKAmlkGAEgASgJEhYKDmFwcGxpY2F0aW9uX2lkGAIgASgJEhUKDW93bmVyX3VzZXJfaWQYAyABKAkSJAoGY29tbWl0GAQgASgLMhQubWF4aWNsb3VkLnYxLkNvbW1pdBIuCgZzdGF0dXMYBSABKA4yHi5tYXhpY2xvdWQudjEuRGVwbG95bWVudFN0YXR1cxIuCgpzdGFydGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBI0CgtmaW5pc2hlZF9hdBgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBIAIgBAUIOCgxfZmluaXNoZWRfYXQiPAoWUmV0cnlEZXBsb3ltZW50UmVxdWVzdBIiCg1kZXBsb3ltZW50X2lkGAEgASgJQgu6SAjIAQFyA7ABASJHChdSZXRyeURlcGxveW1lbnRSZXNwb25zZRIsCgpkZXBsb3ltZW50GAEgASgLMhgubWF4aWNsb3VkLnYxLkRlcGxveW1lbnQiOgoUR2V0RGVwbG95bWVudFJlcXVlc3QSIgoNZGVwbG95bWVudF9pZBgBIAEoCUILukgIyAEBcgOwAQEiRQoVR2V0RGVwbG95bWVudFJlc3BvbnNlEiwKCmRlcGxveW1lbnQYASABKAsyGC5tYXhpY2xvdWQudjEuRGVwbG95bWVudCI9ChZMaXN0RGVwbG95bWVudHNSZXF1ZXN0EiMKDmFwcGxpY2F0aW9uX2lkGAEgASgJQgu6SAjIAQFyA7ABASJIChdMaXN0RGVwbG95bWVudHNSZXNwb25zZRItCgtkZXBsb3ltZW50cxgBIAMoCzIYLm1heGljbG91ZC52MS5EZXBsb3ltZW50IjwKFldhdGNoRGVwbG95bWVudFJlcXVlc3QSIgoNZGVwbG95bWVudF9pZBgBIAEoCUILukgIyAEBcgOwAQEiugEKF1dhdGNoRGVwbG95bWVudFJlc3BvbnNlEk8KGWRlcGxveW1lbnRfc3RhdHVzX2NoYW5nZWQYASABKAsyKi5tYXhpY2xvdWQudjEuRGVwbG95bWVudFN0YXR1c0NoYW5nZWRFdmVudEgAEkUKFGRlcGxveW1lbnRfbG9nX2NodW5rGAIgASgLMiUubWF4aWNsb3VkLnYxLkRlcGxveW1lbnRMb2dDaHVua0V2ZW50SABCBwoFZXZlbnQirQEKHERlcGxveW1lbnRTdGF0dXNDaGFuZ2VkRXZlbnQSLgoGc3RhdHVzGAEgASgOMh4ubWF4aWNsb3VkLnYxLkRlcGxveW1lbnRTdGF0dXMSFwoPZWxhcHNlZF9zZWNvbmRzGAIgASgDEjQKC2ZpbmlzaGVkX2F0GAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcEgAiAEBQg4KDF9maW5pc2hlZF9hdCIoChdEZXBsb3ltZW50TG9nQ2h1bmtFdmVudBINCgVsaW5lcxgBIAMoCSqVAQoQRGVwbG95bWVudFN0YXR1cxIhCh1ERVBMT1lNRU5UX1NUQVRVU19VTlNQRUNJRklFRBAAEh0KGURFUExPWU1FTlRfU1RBVFVTX1NVQ0NFU1MQARIhCh1ERVBMT1lNRU5UX1NUQVRVU19JTl9QUk9HUkVTUxACEhwKGERFUExPWU1FTlRfU1RBVFVTX0ZBSUxFRBADMo8DChFEZXBsb3ltZW50U2VydmljZRJeCg9SZXRyeURlcGxveW1lbnQSJC5tYXhpY2xvdWQudjEuUmV0cnlEZXBsb3ltZW50UmVxdWVzdBolLm1heGljbG91ZC52MS5SZXRyeURlcGxveW1lbnRSZXNwb25zZRJYCg1HZXREZXBsb3ltZW50EiIubWF4aWNsb3VkLnYxLkdldERlcGxveW1lbnRSZXF1ZXN0GiMubWF4aWNsb3VkLnYxLkdldERlcGxveW1lbnRSZXNwb25zZRJeCg9MaXN0RGVwbG95bWVudHMSJC5tYXhpY2xvdWQudjEuTGlzdERlcGxveW1lbnRzUmVxdWVzdBolLm1heGljbG91ZC52MS5MaXN0RGVwbG95bWVudHNSZXNwb25zZRJgCg9XYXRjaERlcGxveW1lbnQSJC5tYXhpY2xvdWQudjEuV2F0Y2hEZXBsb3ltZW50UmVxdWVzdBolLm1heGljbG91ZC52MS5XYXRjaERlcGxveW1lbnRSZXNwb25zZTABQrgBChBjb20ubWF4aWNsb3VkLnYxQg9EZXBsb3ltZW50UHJvdG9QAVpCZ2l0aHViLmNvbS9zYWl0YW1hdS1tYXhpbXVtL21heGljbG91ZC9nZW4vbWF4aWNsb3VkL3YxO21heGljbG91ZHYxogIDTVhYqgIMTWF4aWNsb3VkLlYxygIMTWF4aWNsb3VkXFYx4gIYTWF4aWNsb3VkXFYxXEdQQk1ldGFkYXRh6gINTWF4aWNsb3VkOjpWMWIGcHJvdG8z",
-		[file_buf_validate_validate, file_google_protobuf_timestamp],
-	);
+export const file_maxicloud_v1_deployment: GenFile = /*@__PURE__*/
+  fileDesc("Ch1tYXhpY2xvdWQvdjEvZGVwbG95bWVudC5wcm90bxIMbWF4aWNsb3VkLnYxImoKBkNvbW1pdBILCgNzaGEYASABKAkSDwoHbWVzc2FnZRgCIAEoCRITCgthdXRob3JfbmFtZRgDIAEoCRItCgl0aW1lc3RhbXAYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIpMCCgpEZXBsb3ltZW50EgoKAmlkGAEgASgJEhYKDmFwcGxpY2F0aW9uX2lkGAIgASgJEhUKDW93bmVyX3VzZXJfaWQYAyABKAkSJAoGY29tbWl0GAQgASgLMhQubWF4aWNsb3VkLnYxLkNvbW1pdBIuCgZzdGF0dXMYBSABKA4yHi5tYXhpY2xvdWQudjEuRGVwbG95bWVudFN0YXR1cxIuCgpzdGFydGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBI0CgtmaW5pc2hlZF9hdBgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBIAIgBAUIOCgxfZmluaXNoZWRfYXQiPAoWUmV0cnlEZXBsb3ltZW50UmVxdWVzdBIiCg1kZXBsb3ltZW50X2lkGAEgASgJQgu6SAjIAQFyA7ABASJHChdSZXRyeURlcGxveW1lbnRSZXNwb25zZRIsCgpkZXBsb3ltZW50GAEgASgLMhgubWF4aWNsb3VkLnYxLkRlcGxveW1lbnQiOgoUR2V0RGVwbG95bWVudFJlcXVlc3QSIgoNZGVwbG95bWVudF9pZBgBIAEoCUILukgIyAEBcgOwAQEiRQoVR2V0RGVwbG95bWVudFJlc3BvbnNlEiwKCmRlcGxveW1lbnQYASABKAsyGC5tYXhpY2xvdWQudjEuRGVwbG95bWVudCI9ChZMaXN0RGVwbG95bWVudHNSZXF1ZXN0EiMKDmFwcGxpY2F0aW9uX2lkGAEgASgJQgu6SAjIAQFyA7ABASJIChdMaXN0RGVwbG95bWVudHNSZXNwb25zZRItCgtkZXBsb3ltZW50cxgBIAMoCzIYLm1heGljbG91ZC52MS5EZXBsb3ltZW50IjwKFldhdGNoRGVwbG95bWVudFJlcXVlc3QSIgoNZGVwbG95bWVudF9pZBgBIAEoCUILukgIyAEBcgOwAQEiugEKF1dhdGNoRGVwbG95bWVudFJlc3BvbnNlEk8KGWRlcGxveW1lbnRfc3RhdHVzX2NoYW5nZWQYASABKAsyKi5tYXhpY2xvdWQudjEuRGVwbG95bWVudFN0YXR1c0NoYW5nZWRFdmVudEgAEkUKFGRlcGxveW1lbnRfbG9nX2NodW5rGAIgASgLMiUubWF4aWNsb3VkLnYxLkRlcGxveW1lbnRMb2dDaHVua0V2ZW50SABCBwoFZXZlbnQirQEKHERlcGxveW1lbnRTdGF0dXNDaGFuZ2VkRXZlbnQSLgoGc3RhdHVzGAEgASgOMh4ubWF4aWNsb3VkLnYxLkRlcGxveW1lbnRTdGF0dXMSFwoPZWxhcHNlZF9zZWNvbmRzGAIgASgDEjQKC2ZpbmlzaGVkX2F0GAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcEgAiAEBQg4KDF9maW5pc2hlZF9hdCIoChdEZXBsb3ltZW50TG9nQ2h1bmtFdmVudBINCgVsaW5lcxgBIAMoCSqVAQoQRGVwbG95bWVudFN0YXR1cxIhCh1ERVBMT1lNRU5UX1NUQVRVU19VTlNQRUNJRklFRBAAEh0KGURFUExPWU1FTlRfU1RBVFVTX1NVQ0NFU1MQARIhCh1ERVBMT1lNRU5UX1NUQVRVU19JTl9QUk9HUkVTUxACEhwKGERFUExPWU1FTlRfU1RBVFVTX0ZBSUxFRBADMo8DChFEZXBsb3ltZW50U2VydmljZRJeCg9SZXRyeURlcGxveW1lbnQSJC5tYXhpY2xvdWQudjEuUmV0cnlEZXBsb3ltZW50UmVxdWVzdBolLm1heGljbG91ZC52MS5SZXRyeURlcGxveW1lbnRSZXNwb25zZRJYCg1HZXREZXBsb3ltZW50EiIubWF4aWNsb3VkLnYxLkdldERlcGxveW1lbnRSZXF1ZXN0GiMubWF4aWNsb3VkLnYxLkdldERlcGxveW1lbnRSZXNwb25zZRJeCg9MaXN0RGVwbG95bWVudHMSJC5tYXhpY2xvdWQudjEuTGlzdERlcGxveW1lbnRzUmVxdWVzdBolLm1heGljbG91ZC52MS5MaXN0RGVwbG95bWVudHNSZXNwb25zZRJgCg9XYXRjaERlcGxveW1lbnQSJC5tYXhpY2xvdWQudjEuV2F0Y2hEZXBsb3ltZW50UmVxdWVzdBolLm1heGljbG91ZC52MS5XYXRjaERlcGxveW1lbnRSZXNwb25zZTABQrgBChBjb20ubWF4aWNsb3VkLnYxQg9EZXBsb3ltZW50UHJvdG9QAVpCZ2l0aHViLmNvbS9zYWl0YW1hdS1tYXhpbXVtL21heGljbG91ZC9nZW4vbWF4aWNsb3VkL3YxO21heGljbG91ZHYxogIDTVhYqgIMTWF4aWNsb3VkLlYxygIMTWF4aWNsb3VkXFYx4gIYTWF4aWNsb3VkXFYxXEdQQk1ldGFkYXRh6gINTWF4aWNsb3VkOjpWMWIGcHJvdG8z", [file_buf_validate_validate, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message maxicloud.v1.Commit
  */
 export type Commit = Message<"maxicloud.v1.Commit"> & {
-	/**
-	 * @generated from field: string sha = 1;
-	 */
-	sha: string;
+  /**
+   * @generated from field: string sha = 1;
+   */
+  sha: string;
 
-	/**
-	 * @generated from field: string message = 2;
-	 */
-	message: string;
+  /**
+   * @generated from field: string message = 2;
+   */
+  message: string;
 
-	/**
-	 * @generated from field: string author_name = 3;
-	 */
-	authorName: string;
+  /**
+   * @generated from field: string author_name = 3;
+   */
+  authorName: string;
 
-	/**
-	 * @generated from field: google.protobuf.Timestamp timestamp = 4;
-	 */
-	timestamp?: Timestamp | undefined;
+  /**
+   * @generated from field: google.protobuf.Timestamp timestamp = 4;
+   */
+  timestamp?: Timestamp | undefined;
 };
 
 /**
  * Describes the message maxicloud.v1.Commit.
  * Use `create(CommitSchema)` to create a new message.
  */
-export const CommitSchema: GenMessage<Commit> =
-	/*@__PURE__*/
-	messageDesc(file_maxicloud_v1_deployment, 0);
+export const CommitSchema: GenMessage<Commit> = /*@__PURE__*/
+  messageDesc(file_maxicloud_v1_deployment, 0);
 
 /**
  * @generated from message maxicloud.v1.Deployment
  */
 export type Deployment = Message<"maxicloud.v1.Deployment"> & {
-	/**
-	 * @generated from field: string id = 1;
-	 */
-	id: string;
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
 
-	/**
-	 * @generated from field: string application_id = 2;
-	 */
-	applicationId: string;
+  /**
+   * @generated from field: string application_id = 2;
+   */
+  applicationId: string;
 
-	/**
-	 * @generated from field: string owner_user_id = 3;
-	 */
-	ownerUserId: string;
+  /**
+   * @generated from field: string owner_user_id = 3;
+   */
+  ownerUserId: string;
 
-	/**
-	 * @generated from field: maxicloud.v1.Commit commit = 4;
-	 */
-	commit?: Commit | undefined;
+  /**
+   * @generated from field: maxicloud.v1.Commit commit = 4;
+   */
+  commit?: Commit | undefined;
 
-	/**
-	 * @generated from field: maxicloud.v1.DeploymentStatus status = 5;
-	 */
-	status: DeploymentStatus;
+  /**
+   * @generated from field: maxicloud.v1.DeploymentStatus status = 5;
+   */
+  status: DeploymentStatus;
 
-	/**
-	 * @generated from field: google.protobuf.Timestamp started_at = 6;
-	 */
-	startedAt?: Timestamp | undefined;
+  /**
+   * @generated from field: google.protobuf.Timestamp started_at = 6;
+   */
+  startedAt?: Timestamp | undefined;
 
-	/**
-	 * @generated from field: optional google.protobuf.Timestamp finished_at = 7;
-	 */
-	finishedAt?: Timestamp | undefined;
+  /**
+   * @generated from field: optional google.protobuf.Timestamp finished_at = 7;
+   */
+  finishedAt?: Timestamp | undefined;
 };
 
 /**
  * Describes the message maxicloud.v1.Deployment.
  * Use `create(DeploymentSchema)` to create a new message.
  */
-export const DeploymentSchema: GenMessage<Deployment> =
-	/*@__PURE__*/
-	messageDesc(file_maxicloud_v1_deployment, 1);
+export const DeploymentSchema: GenMessage<Deployment> = /*@__PURE__*/
+  messageDesc(file_maxicloud_v1_deployment, 1);
 
 /**
  * @generated from message maxicloud.v1.RetryDeploymentRequest
  */
-export type RetryDeploymentRequest =
-	Message<"maxicloud.v1.RetryDeploymentRequest"> & {
-		/**
-		 * @generated from field: string deployment_id = 1;
-		 */
-		deploymentId: string;
-	};
+export type RetryDeploymentRequest = Message<"maxicloud.v1.RetryDeploymentRequest"> & {
+  /**
+   * @generated from field: string deployment_id = 1;
+   */
+  deploymentId: string;
+};
 
 /**
  * Describes the message maxicloud.v1.RetryDeploymentRequest.
  * Use `create(RetryDeploymentRequestSchema)` to create a new message.
  */
-export const RetryDeploymentRequestSchema: GenMessage<RetryDeploymentRequest> =
-	/*@__PURE__*/
-	messageDesc(file_maxicloud_v1_deployment, 2);
+export const RetryDeploymentRequestSchema: GenMessage<RetryDeploymentRequest> = /*@__PURE__*/
+  messageDesc(file_maxicloud_v1_deployment, 2);
 
 /**
  * @generated from message maxicloud.v1.RetryDeploymentResponse
  */
-export type RetryDeploymentResponse =
-	Message<"maxicloud.v1.RetryDeploymentResponse"> & {
-		/**
-		 * @generated from field: maxicloud.v1.Deployment deployment = 1;
-		 */
-		deployment?: Deployment | undefined;
-	};
+export type RetryDeploymentResponse = Message<"maxicloud.v1.RetryDeploymentResponse"> & {
+  /**
+   * @generated from field: maxicloud.v1.Deployment deployment = 1;
+   */
+  deployment?: Deployment | undefined;
+};
 
 /**
  * Describes the message maxicloud.v1.RetryDeploymentResponse.
  * Use `create(RetryDeploymentResponseSchema)` to create a new message.
  */
-export const RetryDeploymentResponseSchema: GenMessage<RetryDeploymentResponse> =
-	/*@__PURE__*/
-	messageDesc(file_maxicloud_v1_deployment, 3);
+export const RetryDeploymentResponseSchema: GenMessage<RetryDeploymentResponse> = /*@__PURE__*/
+  messageDesc(file_maxicloud_v1_deployment, 3);
 
 /**
  * @generated from message maxicloud.v1.GetDeploymentRequest
  */
-export type GetDeploymentRequest =
-	Message<"maxicloud.v1.GetDeploymentRequest"> & {
-		/**
-		 * @generated from field: string deployment_id = 1;
-		 */
-		deploymentId: string;
-	};
+export type GetDeploymentRequest = Message<"maxicloud.v1.GetDeploymentRequest"> & {
+  /**
+   * @generated from field: string deployment_id = 1;
+   */
+  deploymentId: string;
+};
 
 /**
  * Describes the message maxicloud.v1.GetDeploymentRequest.
  * Use `create(GetDeploymentRequestSchema)` to create a new message.
  */
-export const GetDeploymentRequestSchema: GenMessage<GetDeploymentRequest> =
-	/*@__PURE__*/
-	messageDesc(file_maxicloud_v1_deployment, 4);
+export const GetDeploymentRequestSchema: GenMessage<GetDeploymentRequest> = /*@__PURE__*/
+  messageDesc(file_maxicloud_v1_deployment, 4);
 
 /**
  * @generated from message maxicloud.v1.GetDeploymentResponse
  */
-export type GetDeploymentResponse =
-	Message<"maxicloud.v1.GetDeploymentResponse"> & {
-		/**
-		 * @generated from field: maxicloud.v1.Deployment deployment = 1;
-		 */
-		deployment?: Deployment | undefined;
-	};
+export type GetDeploymentResponse = Message<"maxicloud.v1.GetDeploymentResponse"> & {
+  /**
+   * @generated from field: maxicloud.v1.Deployment deployment = 1;
+   */
+  deployment?: Deployment | undefined;
+};
 
 /**
  * Describes the message maxicloud.v1.GetDeploymentResponse.
  * Use `create(GetDeploymentResponseSchema)` to create a new message.
  */
-export const GetDeploymentResponseSchema: GenMessage<GetDeploymentResponse> =
-	/*@__PURE__*/
-	messageDesc(file_maxicloud_v1_deployment, 5);
+export const GetDeploymentResponseSchema: GenMessage<GetDeploymentResponse> = /*@__PURE__*/
+  messageDesc(file_maxicloud_v1_deployment, 5);
 
 /**
  * @generated from message maxicloud.v1.ListDeploymentsRequest
  */
-export type ListDeploymentsRequest =
-	Message<"maxicloud.v1.ListDeploymentsRequest"> & {
-		/**
-		 * @generated from field: string application_id = 1;
-		 */
-		applicationId: string;
-	};
+export type ListDeploymentsRequest = Message<"maxicloud.v1.ListDeploymentsRequest"> & {
+  /**
+   * @generated from field: string application_id = 1;
+   */
+  applicationId: string;
+};
 
 /**
  * Describes the message maxicloud.v1.ListDeploymentsRequest.
  * Use `create(ListDeploymentsRequestSchema)` to create a new message.
  */
-export const ListDeploymentsRequestSchema: GenMessage<ListDeploymentsRequest> =
-	/*@__PURE__*/
-	messageDesc(file_maxicloud_v1_deployment, 6);
+export const ListDeploymentsRequestSchema: GenMessage<ListDeploymentsRequest> = /*@__PURE__*/
+  messageDesc(file_maxicloud_v1_deployment, 6);
 
 /**
  * @generated from message maxicloud.v1.ListDeploymentsResponse
  */
-export type ListDeploymentsResponse =
-	Message<"maxicloud.v1.ListDeploymentsResponse"> & {
-		/**
-		 * @generated from field: repeated maxicloud.v1.Deployment deployments = 1;
-		 */
-		deployments: Deployment[];
-	};
+export type ListDeploymentsResponse = Message<"maxicloud.v1.ListDeploymentsResponse"> & {
+  /**
+   * @generated from field: repeated maxicloud.v1.Deployment deployments = 1;
+   */
+  deployments: Deployment[];
+};
 
 /**
  * Describes the message maxicloud.v1.ListDeploymentsResponse.
  * Use `create(ListDeploymentsResponseSchema)` to create a new message.
  */
-export const ListDeploymentsResponseSchema: GenMessage<ListDeploymentsResponse> =
-	/*@__PURE__*/
-	messageDesc(file_maxicloud_v1_deployment, 7);
+export const ListDeploymentsResponseSchema: GenMessage<ListDeploymentsResponse> = /*@__PURE__*/
+  messageDesc(file_maxicloud_v1_deployment, 7);
 
 /**
  * @generated from message maxicloud.v1.WatchDeploymentRequest
  */
-export type WatchDeploymentRequest =
-	Message<"maxicloud.v1.WatchDeploymentRequest"> & {
-		/**
-		 * @generated from field: string deployment_id = 1;
-		 */
-		deploymentId: string;
-	};
+export type WatchDeploymentRequest = Message<"maxicloud.v1.WatchDeploymentRequest"> & {
+  /**
+   * @generated from field: string deployment_id = 1;
+   */
+  deploymentId: string;
+};
 
 /**
  * Describes the message maxicloud.v1.WatchDeploymentRequest.
  * Use `create(WatchDeploymentRequestSchema)` to create a new message.
  */
-export const WatchDeploymentRequestSchema: GenMessage<WatchDeploymentRequest> =
-	/*@__PURE__*/
-	messageDesc(file_maxicloud_v1_deployment, 8);
+export const WatchDeploymentRequestSchema: GenMessage<WatchDeploymentRequest> = /*@__PURE__*/
+  messageDesc(file_maxicloud_v1_deployment, 8);
 
 /**
  * @generated from message maxicloud.v1.WatchDeploymentResponse
  */
-export type WatchDeploymentResponse =
-	Message<"maxicloud.v1.WatchDeploymentResponse"> & {
-		/**
-		 * @generated from oneof maxicloud.v1.WatchDeploymentResponse.event
-		 */
-		event:
-			| {
-					/**
-					 * @generated from field: maxicloud.v1.DeploymentStatusChangedEvent deployment_status_changed = 1;
-					 */
-					value: DeploymentStatusChangedEvent;
-					case: "deploymentStatusChanged";
-			  }
-			| {
-					/**
-					 * @generated from field: maxicloud.v1.DeploymentLogChunkEvent deployment_log_chunk = 2;
-					 */
-					value: DeploymentLogChunkEvent;
-					case: "deploymentLogChunk";
-			  }
-			| { case: undefined; value?: undefined };
-	};
+export type WatchDeploymentResponse = Message<"maxicloud.v1.WatchDeploymentResponse"> & {
+  /**
+   * @generated from oneof maxicloud.v1.WatchDeploymentResponse.event
+   */
+  event: {
+    /**
+     * @generated from field: maxicloud.v1.DeploymentStatusChangedEvent deployment_status_changed = 1;
+     */
+    value: DeploymentStatusChangedEvent;
+    case: "deploymentStatusChanged";
+  } | {
+    /**
+     * @generated from field: maxicloud.v1.DeploymentLogChunkEvent deployment_log_chunk = 2;
+     */
+    value: DeploymentLogChunkEvent;
+    case: "deploymentLogChunk";
+  } | { case: undefined; value?: undefined };
+};
 
 /**
  * Describes the message maxicloud.v1.WatchDeploymentResponse.
  * Use `create(WatchDeploymentResponseSchema)` to create a new message.
  */
-export const WatchDeploymentResponseSchema: GenMessage<WatchDeploymentResponse> =
-	/*@__PURE__*/
-	messageDesc(file_maxicloud_v1_deployment, 9);
+export const WatchDeploymentResponseSchema: GenMessage<WatchDeploymentResponse> = /*@__PURE__*/
+  messageDesc(file_maxicloud_v1_deployment, 9);
 
 /**
  * @generated from message maxicloud.v1.DeploymentStatusChangedEvent
  */
-export type DeploymentStatusChangedEvent =
-	Message<"maxicloud.v1.DeploymentStatusChangedEvent"> & {
-		/**
-		 * @generated from field: maxicloud.v1.DeploymentStatus status = 1;
-		 */
-		status: DeploymentStatus;
+export type DeploymentStatusChangedEvent = Message<"maxicloud.v1.DeploymentStatusChangedEvent"> & {
+  /**
+   * @generated from field: maxicloud.v1.DeploymentStatus status = 1;
+   */
+  status: DeploymentStatus;
 
-		/**
-		 * @generated from field: int64 elapsed_seconds = 2;
-		 */
-		elapsedSeconds: bigint;
+  /**
+   * @generated from field: int64 elapsed_seconds = 2;
+   */
+  elapsedSeconds: bigint;
 
-		/**
-		 * @generated from field: optional google.protobuf.Timestamp finished_at = 3;
-		 */
-		finishedAt?: Timestamp | undefined;
-	};
+  /**
+   * @generated from field: optional google.protobuf.Timestamp finished_at = 3;
+   */
+  finishedAt?: Timestamp | undefined;
+};
 
 /**
  * Describes the message maxicloud.v1.DeploymentStatusChangedEvent.
  * Use `create(DeploymentStatusChangedEventSchema)` to create a new message.
  */
-export const DeploymentStatusChangedEventSchema: GenMessage<DeploymentStatusChangedEvent> =
-	/*@__PURE__*/
-	messageDesc(file_maxicloud_v1_deployment, 10);
+export const DeploymentStatusChangedEventSchema: GenMessage<DeploymentStatusChangedEvent> = /*@__PURE__*/
+  messageDesc(file_maxicloud_v1_deployment, 10);
 
 /**
  * @generated from message maxicloud.v1.DeploymentLogChunkEvent
  */
-export type DeploymentLogChunkEvent =
-	Message<"maxicloud.v1.DeploymentLogChunkEvent"> & {
-		/**
-		 * @generated from field: repeated string lines = 1;
-		 */
-		lines: string[];
-	};
+export type DeploymentLogChunkEvent = Message<"maxicloud.v1.DeploymentLogChunkEvent"> & {
+  /**
+   * @generated from field: repeated string lines = 1;
+   */
+  lines: string[];
+};
 
 /**
  * Describes the message maxicloud.v1.DeploymentLogChunkEvent.
  * Use `create(DeploymentLogChunkEventSchema)` to create a new message.
  */
-export const DeploymentLogChunkEventSchema: GenMessage<DeploymentLogChunkEvent> =
-	/*@__PURE__*/
-	messageDesc(file_maxicloud_v1_deployment, 11);
+export const DeploymentLogChunkEventSchema: GenMessage<DeploymentLogChunkEvent> = /*@__PURE__*/
+  messageDesc(file_maxicloud_v1_deployment, 11);
 
 /**
  * @generated from enum maxicloud.v1.DeploymentStatus
  */
 export enum DeploymentStatus {
-	/**
-	 * @generated from enum value: DEPLOYMENT_STATUS_UNSPECIFIED = 0;
-	 */
-	UNSPECIFIED = 0,
+  /**
+   * @generated from enum value: DEPLOYMENT_STATUS_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
 
-	/**
-	 * @generated from enum value: DEPLOYMENT_STATUS_SUCCESS = 1;
-	 */
-	SUCCESS = 1,
+  /**
+   * @generated from enum value: DEPLOYMENT_STATUS_SUCCESS = 1;
+   */
+  SUCCESS = 1,
 
-	/**
-	 * @generated from enum value: DEPLOYMENT_STATUS_IN_PROGRESS = 2;
-	 */
-	IN_PROGRESS = 2,
+  /**
+   * @generated from enum value: DEPLOYMENT_STATUS_IN_PROGRESS = 2;
+   */
+  IN_PROGRESS = 2,
 
-	/**
-	 * @generated from enum value: DEPLOYMENT_STATUS_FAILED = 3;
-	 */
-	FAILED = 3,
+  /**
+   * @generated from enum value: DEPLOYMENT_STATUS_FAILED = 3;
+   */
+  FAILED = 3,
 }
 
 /**
  * Describes the enum maxicloud.v1.DeploymentStatus.
  */
-export const DeploymentStatusSchema: GenEnum<DeploymentStatus> =
-	/*@__PURE__*/
-	enumDesc(file_maxicloud_v1_deployment, 0);
+export const DeploymentStatusSchema: GenEnum<DeploymentStatus> = /*@__PURE__*/
+  enumDesc(file_maxicloud_v1_deployment, 0);
 
 /**
  * @generated from service maxicloud.v1.DeploymentService
  */
 export const DeploymentService: GenService<{
-	/**
-	 * @generated from rpc maxicloud.v1.DeploymentService.RetryDeployment
-	 */
-	retryDeployment: {
-		methodKind: "unary";
-		input: typeof RetryDeploymentRequestSchema;
-		output: typeof RetryDeploymentResponseSchema;
-	};
-	/**
-	 * @generated from rpc maxicloud.v1.DeploymentService.GetDeployment
-	 */
-	getDeployment: {
-		methodKind: "unary";
-		input: typeof GetDeploymentRequestSchema;
-		output: typeof GetDeploymentResponseSchema;
-	};
-	/**
-	 * @generated from rpc maxicloud.v1.DeploymentService.ListDeployments
-	 */
-	listDeployments: {
-		methodKind: "unary";
-		input: typeof ListDeploymentsRequestSchema;
-		output: typeof ListDeploymentsResponseSchema;
-	};
-	/**
-	 * @generated from rpc maxicloud.v1.DeploymentService.WatchDeployment
-	 */
-	watchDeployment: {
-		methodKind: "server_streaming";
-		input: typeof WatchDeploymentRequestSchema;
-		output: typeof WatchDeploymentResponseSchema;
-	};
-}> = /*@__PURE__*/ serviceDesc(file_maxicloud_v1_deployment, 0);
+  /**
+   * @generated from rpc maxicloud.v1.DeploymentService.RetryDeployment
+   */
+  retryDeployment: {
+    methodKind: "unary";
+    input: typeof RetryDeploymentRequestSchema;
+    output: typeof RetryDeploymentResponseSchema;
+  },
+  /**
+   * @generated from rpc maxicloud.v1.DeploymentService.GetDeployment
+   */
+  getDeployment: {
+    methodKind: "unary";
+    input: typeof GetDeploymentRequestSchema;
+    output: typeof GetDeploymentResponseSchema;
+  },
+  /**
+   * @generated from rpc maxicloud.v1.DeploymentService.ListDeployments
+   */
+  listDeployments: {
+    methodKind: "unary";
+    input: typeof ListDeploymentsRequestSchema;
+    output: typeof ListDeploymentsResponseSchema;
+  },
+  /**
+   * @generated from rpc maxicloud.v1.DeploymentService.WatchDeployment
+   */
+  watchDeployment: {
+    methodKind: "server_streaming";
+    input: typeof WatchDeploymentRequestSchema;
+    output: typeof WatchDeploymentResponseSchema;
+  },
+}> = /*@__PURE__*/
+  serviceDesc(file_maxicloud_v1_deployment, 0);
+
