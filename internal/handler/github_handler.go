@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"connectrpc.com/connect"
 	gh "github.com/google/go-github/v72/github"
@@ -13,6 +12,7 @@ import (
 	"github.com/saitamau-maximum/maxicloud/gen/maxicloud/v1/maxicloudv1connect"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
 	"github.com/saitamau-maximum/maxicloud/internal/usecase"
+	"github.com/saitamau-maximum/maxicloud/internal/usecase/deployment"
 	"golang.org/x/oauth2"
 )
 
@@ -26,13 +26,13 @@ type GitHubHandlerConfig struct {
 
 type GitHubHandler struct {
 	maxicloudv1connect.UnimplementedGitHubServiceHandler
-	deployService usecase.DeploymentService
+	deployService deployment.DeploymentEventService
 	srcService    usecase.SourceService
 	config        GitHubHandlerConfig
 	oauthCfg      *oauth2.Config
 }
 
-func NewGitHubHandler(deploySvc usecase.DeploymentService, srcSvc usecase.SourceService, config GitHubHandlerConfig) *GitHubHandler {
+func NewGitHubHandler(deploySvc deployment.DeploymentEventService, srcSvc usecase.SourceService, config GitHubHandlerConfig) *GitHubHandler {
 	oauthCfg := &oauth2.Config{
 		ClientID:     config.ClientID,
 		ClientSecret: config.ClientSecret,
@@ -92,7 +92,7 @@ func (h *GitHubHandler) Webhook(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		return
 	}
-	if err := h.deployService.HandleGitHubEvent(r.Context(), *deployEvent); err != nil {
+	if err := h.deployService.HandleDeploymentEvent(r.Context(), *deployEvent); err != nil {
 		if domain.IsValidationError(err) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -102,61 +102,6 @@ func (h *GitHubHandler) Webhook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-}
-
-func toDeploymentEvent(event any) (*domain.DeploymentEvent, bool) {
-	switch e := event.(type) {
-	case *gh.PushEvent:
-		if e.GetDeleted() {
-			return nil, false
-		}
-		const refPrefix = "refs/heads/"
-		if !strings.HasPrefix(e.GetRef(), refPrefix) {
-			return nil, false
-		}
-		branch := strings.TrimPrefix(e.GetRef(), refPrefix)
-		return &domain.DeploymentEvent{
-			Type: domain.DeploymentEventTypeProductionRequested,
-			Repo: domain.Repository{
-				Owner: e.GetRepo().GetOwner().GetLogin(),
-				Name:  e.GetRepo().GetName(),
-			},
-			Branch: branch,
-			Commit: domain.Commit{
-				SHA:        e.GetAfter(),
-				Message:    e.GetHeadCommit().GetMessage(),
-				AuthorName: e.GetHeadCommit().GetAuthor().GetName(),
-			},
-		}, true
-	case *gh.PullRequestEvent:
-		var eventType domain.DeploymentEventType
-		switch e.GetAction() {
-		case "opened", "synchronize", "reopened":
-			eventType = domain.DeploymentEventTypePreviewRequested
-		case "closed":
-			eventType = domain.DeploymentEventTypePreviewDeleted
-		default:
-			return nil, false
-		}
-		pr := e.GetPullRequest()
-		prNumber := pr.GetNumber()
-		return &domain.DeploymentEvent{
-			Type: eventType,
-			Repo: domain.Repository{
-				Owner: e.GetRepo().GetOwner().GetLogin(),
-				Name:  e.GetRepo().GetName(),
-			},
-			Branch: pr.GetHead().GetRef(),
-			Commit: domain.Commit{
-				SHA:        pr.GetHead().GetSHA(),
-				Message:    pr.GetTitle(),
-				AuthorName: pr.GetUser().GetLogin(),
-			},
-			PRNumber: &prNumber,
-		}, true
-	default:
-		return nil, false
-	}
 }
 
 func (h *GitHubHandler) ListRepositories(ctx context.Context, req *v1.ListRepositoriesRequest) (*v1.ListRepositoriesResponse, error) {

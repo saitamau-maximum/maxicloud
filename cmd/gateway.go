@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -16,21 +17,38 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	"connectrpc.com/connect"
 	"github.com/saitamau-maximum/maxicloud/gen/maxicloud/v1/maxicloudv1connect"
 	"github.com/saitamau-maximum/maxicloud/internal/handler"
 	"github.com/saitamau-maximum/maxicloud/internal/infra/github"
 	"github.com/saitamau-maximum/maxicloud/internal/infra/k8s"
 	"github.com/saitamau-maximum/maxicloud/internal/infra/postgres"
 	"github.com/saitamau-maximum/maxicloud/internal/usecase"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	deployuc "github.com/saitamau-maximum/maxicloud/internal/usecase/deployment"
 )
 
 var gatewayCmd = &cobra.Command{
 	Use:   "gateway",
 	Short: "Start the API gateway server",
 	RunE:  runGateway,
+}
+
+type connectSvc struct {
+	path    string
+	handler http.Handler
+}
+
+func svc(path string, h http.Handler) connectSvc {
+	return connectSvc{path, h}
+}
+
+func mountAll(r chi.Router, svcs ...connectSvc) {
+	for _, s := range svcs {
+		r.Mount(s.path, s.handler)
+	}
 }
 
 func runGateway(cmd *cobra.Command, args []string) error {
@@ -57,19 +75,43 @@ func runGateway(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%d/%s", cfg.PostgreSQLUser, cfg.PostgreSQLPassword, cfg.PostgreSQLHost, cfg.PostgreSQLPort, cfg.PostgreSQLDB)
+	pool, err := postgres.NewPool(cmd.Context(), dsn)
+	if err != nil {
+		return fmt.Errorf("failed to connect to database: %w", err)
+	}
+	defer pool.Close()
+
 	appRepo := k8s.NewApplicationRepository(k8sClient, cfg.IngressClass)
 	prjRepo := k8s.NewProjectRepository(k8sClient)
-	deployRepo := postgres.NewDeploymentRepository()
-	deployPipelineRepo := k8s.NewDeploymentPipelineRepository(k8sClient, clientset)
+	historyRepo := postgres.NewDeploymentHistoryRepository(pool)
+	userRepo := postgres.NewUserRepository(pool)
+	logStreamer := k8s.NewLogStreamer(clientset)
+	deployRepo := k8s.NewDeployRepository(k8sClient, logStreamer)
 	srcRepo := github.NewClient(cfg.GitHubAppID, privateKey, cfg.InstallationID)
 
-	deploySvc := usecase.NewDeploymentService(deployRepo, deployPipelineRepo, appRepo)
+	authSvc := usecase.NewAuthService(usecase.AuthConfig{
+		Issuer:        cfg.OIDCIssuer,
+		ClientID:      cfg.OIDCClientID,
+		RedirectURL:   cfg.OIDCRedirectURL,
+		StateSecret:   cfg.StateSecret,
+		SessionSecret: cfg.SessionSecret,
+	}, userRepo)
+
+	deploySvc := deployuc.NewDeploymentService(historyRepo, deployRepo)
+	deployEventSvc := deployuc.NewDeploymentEventService(appRepo, deploySvc)
+	deployHistory := deployuc.NewHistory(historyRepo)
+	deployWatcher := deployuc.NewWatcher(deployHistory, deployRepo)
+	userSvc := usecase.NewUserService(userRepo)
 	prjSvc := usecase.NewProjectUsecase(prjRepo)
 	domainSvc := usecase.NewDomainService(appRepo, strings.Split(cfg.AvailableDomains, ","))
 	srcSvc := usecase.NewSourceService(srcRepo)
 	appSvc := usecase.NewApplicationService(appRepo, deploySvc, srcSvc)
 
-	ghHandler := handler.NewGitHubHandler(deploySvc, srcSvc, handler.GitHubHandlerConfig{
+	protected := connect.WithInterceptors(handler.NewAuthInterceptor(authSvc))
+
+	authHandler := handler.NewAuthHandler(authSvc)
+	ghHandler := handler.NewGitHubHandler(deployEventSvc, srcSvc, handler.GitHubHandlerConfig{
 		GitHubAppName:  cfg.GitHubAppName,
 		WebhookSecret:  cfg.GitHubWebhookSecret,
 		ClientID:       cfg.GitHubClientID,
@@ -77,8 +119,9 @@ func runGateway(cmd *cobra.Command, args []string) error {
 		InstallationID: cfg.InstallationID,
 	})
 	prjHandler := handler.NewProjectHandler(prjSvc)
+	userHandler := handler.NewUserHandler(userSvc)
 	appHandler := handler.NewApplicationHandler(appSvc)
-	deployHandler := handler.NewDeploymentHandler(deploySvc)
+	deployHandler := handler.NewDeploymentHandler(deploySvc, deployHistory, deployWatcher)
 	domainHandler := handler.NewDomainHandler(domainSvc)
 
 	r := chi.NewRouter()
@@ -96,16 +139,19 @@ func runGateway(cmd *cobra.Command, args []string) error {
 		AllowCredentials: false,
 	}))
 
-	path, h := maxicloudv1connect.NewProjectServiceHandler(prjHandler)
-	r.Mount(path, h)
-	path, h = maxicloudv1connect.NewApplicationServiceHandler(appHandler)
-	r.Mount(path, h)
-	path, h = maxicloudv1connect.NewDeploymentServiceHandler(deployHandler)
-	r.Mount(path, h)
-	path, h = maxicloudv1connect.NewGitHubServiceHandler(ghHandler)
-	r.Mount(path, h)
-	path, h = maxicloudv1connect.NewDomainServiceHandler(domainHandler)
-	r.Mount(path, h)
+	mountAll(r,
+		svc(maxicloudv1connect.NewAuthServiceHandler(authHandler, protected)),
+		svc(maxicloudv1connect.NewProjectServiceHandler(prjHandler, protected)),
+		svc(maxicloudv1connect.NewUserServiceHandler(userHandler, protected)),
+		svc(maxicloudv1connect.NewApplicationServiceHandler(appHandler, protected)),
+		svc(maxicloudv1connect.NewDeploymentServiceHandler(deployHandler, protected)),
+		svc(maxicloudv1connect.NewGitHubServiceHandler(ghHandler, protected)),
+		svc(maxicloudv1connect.NewDomainServiceHandler(domainHandler, protected)),
+	)
+
+	// Auth ハンドラ（ブラウザリダイレクト）
+	r.Get("/auth/login", authHandler.Login)
+	r.Get("/auth/callback", authHandler.Callback)
 
 	// GitHub App 関連のエンドポイント
 	r.Post("/github/webhook", ghHandler.Webhook)

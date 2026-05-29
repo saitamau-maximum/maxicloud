@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
+	"github.com/saitamau-maximum/maxicloud/internal/usecase/deployment"
 )
 
 type ApplicationService interface {
@@ -18,21 +19,17 @@ type ApplicationService interface {
 
 type applicationService struct {
 	appRepo   domain.ApplicationRepository
-	deploySvc DeploymentCreator
+	deploySvc deployment.DeploymentService
 	sourceSvc SourceService
 }
 
-type DeploymentCreator interface {
-	CreateDeployment(ctx context.Context, params CreateDeploymentParams) (string, error)
-}
-
 func NewApplicationService(
-	repo domain.ApplicationRepository,
-	deploySvc DeploymentCreator,
+	appRepo domain.ApplicationRepository,
+	deploySvc deployment.DeploymentService,
 	sourceSvc SourceService,
 ) ApplicationService {
 	return &applicationService{
-		appRepo:   repo,
+		appRepo:   appRepo,
 		deploySvc: deploySvc,
 		sourceSvc: sourceSvc,
 	}
@@ -82,12 +79,11 @@ func (u *applicationService) CreateApplication(ctx context.Context, params Creat
 		return result, nil
 	}
 
-	deployID, err := u.deploySvc.CreateDeployment(ctx, CreateDeploymentParams{
+	deployID, err := u.deploySvc.Deploy(ctx, domain.DeploymentSpec{
 		ApplicationID: app.ID,
 		OwnerUserID:   app.OwnerID,
 		Repo:          app.Source.Repo,
 		Commit:        headCommit,
-		PRNumber:      nil,
 	})
 	if err != nil {
 		result.InitialDeploymentError = fmt.Sprintf("failed to create initial deployment: %v", err)

@@ -33,25 +33,13 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// AuthServiceCreateLoginUrlProcedure is the fully-qualified name of the AuthService's
-	// CreateLoginUrl RPC.
-	AuthServiceCreateLoginUrlProcedure = "/maxicloud.v1.AuthService/CreateLoginUrl"
-	// AuthServiceCompleteLoginProcedure is the fully-qualified name of the AuthService's CompleteLogin
-	// RPC.
-	AuthServiceCompleteLoginProcedure = "/maxicloud.v1.AuthService/CompleteLogin"
-	// AuthServiceGetCurrentUserProcedure is the fully-qualified name of the AuthService's
-	// GetCurrentUser RPC.
-	AuthServiceGetCurrentUserProcedure = "/maxicloud.v1.AuthService/GetCurrentUser"
-	// AuthServiceLogoutProcedure is the fully-qualified name of the AuthService's Logout RPC.
-	AuthServiceLogoutProcedure = "/maxicloud.v1.AuthService/Logout"
+	// AuthServiceMeProcedure is the fully-qualified name of the AuthService's Me RPC.
+	AuthServiceMeProcedure = "/maxicloud.v1.AuthService/Me"
 )
 
 // AuthServiceClient is a client for the maxicloud.v1.AuthService service.
 type AuthServiceClient interface {
-	CreateLoginUrl(context.Context, *v1.CreateLoginUrlRequest) (*v1.CreateLoginUrlResponse, error)
-	CompleteLogin(context.Context, *v1.CompleteLoginRequest) (*v1.CompleteLoginResponse, error)
-	GetCurrentUser(context.Context, *v1.GetCurrentUserRequest) (*v1.GetCurrentUserResponse, error)
-	Logout(context.Context, *v1.LogoutRequest) (*v1.LogoutResponse, error)
+	Me(context.Context, *v1.MeRequest) (*v1.MeResponse, error)
 }
 
 // NewAuthServiceClient constructs a client for the maxicloud.v1.AuthService service. By default, it
@@ -65,28 +53,10 @@ func NewAuthServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 	baseURL = strings.TrimRight(baseURL, "/")
 	authServiceMethods := v1.File_maxicloud_v1_auth_proto.Services().ByName("AuthService").Methods()
 	return &authServiceClient{
-		createLoginUrl: connect.NewClient[v1.CreateLoginUrlRequest, v1.CreateLoginUrlResponse](
+		me: connect.NewClient[v1.MeRequest, v1.MeResponse](
 			httpClient,
-			baseURL+AuthServiceCreateLoginUrlProcedure,
-			connect.WithSchema(authServiceMethods.ByName("CreateLoginUrl")),
-			connect.WithClientOptions(opts...),
-		),
-		completeLogin: connect.NewClient[v1.CompleteLoginRequest, v1.CompleteLoginResponse](
-			httpClient,
-			baseURL+AuthServiceCompleteLoginProcedure,
-			connect.WithSchema(authServiceMethods.ByName("CompleteLogin")),
-			connect.WithClientOptions(opts...),
-		),
-		getCurrentUser: connect.NewClient[v1.GetCurrentUserRequest, v1.GetCurrentUserResponse](
-			httpClient,
-			baseURL+AuthServiceGetCurrentUserProcedure,
-			connect.WithSchema(authServiceMethods.ByName("GetCurrentUser")),
-			connect.WithClientOptions(opts...),
-		),
-		logout: connect.NewClient[v1.LogoutRequest, v1.LogoutResponse](
-			httpClient,
-			baseURL+AuthServiceLogoutProcedure,
-			connect.WithSchema(authServiceMethods.ByName("Logout")),
+			baseURL+AuthServiceMeProcedure,
+			connect.WithSchema(authServiceMethods.ByName("Me")),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -94,42 +64,12 @@ func NewAuthServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 
 // authServiceClient implements AuthServiceClient.
 type authServiceClient struct {
-	createLoginUrl *connect.Client[v1.CreateLoginUrlRequest, v1.CreateLoginUrlResponse]
-	completeLogin  *connect.Client[v1.CompleteLoginRequest, v1.CompleteLoginResponse]
-	getCurrentUser *connect.Client[v1.GetCurrentUserRequest, v1.GetCurrentUserResponse]
-	logout         *connect.Client[v1.LogoutRequest, v1.LogoutResponse]
+	me *connect.Client[v1.MeRequest, v1.MeResponse]
 }
 
-// CreateLoginUrl calls maxicloud.v1.AuthService.CreateLoginUrl.
-func (c *authServiceClient) CreateLoginUrl(ctx context.Context, req *v1.CreateLoginUrlRequest) (*v1.CreateLoginUrlResponse, error) {
-	response, err := c.createLoginUrl.CallUnary(ctx, connect.NewRequest(req))
-	if response != nil {
-		return response.Msg, err
-	}
-	return nil, err
-}
-
-// CompleteLogin calls maxicloud.v1.AuthService.CompleteLogin.
-func (c *authServiceClient) CompleteLogin(ctx context.Context, req *v1.CompleteLoginRequest) (*v1.CompleteLoginResponse, error) {
-	response, err := c.completeLogin.CallUnary(ctx, connect.NewRequest(req))
-	if response != nil {
-		return response.Msg, err
-	}
-	return nil, err
-}
-
-// GetCurrentUser calls maxicloud.v1.AuthService.GetCurrentUser.
-func (c *authServiceClient) GetCurrentUser(ctx context.Context, req *v1.GetCurrentUserRequest) (*v1.GetCurrentUserResponse, error) {
-	response, err := c.getCurrentUser.CallUnary(ctx, connect.NewRequest(req))
-	if response != nil {
-		return response.Msg, err
-	}
-	return nil, err
-}
-
-// Logout calls maxicloud.v1.AuthService.Logout.
-func (c *authServiceClient) Logout(ctx context.Context, req *v1.LogoutRequest) (*v1.LogoutResponse, error) {
-	response, err := c.logout.CallUnary(ctx, connect.NewRequest(req))
+// Me calls maxicloud.v1.AuthService.Me.
+func (c *authServiceClient) Me(ctx context.Context, req *v1.MeRequest) (*v1.MeResponse, error) {
+	response, err := c.me.CallUnary(ctx, connect.NewRequest(req))
 	if response != nil {
 		return response.Msg, err
 	}
@@ -138,10 +78,7 @@ func (c *authServiceClient) Logout(ctx context.Context, req *v1.LogoutRequest) (
 
 // AuthServiceHandler is an implementation of the maxicloud.v1.AuthService service.
 type AuthServiceHandler interface {
-	CreateLoginUrl(context.Context, *v1.CreateLoginUrlRequest) (*v1.CreateLoginUrlResponse, error)
-	CompleteLogin(context.Context, *v1.CompleteLoginRequest) (*v1.CompleteLoginResponse, error)
-	GetCurrentUser(context.Context, *v1.GetCurrentUserRequest) (*v1.GetCurrentUserResponse, error)
-	Logout(context.Context, *v1.LogoutRequest) (*v1.LogoutResponse, error)
+	Me(context.Context, *v1.MeRequest) (*v1.MeResponse, error)
 }
 
 // NewAuthServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -151,40 +88,16 @@ type AuthServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	authServiceMethods := v1.File_maxicloud_v1_auth_proto.Services().ByName("AuthService").Methods()
-	authServiceCreateLoginUrlHandler := connect.NewUnaryHandlerSimple(
-		AuthServiceCreateLoginUrlProcedure,
-		svc.CreateLoginUrl,
-		connect.WithSchema(authServiceMethods.ByName("CreateLoginUrl")),
-		connect.WithHandlerOptions(opts...),
-	)
-	authServiceCompleteLoginHandler := connect.NewUnaryHandlerSimple(
-		AuthServiceCompleteLoginProcedure,
-		svc.CompleteLogin,
-		connect.WithSchema(authServiceMethods.ByName("CompleteLogin")),
-		connect.WithHandlerOptions(opts...),
-	)
-	authServiceGetCurrentUserHandler := connect.NewUnaryHandlerSimple(
-		AuthServiceGetCurrentUserProcedure,
-		svc.GetCurrentUser,
-		connect.WithSchema(authServiceMethods.ByName("GetCurrentUser")),
-		connect.WithHandlerOptions(opts...),
-	)
-	authServiceLogoutHandler := connect.NewUnaryHandlerSimple(
-		AuthServiceLogoutProcedure,
-		svc.Logout,
-		connect.WithSchema(authServiceMethods.ByName("Logout")),
+	authServiceMeHandler := connect.NewUnaryHandlerSimple(
+		AuthServiceMeProcedure,
+		svc.Me,
+		connect.WithSchema(authServiceMethods.ByName("Me")),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/maxicloud.v1.AuthService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case AuthServiceCreateLoginUrlProcedure:
-			authServiceCreateLoginUrlHandler.ServeHTTP(w, r)
-		case AuthServiceCompleteLoginProcedure:
-			authServiceCompleteLoginHandler.ServeHTTP(w, r)
-		case AuthServiceGetCurrentUserProcedure:
-			authServiceGetCurrentUserHandler.ServeHTTP(w, r)
-		case AuthServiceLogoutProcedure:
-			authServiceLogoutHandler.ServeHTTP(w, r)
+		case AuthServiceMeProcedure:
+			authServiceMeHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -194,18 +107,6 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 // UnimplementedAuthServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedAuthServiceHandler struct{}
 
-func (UnimplementedAuthServiceHandler) CreateLoginUrl(context.Context, *v1.CreateLoginUrlRequest) (*v1.CreateLoginUrlResponse, error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("maxicloud.v1.AuthService.CreateLoginUrl is not implemented"))
-}
-
-func (UnimplementedAuthServiceHandler) CompleteLogin(context.Context, *v1.CompleteLoginRequest) (*v1.CompleteLoginResponse, error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("maxicloud.v1.AuthService.CompleteLogin is not implemented"))
-}
-
-func (UnimplementedAuthServiceHandler) GetCurrentUser(context.Context, *v1.GetCurrentUserRequest) (*v1.GetCurrentUserResponse, error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("maxicloud.v1.AuthService.GetCurrentUser is not implemented"))
-}
-
-func (UnimplementedAuthServiceHandler) Logout(context.Context, *v1.LogoutRequest) (*v1.LogoutResponse, error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("maxicloud.v1.AuthService.Logout is not implemented"))
+func (UnimplementedAuthServiceHandler) Me(context.Context, *v1.MeRequest) (*v1.MeResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("maxicloud.v1.AuthService.Me is not implemented"))
 }

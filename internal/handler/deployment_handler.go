@@ -7,7 +7,7 @@ import (
 	v1 "github.com/saitamau-maximum/maxicloud/gen/maxicloud/v1"
 	"github.com/saitamau-maximum/maxicloud/gen/maxicloud/v1/maxicloudv1connect"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
-	"github.com/saitamau-maximum/maxicloud/internal/usecase"
+	"github.com/saitamau-maximum/maxicloud/internal/usecase/deployment"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -15,17 +15,25 @@ var _ maxicloudv1connect.DeploymentServiceHandler = (*DeploymentHandler)(nil)
 
 type DeploymentHandler struct {
 	maxicloudv1connect.UnimplementedDeploymentServiceHandler
-	uc usecase.DeploymentService
+	service deployment.DeploymentService
+	history deployment.History
+	watcher deployment.Watcher
 }
 
-func NewDeploymentHandler(deployService usecase.DeploymentService) *DeploymentHandler {
+func NewDeploymentHandler(
+	deployService deployment.DeploymentService,
+	history deployment.History,
+	watcher deployment.Watcher,
+) *DeploymentHandler {
 	return &DeploymentHandler{
-		uc: deployService,
+		service: deployService,
+		history: history,
+		watcher: watcher,
 	}
 }
 
 func (h *DeploymentHandler) RetryDeployment(ctx context.Context, req *v1.RetryDeploymentRequest) (*v1.RetryDeploymentResponse, error) {
-	deploy, err := h.uc.RetryDeployment(ctx, req.GetDeploymentId())
+	deploy, err := h.service.Retry(ctx, req.GetDeploymentId())
 	if err != nil {
 		return nil, toConnectError(err)
 	}
@@ -36,7 +44,7 @@ func (h *DeploymentHandler) RetryDeployment(ctx context.Context, req *v1.RetryDe
 }
 
 func (h *DeploymentHandler) GetDeployment(ctx context.Context, req *v1.GetDeploymentRequest) (*v1.GetDeploymentResponse, error) {
-	deploy, err := h.uc.GetDeployment(ctx, req.GetDeploymentId())
+	deploy, err := h.history.Get(ctx, req.GetDeploymentId())
 	if err != nil {
 		return nil, toConnectError(err)
 	}
@@ -47,7 +55,7 @@ func (h *DeploymentHandler) GetDeployment(ctx context.Context, req *v1.GetDeploy
 }
 
 func (h *DeploymentHandler) ListDeployments(ctx context.Context, req *v1.ListDeploymentsRequest) (*v1.ListDeploymentsResponse, error) {
-	deploys, err := h.uc.ListDeployments(ctx, req.GetApplicationId())
+	deploys, err := h.history.List(ctx, req.GetApplicationId())
 	if err != nil {
 		return nil, toConnectError(err)
 	}
@@ -60,14 +68,14 @@ func (h *DeploymentHandler) ListDeployments(ctx context.Context, req *v1.ListDep
 }
 
 func (h *DeploymentHandler) WatchDeployment(ctx context.Context, req *v1.WatchDeploymentRequest, stream *connect.ServerStream[v1.WatchDeploymentResponse]) error {
-	events, err := h.uc.WatchDeployment(ctx, req.GetDeploymentId())
+	events, err := h.watcher.WatchDeployment(ctx, req.GetDeploymentId())
 	if err != nil {
 		return toConnectError(err)
 	}
 	for event := range events {
 		var protoEvent *v1.WatchDeploymentResponse
 		switch e := event.(type) {
-		case usecase.DeploymentStatusChangedEvent:
+		case deployment.DeploymentStatusChangedEvent:
 			var finishedAt *timestamppb.Timestamp
 			if e.FinishedAt != nil {
 				finishedAt = timestamppb.New(*e.FinishedAt)
@@ -81,7 +89,7 @@ func (h *DeploymentHandler) WatchDeployment(ctx context.Context, req *v1.WatchDe
 					},
 				},
 			}
-		case usecase.DeploymentLogChunkEvent:
+		case deployment.DeploymentLogChunkEvent:
 			protoEvent = &v1.WatchDeploymentResponse{
 				Event: &v1.WatchDeploymentResponse_DeploymentLogChunk{
 					DeploymentLogChunk: &v1.DeploymentLogChunkEvent{
@@ -109,13 +117,13 @@ func toProtoDeployment(d *domain.Deployment) *v1.Deployment {
 	}
 	return &v1.Deployment{
 		Id:            d.ID,
-		ApplicationId: d.ApplicationID,
-		OwnerUserId:   d.OwnerUserID,
+		ApplicationId: d.Spec.ApplicationID,
+		OwnerUserId:   d.Spec.OwnerUserID,
 		Commit: &v1.Commit{
-			Sha:        d.Commit.SHA,
-			Message:    d.Commit.Message,
-			AuthorName: d.Commit.AuthorName,
-			Timestamp:  timestamppb.New(d.Commit.Timestamp),
+			Sha:        d.Spec.Commit.SHA,
+			Message:    d.Spec.Commit.Message,
+			AuthorName: d.Spec.Commit.AuthorName,
+			Timestamp:  timestamppb.New(d.Spec.Commit.Timestamp),
 		},
 		Status:     toProtoDeploymentStatus(d.Status),
 		StartedAt:  timestamppb.New(d.StartedAt),

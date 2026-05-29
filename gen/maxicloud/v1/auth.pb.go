@@ -21,84 +21,26 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type UserStatus int32
-
-const (
-	UserStatus_USER_STATUS_UNSPECIFIED UserStatus = 0
-	UserStatus_USER_STATUS_ACTIVE      UserStatus = 1
-	UserStatus_USER_STATUS_INVITED     UserStatus = 2
-	UserStatus_USER_STATUS_SUSPENDED   UserStatus = 3
-)
-
-// Enum value maps for UserStatus.
-var (
-	UserStatus_name = map[int32]string{
-		0: "USER_STATUS_UNSPECIFIED",
-		1: "USER_STATUS_ACTIVE",
-		2: "USER_STATUS_INVITED",
-		3: "USER_STATUS_SUSPENDED",
-	}
-	UserStatus_value = map[string]int32{
-		"USER_STATUS_UNSPECIFIED": 0,
-		"USER_STATUS_ACTIVE":      1,
-		"USER_STATUS_INVITED":     2,
-		"USER_STATUS_SUSPENDED":   3,
-	}
-)
-
-func (x UserStatus) Enum() *UserStatus {
-	p := new(UserStatus)
-	*p = x
-	return p
-}
-
-func (x UserStatus) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (UserStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_maxicloud_v1_auth_proto_enumTypes[0].Descriptor()
-}
-
-func (UserStatus) Type() protoreflect.EnumType {
-	return &file_maxicloud_v1_auth_proto_enumTypes[0]
-}
-
-func (x UserStatus) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use UserStatus.Descriptor instead.
-func (UserStatus) EnumDescriptor() ([]byte, []int) {
-	return file_maxicloud_v1_auth_proto_rawDescGZIP(), []int{0}
-}
-
-type UserAccount struct {
+type MeRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	DisplayId     string                 `protobuf:"bytes,2,opt,name=display_id,json=displayId,proto3" json:"display_id,omitempty"`
-	DisplayName   string                 `protobuf:"bytes,3,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
-	Email         string                 `protobuf:"bytes,4,opt,name=email,proto3" json:"email,omitempty"`
-	Status        UserStatus             `protobuf:"varint,5,opt,name=status,proto3,enum=maxicloud.v1.UserStatus" json:"status,omitempty"`
-	JoinedAt      string                 `protobuf:"bytes,6,opt,name=joined_at,json=joinedAt,proto3" json:"joined_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *UserAccount) Reset() {
-	*x = UserAccount{}
+func (x *MeRequest) Reset() {
+	*x = MeRequest{}
 	mi := &file_maxicloud_v1_auth_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *UserAccount) String() string {
+func (x *MeRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*UserAccount) ProtoMessage() {}
+func (*MeRequest) ProtoMessage() {}
 
-func (x *UserAccount) ProtoReflect() protoreflect.Message {
+func (x *MeRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_maxicloud_v1_auth_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -110,74 +52,32 @@ func (x *UserAccount) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use UserAccount.ProtoReflect.Descriptor instead.
-func (*UserAccount) Descriptor() ([]byte, []int) {
+// Deprecated: Use MeRequest.ProtoReflect.Descriptor instead.
+func (*MeRequest) Descriptor() ([]byte, []int) {
 	return file_maxicloud_v1_auth_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *UserAccount) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *UserAccount) GetDisplayId() string {
-	if x != nil {
-		return x.DisplayId
-	}
-	return ""
-}
-
-func (x *UserAccount) GetDisplayName() string {
-	if x != nil {
-		return x.DisplayName
-	}
-	return ""
-}
-
-func (x *UserAccount) GetEmail() string {
-	if x != nil {
-		return x.Email
-	}
-	return ""
-}
-
-func (x *UserAccount) GetStatus() UserStatus {
-	if x != nil {
-		return x.Status
-	}
-	return UserStatus_USER_STATUS_UNSPECIFIED
-}
-
-func (x *UserAccount) GetJoinedAt() string {
-	if x != nil {
-		return x.JoinedAt
-	}
-	return ""
-}
-
-type CreateLoginUrlRequest struct {
+type MeResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	RedirectTo    string                 `protobuf:"bytes,1,opt,name=redirect_to,json=redirectTo,proto3" json:"redirect_to,omitempty"`
+	User          *User                  `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *CreateLoginUrlRequest) Reset() {
-	*x = CreateLoginUrlRequest{}
+func (x *MeResponse) Reset() {
+	*x = MeResponse{}
 	mi := &file_maxicloud_v1_auth_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *CreateLoginUrlRequest) String() string {
+func (x *MeResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CreateLoginUrlRequest) ProtoMessage() {}
+func (*MeResponse) ProtoMessage() {}
 
-func (x *CreateLoginUrlRequest) ProtoReflect() protoreflect.Message {
+func (x *MeResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_maxicloud_v1_auth_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -189,367 +89,29 @@ func (x *CreateLoginUrlRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CreateLoginUrlRequest.ProtoReflect.Descriptor instead.
-func (*CreateLoginUrlRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use MeResponse.ProtoReflect.Descriptor instead.
+func (*MeResponse) Descriptor() ([]byte, []int) {
 	return file_maxicloud_v1_auth_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *CreateLoginUrlRequest) GetRedirectTo() string {
-	if x != nil {
-		return x.RedirectTo
-	}
-	return ""
-}
-
-type CreateLoginUrlResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	LoginUrl      string                 `protobuf:"bytes,1,opt,name=login_url,json=loginUrl,proto3" json:"login_url,omitempty"`
-	State         string                 `protobuf:"bytes,2,opt,name=state,proto3" json:"state,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CreateLoginUrlResponse) Reset() {
-	*x = CreateLoginUrlResponse{}
-	mi := &file_maxicloud_v1_auth_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateLoginUrlResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateLoginUrlResponse) ProtoMessage() {}
-
-func (x *CreateLoginUrlResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_maxicloud_v1_auth_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateLoginUrlResponse.ProtoReflect.Descriptor instead.
-func (*CreateLoginUrlResponse) Descriptor() ([]byte, []int) {
-	return file_maxicloud_v1_auth_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *CreateLoginUrlResponse) GetLoginUrl() string {
-	if x != nil {
-		return x.LoginUrl
-	}
-	return ""
-}
-
-func (x *CreateLoginUrlResponse) GetState() string {
-	if x != nil {
-		return x.State
-	}
-	return ""
-}
-
-type CompleteLoginRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Code          string                 `protobuf:"bytes,1,opt,name=code,proto3" json:"code,omitempty"`
-	State         string                 `protobuf:"bytes,2,opt,name=state,proto3" json:"state,omitempty"`
-	CodeVerifier  string                 `protobuf:"bytes,3,opt,name=code_verifier,json=codeVerifier,proto3" json:"code_verifier,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CompleteLoginRequest) Reset() {
-	*x = CompleteLoginRequest{}
-	mi := &file_maxicloud_v1_auth_proto_msgTypes[3]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CompleteLoginRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CompleteLoginRequest) ProtoMessage() {}
-
-func (x *CompleteLoginRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_maxicloud_v1_auth_proto_msgTypes[3]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CompleteLoginRequest.ProtoReflect.Descriptor instead.
-func (*CompleteLoginRequest) Descriptor() ([]byte, []int) {
-	return file_maxicloud_v1_auth_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *CompleteLoginRequest) GetCode() string {
-	if x != nil {
-		return x.Code
-	}
-	return ""
-}
-
-func (x *CompleteLoginRequest) GetState() string {
-	if x != nil {
-		return x.State
-	}
-	return ""
-}
-
-func (x *CompleteLoginRequest) GetCodeVerifier() string {
-	if x != nil {
-		return x.CodeVerifier
-	}
-	return ""
-}
-
-type CompleteLoginResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	User          *UserAccount           `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CompleteLoginResponse) Reset() {
-	*x = CompleteLoginResponse{}
-	mi := &file_maxicloud_v1_auth_proto_msgTypes[4]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CompleteLoginResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CompleteLoginResponse) ProtoMessage() {}
-
-func (x *CompleteLoginResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_maxicloud_v1_auth_proto_msgTypes[4]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CompleteLoginResponse.ProtoReflect.Descriptor instead.
-func (*CompleteLoginResponse) Descriptor() ([]byte, []int) {
-	return file_maxicloud_v1_auth_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *CompleteLoginResponse) GetUser() *UserAccount {
+func (x *MeResponse) GetUser() *User {
 	if x != nil {
 		return x.User
 	}
 	return nil
-}
-
-type GetCurrentUserRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetCurrentUserRequest) Reset() {
-	*x = GetCurrentUserRequest{}
-	mi := &file_maxicloud_v1_auth_proto_msgTypes[5]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetCurrentUserRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetCurrentUserRequest) ProtoMessage() {}
-
-func (x *GetCurrentUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_maxicloud_v1_auth_proto_msgTypes[5]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetCurrentUserRequest.ProtoReflect.Descriptor instead.
-func (*GetCurrentUserRequest) Descriptor() ([]byte, []int) {
-	return file_maxicloud_v1_auth_proto_rawDescGZIP(), []int{5}
-}
-
-type GetCurrentUserResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	User          *UserAccount           `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetCurrentUserResponse) Reset() {
-	*x = GetCurrentUserResponse{}
-	mi := &file_maxicloud_v1_auth_proto_msgTypes[6]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetCurrentUserResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetCurrentUserResponse) ProtoMessage() {}
-
-func (x *GetCurrentUserResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_maxicloud_v1_auth_proto_msgTypes[6]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetCurrentUserResponse.ProtoReflect.Descriptor instead.
-func (*GetCurrentUserResponse) Descriptor() ([]byte, []int) {
-	return file_maxicloud_v1_auth_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *GetCurrentUserResponse) GetUser() *UserAccount {
-	if x != nil {
-		return x.User
-	}
-	return nil
-}
-
-type LogoutRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *LogoutRequest) Reset() {
-	*x = LogoutRequest{}
-	mi := &file_maxicloud_v1_auth_proto_msgTypes[7]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *LogoutRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*LogoutRequest) ProtoMessage() {}
-
-func (x *LogoutRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_maxicloud_v1_auth_proto_msgTypes[7]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use LogoutRequest.ProtoReflect.Descriptor instead.
-func (*LogoutRequest) Descriptor() ([]byte, []int) {
-	return file_maxicloud_v1_auth_proto_rawDescGZIP(), []int{7}
-}
-
-type LogoutResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *LogoutResponse) Reset() {
-	*x = LogoutResponse{}
-	mi := &file_maxicloud_v1_auth_proto_msgTypes[8]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *LogoutResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*LogoutResponse) ProtoMessage() {}
-
-func (x *LogoutResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_maxicloud_v1_auth_proto_msgTypes[8]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use LogoutResponse.ProtoReflect.Descriptor instead.
-func (*LogoutResponse) Descriptor() ([]byte, []int) {
-	return file_maxicloud_v1_auth_proto_rawDescGZIP(), []int{8}
 }
 
 var File_maxicloud_v1_auth_proto protoreflect.FileDescriptor
 
 const file_maxicloud_v1_auth_proto_rawDesc = "" +
 	"\n" +
-	"\x17maxicloud/v1/auth.proto\x12\fmaxicloud.v1\"\xc4\x01\n" +
-	"\vUserAccount\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
+	"\x17maxicloud/v1/auth.proto\x12\fmaxicloud.v1\x1a\x17maxicloud/v1/user.proto\"\v\n" +
+	"\tMeRequest\"4\n" +
 	"\n" +
-	"display_id\x18\x02 \x01(\tR\tdisplayId\x12!\n" +
-	"\fdisplay_name\x18\x03 \x01(\tR\vdisplayName\x12\x14\n" +
-	"\x05email\x18\x04 \x01(\tR\x05email\x120\n" +
-	"\x06status\x18\x05 \x01(\x0e2\x18.maxicloud.v1.UserStatusR\x06status\x12\x1b\n" +
-	"\tjoined_at\x18\x06 \x01(\tR\bjoinedAt\"8\n" +
-	"\x15CreateLoginUrlRequest\x12\x1f\n" +
-	"\vredirect_to\x18\x01 \x01(\tR\n" +
-	"redirectTo\"K\n" +
-	"\x16CreateLoginUrlResponse\x12\x1b\n" +
-	"\tlogin_url\x18\x01 \x01(\tR\bloginUrl\x12\x14\n" +
-	"\x05state\x18\x02 \x01(\tR\x05state\"e\n" +
-	"\x14CompleteLoginRequest\x12\x12\n" +
-	"\x04code\x18\x01 \x01(\tR\x04code\x12\x14\n" +
-	"\x05state\x18\x02 \x01(\tR\x05state\x12#\n" +
-	"\rcode_verifier\x18\x03 \x01(\tR\fcodeVerifier\"F\n" +
-	"\x15CompleteLoginResponse\x12-\n" +
-	"\x04user\x18\x01 \x01(\v2\x19.maxicloud.v1.UserAccountR\x04user\"\x17\n" +
-	"\x15GetCurrentUserRequest\"G\n" +
-	"\x16GetCurrentUserResponse\x12-\n" +
-	"\x04user\x18\x01 \x01(\v2\x19.maxicloud.v1.UserAccountR\x04user\"\x0f\n" +
-	"\rLogoutRequest\"\x10\n" +
-	"\x0eLogoutResponse*u\n" +
-	"\n" +
-	"UserStatus\x12\x1b\n" +
-	"\x17USER_STATUS_UNSPECIFIED\x10\x00\x12\x16\n" +
-	"\x12USER_STATUS_ACTIVE\x10\x01\x12\x17\n" +
-	"\x13USER_STATUS_INVITED\x10\x02\x12\x19\n" +
-	"\x15USER_STATUS_SUSPENDED\x10\x032\xe6\x02\n" +
-	"\vAuthService\x12[\n" +
-	"\x0eCreateLoginUrl\x12#.maxicloud.v1.CreateLoginUrlRequest\x1a$.maxicloud.v1.CreateLoginUrlResponse\x12X\n" +
-	"\rCompleteLogin\x12\".maxicloud.v1.CompleteLoginRequest\x1a#.maxicloud.v1.CompleteLoginResponse\x12[\n" +
-	"\x0eGetCurrentUser\x12#.maxicloud.v1.GetCurrentUserRequest\x1a$.maxicloud.v1.GetCurrentUserResponse\x12C\n" +
-	"\x06Logout\x12\x1b.maxicloud.v1.LogoutRequest\x1a\x1c.maxicloud.v1.LogoutResponseB\xb2\x01\n" +
+	"MeResponse\x12&\n" +
+	"\x04user\x18\x01 \x01(\v2\x12.maxicloud.v1.UserR\x04user2F\n" +
+	"\vAuthService\x127\n" +
+	"\x02Me\x12\x17.maxicloud.v1.MeRequest\x1a\x18.maxicloud.v1.MeResponseB\xb2\x01\n" +
 	"\x10com.maxicloud.v1B\tAuthProtoP\x01ZBgithub.com/saitamau-maximum/maxicloud/gen/maxicloud/v1;maxicloudv1\xa2\x02\x03MXX\xaa\x02\fMaxicloud.V1\xca\x02\fMaxicloud\\V1\xe2\x02\x18Maxicloud\\V1\\GPBMetadata\xea\x02\rMaxicloud::V1b\x06proto3"
 
 var (
@@ -564,37 +126,21 @@ func file_maxicloud_v1_auth_proto_rawDescGZIP() []byte {
 	return file_maxicloud_v1_auth_proto_rawDescData
 }
 
-var file_maxicloud_v1_auth_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_maxicloud_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_maxicloud_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_maxicloud_v1_auth_proto_goTypes = []any{
-	(UserStatus)(0),                // 0: maxicloud.v1.UserStatus
-	(*UserAccount)(nil),            // 1: maxicloud.v1.UserAccount
-	(*CreateLoginUrlRequest)(nil),  // 2: maxicloud.v1.CreateLoginUrlRequest
-	(*CreateLoginUrlResponse)(nil), // 3: maxicloud.v1.CreateLoginUrlResponse
-	(*CompleteLoginRequest)(nil),   // 4: maxicloud.v1.CompleteLoginRequest
-	(*CompleteLoginResponse)(nil),  // 5: maxicloud.v1.CompleteLoginResponse
-	(*GetCurrentUserRequest)(nil),  // 6: maxicloud.v1.GetCurrentUserRequest
-	(*GetCurrentUserResponse)(nil), // 7: maxicloud.v1.GetCurrentUserResponse
-	(*LogoutRequest)(nil),          // 8: maxicloud.v1.LogoutRequest
-	(*LogoutResponse)(nil),         // 9: maxicloud.v1.LogoutResponse
+	(*MeRequest)(nil),  // 0: maxicloud.v1.MeRequest
+	(*MeResponse)(nil), // 1: maxicloud.v1.MeResponse
+	(*User)(nil),       // 2: maxicloud.v1.User
 }
 var file_maxicloud_v1_auth_proto_depIdxs = []int32{
-	0, // 0: maxicloud.v1.UserAccount.status:type_name -> maxicloud.v1.UserStatus
-	1, // 1: maxicloud.v1.CompleteLoginResponse.user:type_name -> maxicloud.v1.UserAccount
-	1, // 2: maxicloud.v1.GetCurrentUserResponse.user:type_name -> maxicloud.v1.UserAccount
-	2, // 3: maxicloud.v1.AuthService.CreateLoginUrl:input_type -> maxicloud.v1.CreateLoginUrlRequest
-	4, // 4: maxicloud.v1.AuthService.CompleteLogin:input_type -> maxicloud.v1.CompleteLoginRequest
-	6, // 5: maxicloud.v1.AuthService.GetCurrentUser:input_type -> maxicloud.v1.GetCurrentUserRequest
-	8, // 6: maxicloud.v1.AuthService.Logout:input_type -> maxicloud.v1.LogoutRequest
-	3, // 7: maxicloud.v1.AuthService.CreateLoginUrl:output_type -> maxicloud.v1.CreateLoginUrlResponse
-	5, // 8: maxicloud.v1.AuthService.CompleteLogin:output_type -> maxicloud.v1.CompleteLoginResponse
-	7, // 9: maxicloud.v1.AuthService.GetCurrentUser:output_type -> maxicloud.v1.GetCurrentUserResponse
-	9, // 10: maxicloud.v1.AuthService.Logout:output_type -> maxicloud.v1.LogoutResponse
-	7, // [7:11] is the sub-list for method output_type
-	3, // [3:7] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	2, // 0: maxicloud.v1.MeResponse.user:type_name -> maxicloud.v1.User
+	0, // 1: maxicloud.v1.AuthService.Me:input_type -> maxicloud.v1.MeRequest
+	1, // 2: maxicloud.v1.AuthService.Me:output_type -> maxicloud.v1.MeResponse
+	2, // [2:3] is the sub-list for method output_type
+	1, // [1:2] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_maxicloud_v1_auth_proto_init() }
@@ -602,19 +148,19 @@ func file_maxicloud_v1_auth_proto_init() {
 	if File_maxicloud_v1_auth_proto != nil {
 		return
 	}
+	file_maxicloud_v1_user_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_maxicloud_v1_auth_proto_rawDesc), len(file_maxicloud_v1_auth_proto_rawDesc)),
-			NumEnums:      1,
-			NumMessages:   9,
+			NumEnums:      0,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_maxicloud_v1_auth_proto_goTypes,
 		DependencyIndexes: file_maxicloud_v1_auth_proto_depIdxs,
-		EnumInfos:         file_maxicloud_v1_auth_proto_enumTypes,
 		MessageInfos:      file_maxicloud_v1_auth_proto_msgTypes,
 	}.Build()
 	File_maxicloud_v1_auth_proto = out.File
