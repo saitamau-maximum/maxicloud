@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -22,8 +23,8 @@ import (
 	"github.com/saitamau-maximum/maxicloud/gen/maxicloud/v1/maxicloudv1connect"
 	"github.com/saitamau-maximum/maxicloud/internal/handler"
 	"github.com/saitamau-maximum/maxicloud/internal/infra/github"
-	"github.com/saitamau-maximum/maxicloud/internal/infra/inmemory"
 	"github.com/saitamau-maximum/maxicloud/internal/infra/k8s"
+	"github.com/saitamau-maximum/maxicloud/internal/infra/postgres"
 	"github.com/saitamau-maximum/maxicloud/internal/usecase"
 	deployuc "github.com/saitamau-maximum/maxicloud/internal/usecase/deployment"
 )
@@ -73,10 +74,16 @@ func runGateway(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	pool, err := postgres.NewPool(cmd.Context(), fmt.Sprintf("postgresql://%s:%s@%s:%d/%s", cfg.PostgreSQLUser, cfg.PostgreSQLPassword, cfg.PostgreSQLHost, cfg.PostgreSQLPort, cfg.PostgreSQLDB))
+	if err != nil {
+		return fmt.Errorf("failed to connect to database: %w", err)
+	}
+	defer pool.Close()
+
 	appRepo := k8s.NewApplicationRepository(k8sClient, cfg.IngressClass)
 	prjRepo := k8s.NewProjectRepository(k8sClient)
-	historyRepo := inmemory.NewDeploymentHistoryRepository()
-	userRepo := inmemory.NewUserRepository()
+	historyRepo := postgres.NewDeploymentHistoryRepository(pool)
+	userRepo := postgres.NewUserRepository(pool)
 	logStreamer := k8s.NewLogStreamer(clientset)
 	deployRepo := k8s.NewDeployRepository(k8sClient, logStreamer)
 	srcRepo := github.NewClient(cfg.GitHubAppID, privateKey, cfg.InstallationID)

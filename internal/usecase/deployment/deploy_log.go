@@ -2,6 +2,7 @@ package deployment
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -77,10 +78,6 @@ func (w *watcher) WatchDeployment(ctx context.Context, deploymentID string) (<-c
 			w.watchBuildLogStream(ctx, deploymentID, ch)
 		})
 
-		if isTerminalStatus(lastStatus) {
-			return
-		}
-
 		w.watchDeploymentStatusLoop(ctx, deploymentID, lastStatus, ch)
 	}()
 	return ch, nil
@@ -89,6 +86,9 @@ func (w *watcher) WatchDeployment(ctx context.Context, deploymentID string) (<-c
 func (w *watcher) watchBuildLogStream(ctx context.Context, deploymentID string, ch chan<- DeploymentWatchEvent) {
 	lines, errs, err := w.workflow.Watch(ctx, deploymentID)
 	if err != nil {
+		if errors.Is(err, context.Canceled) {
+			return
+		}
 		sendDeploymentLogChunk(ctx, ch, "failed to retrieve logs")
 		return
 	}

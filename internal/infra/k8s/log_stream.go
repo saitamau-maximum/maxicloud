@@ -92,17 +92,17 @@ func (s *logStreamer) waitForPod(ctx context.Context, opts logStreamOptions) (st
 }
 
 func (s *logStreamer) openLogStream(ctx context.Context, namespace, podName string) (io.ReadCloser, error) {
-	streamCtx, cancel := context.WithTimeout(ctx, streamOpenTimeout)
+	openCtx, cancel := context.WithTimeout(ctx, streamOpenTimeout)
 	defer cancel()
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
 	for {
 		req := s.clientset.CoreV1().Pods(namespace).GetLogs(podName, &corev1.PodLogOptions{Follow: true})
-		if stream, err := req.Stream(streamCtx); err == nil {
+		if stream, err := req.Stream(ctx); err == nil {
 			return stream, nil
 		}
 		select {
-		case <-streamCtx.Done():
+		case <-openCtx.Done():
 			return nil, fmt.Errorf("timed out opening log stream for pod %s/%s", namespace, podName)
 		case <-ticker.C:
 		}

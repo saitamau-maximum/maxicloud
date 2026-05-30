@@ -1,0 +1,87 @@
+[tools]
+
+[vars]
+img = "maxicloud:latest"
+local_img = "localhost:5001/maxicloud:latest"
+kubectl = "kubectl"
+kustomize = "./bin/kustomize"
+controller_gen = "./bin/controller-gen"
+namespace = "maxicloud-system"
+
+[tasks.manifests]
+description = "Generate CRD and RBAC manifests"
+run = '{{vars.controller_gen}} rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases'
+
+[tasks.generate]
+description = "Generate DeepCopy method implementations"
+run = '{{vars.controller_gen}} object:headerFile="hack/boilerplate.go.txt" paths="./..."'
+
+[tasks.fmt]
+description = "Run go fmt"
+run = "go fmt ./..."
+
+[tasks.vet]
+description = "Run go vet"
+run = "go vet ./..."
+
+[tasks.lint]
+description = "Run golangci-lint"
+run = "./bin/golangci-lint run"
+
+[tasks.test]
+description = "Run tests"
+depends = ["manifests", "generate", "fmt", "vet"]
+run = "go test $(go list ./... | grep -v /e2e) -coverprofile cover.out"
+
+[tasks.build]
+description = "Build binary"
+depends = ["manifests", "generate", "fmt", "vet"]
+run = "go build -o bin/manager ./cmd"
+
+[tasks."buf:generate"]
+description = "Generate proto files"
+run = "buf generate"
+
+[tasks."docker:build"]
+description = "Build docker image"
+run = "docker build -t {{vars.img}} ."
+
+[tasks."docker:push"]
+description = "Push docker image to local registry"
+run = """
+docker tag {{vars.img}} {{vars.local_img}}
+docker push {{vars.local_img}}
+"""
+
+[tasks.deploy]
+description = "Apply kustomize manifests to cluster"
+depends = ["manifests"]
+run = "{{vars.kustomize}} build config/overlays/dev | {{vars.kubectl}} apply -f -"
+
+[tasks.undeploy]
+description = "Remove kustomize manifests from cluster"
+run = "{{vars.kustomize}} build config/overlays/dev | {{vars.kubectl}} delete --ignore-not-found=true -f -"
+
+[tasks.rollout]
+description = "Restart deployment"
+run = "{{vars.kubectl}} rollout restart deployment maxicloud-controller-manager maxicloud-gateway -n {{vars.namespace}}"
+
+[tasks.release]
+description = "Full build and deploy"
+run = [
+ { task = "manifests" },
+  { task = "generate" },
+  { task = "buf:generate" },
+  { task = "docker:build" },
+  { task = "docker:push" },
+  { task = "deploy" },
+  { task = "rollout" },
+]
+
+[tasks."log:controller"]
+description = "Tail controller logs"
+run = "{{vars.kubectl}} logs -n {{vars.namespace}} deployment/maxicloud-controller-manager -f"
+
+[tasks."log:gateway"]
+description = "Tail gateway logs"
+run = "{{vars.kubectl}} logs -n {{vars.namespace}} deployment/maxicloud-gateway -f"
