@@ -3,7 +3,6 @@ package k8s
 import (
 	"bufio"
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"time"
@@ -39,83 +38,73 @@ func (s *logStreamer) Stream(ctx context.Context, opts logStreamOptions) (io.Rea
 	return s.openLogStream(ctx, opts.Namespace, podName)
 }
 
-func (s *logStreamer) EachLine(stream io.ReadCloser, fn func(string) string) io.ReadCloser {
-	pr, pw := io.Pipe()
+func (s *logStreamer) StreamLines(ctx context.Context, opts logStreamOptions) (<-chan string, <-chan error, error) {
+	raw, err := s.Stream(ctx, opts)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	lines := make(chan string)
+	errs := make(chan error, 1)
+
+	context.AfterFunc(ctx, func() { _ = raw.Close() })
+
 	go func() {
-		defer func() { _ = pw.Close() }()
-		defer func() { _ = stream.Close() }()
-		reader := bufio.NewReader(stream)
-		for {
-			line, err := reader.ReadString('\n')
-			if len(line) > 0 {
-				if _, writeErr := pw.Write([]byte(fn(line))); writeErr != nil {
-					return
-				}
-			}
-			if err == nil {
-				continue
-			}
-			if errors.Is(err, io.EOF) {
+		defer raw.Close()
+		defer close(lines)
+		defer close(errs)
+
+		scanner := bufio.NewScanner(raw)
+		scanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)
+		for scanner.Scan() {
+			select {
+			case <-ctx.Done():
 				return
+			case lines <- scanner.Text():
 			}
-			_ = pw.CloseWithError(err)
-			return
+		}
+		if err := scanner.Err(); err != nil && ctx.Err() == nil {
+			errs <- err
 		}
 	}()
-	return &eachLineReader{pr: pr, upstream: stream}
-}
 
-type eachLineReader struct {
-	pr       *io.PipeReader
-	upstream io.ReadCloser
-}
-
-func (e *eachLineReader) Read(p []byte) (int, error) { return e.pr.Read(p) }
-
-func (e *eachLineReader) Close() error {
-	upErr := e.upstream.Close()
-	prErr := e.pr.Close()
-	if upErr != nil {
-		return upErr
-	}
-	return prErr
+	return lines, errs, nil
 }
 
 func (s *logStreamer) waitForPod(ctx context.Context, opts logStreamOptions) (string, error) {
 	waitCtx, cancel := context.WithTimeout(ctx, podWaitTimeout)
 	defer cancel()
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
 	for {
-		select {
-		case <-waitCtx.Done():
-			return "", fmt.Errorf("timed out waiting for pod (ns=%s selector=%q): %w", opts.Namespace, opts.LabelSelector, waitCtx.Err())
-		default:
-		}
 		pods, err := s.clientset.CoreV1().Pods(opts.Namespace).List(waitCtx, metav1.ListOptions{
 			LabelSelector: opts.LabelSelector,
 		})
 		if err == nil && len(pods.Items) > 0 {
 			return pods.Items[0].Name, nil
 		}
-		time.Sleep(1 * time.Second)
+		select {
+		case <-waitCtx.Done():
+			return "", fmt.Errorf("timed out waiting for pod (ns=%s selector=%q): %w", opts.Namespace, opts.LabelSelector, waitCtx.Err())
+		case <-ticker.C:
+		}
 	}
 }
 
 func (s *logStreamer) openLogStream(ctx context.Context, namespace, podName string) (io.ReadCloser, error) {
-	deadline := time.Now().Add(streamOpenTimeout)
+	streamCtx, cancel := context.WithTimeout(ctx, streamOpenTimeout)
+	defer cancel()
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
 	for {
-		select {
-		case <-ctx.Done():
-			return nil, ctx.Err()
-		default:
-		}
-		if time.Now().After(deadline) {
-			return nil, fmt.Errorf("timed out opening log stream for pod %s/%s", namespace, podName)
-		}
 		req := s.clientset.CoreV1().Pods(namespace).GetLogs(podName, &corev1.PodLogOptions{Follow: true})
-		stream, err := req.Stream(ctx)
-		if err == nil {
+		if stream, err := req.Stream(streamCtx); err == nil {
 			return stream, nil
 		}
-		time.Sleep(1 * time.Second)
+		select {
+		case <-streamCtx.Done():
+			return nil, fmt.Errorf("timed out opening log stream for pod %s/%s", namespace, podName)
+		case <-ticker.C:
+		}
 	}
 }

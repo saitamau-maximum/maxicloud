@@ -3,7 +3,6 @@ package domain
 import (
 	"context"
 	"fmt"
-	"io"
 	"time"
 )
 
@@ -74,7 +73,7 @@ type DeploymentWorkflowRepository interface {
 	Create(ctx context.Context, deployment Deployment) (string, error)
 	Get(ctx context.Context, id string) (*Deployment, error)
 	Delete(ctx context.Context, applicationID string, maxHistory int, isPreview bool) error
-	Watch(ctx context.Context, deploymentID string) (io.ReadCloser, error)
+	Watch(ctx context.Context, deploymentID string) (<-chan string, <-chan error, error)
 }
 
 type DeploymentEventType string

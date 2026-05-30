@@ -1,9 +1,7 @@
 package deployment
 
 import (
-	"bufio"
 	"context"
-	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -18,7 +16,7 @@ type DeploymentStatusChangedEvent struct {
 }
 
 type DeploymentLogChunkEvent struct {
-	Lines []string
+	Line string
 }
 
 type DeploymentWatchEvent interface {
@@ -31,15 +29,15 @@ func (DeploymentLogChunkEvent) isDeploymentWatchEvent()      {}
 type Watcher interface {
 	WatchDeployment(ctx context.Context, deploymentID string) (<-chan DeploymentWatchEvent, error)
 }
-	
+
 type watcher struct {
-	history    History
+	history  History
 	workflow domain.DeploymentWorkflowRepository
 }
 
 func NewWatcher(history History, workflow domain.DeploymentWorkflowRepository) Watcher {
 	return &watcher{
-		history:    history,
+		history:  history,
 		workflow: workflow,
 	}
 }
@@ -89,27 +87,32 @@ func (w *watcher) WatchDeployment(ctx context.Context, deploymentID string) (<-c
 }
 
 func (w *watcher) watchBuildLogStream(ctx context.Context, deploymentID string, ch chan<- DeploymentWatchEvent) {
-	stream, err := w.workflow.Watch(ctx, deploymentID)
+	lines, errs, err := w.workflow.Watch(ctx, deploymentID)
 	if err != nil {
 		sendDeploymentLogChunk(ctx, ch, "failed to retrieve logs")
 		return
 	}
-	defer func() { _ = stream.Close() }()
 
-	scanner := bufio.NewScanner(stream)
-	for scanner.Scan() {
-		sendDeploymentLogChunk(ctx, ch, scanner.Text())
-	}
-
-	if err := scanner.Err(); err != nil && !errors.Is(err, context.Canceled) {
-		sendDeploymentLogChunk(ctx, ch, "failed to retrieve logs")
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case line, ok := <-lines:
+			if !ok {
+				if streamErr, ok := <-errs; ok && streamErr != nil {
+					sendDeploymentLogChunk(ctx, ch, "failed to retrieve logs")
+				}
+				return
+			}
+			sendDeploymentLogChunk(ctx, ch, line)
+		}
 	}
 }
 
 func sendDeploymentLogChunk(ctx context.Context, ch chan<- DeploymentWatchEvent, line string) {
 	select {
 	case <-ctx.Done():
-	case ch <- DeploymentLogChunkEvent{Lines: []string{line}}:
+	case ch <- DeploymentLogChunkEvent{Line: line}:
 	}
 }
 

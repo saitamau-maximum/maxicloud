@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -20,12 +19,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	"connectrpc.com/connect"
 	"github.com/saitamau-maximum/maxicloud/gen/maxicloud/v1/maxicloudv1connect"
 	"github.com/saitamau-maximum/maxicloud/internal/handler"
 	"github.com/saitamau-maximum/maxicloud/internal/infra/github"
+	"github.com/saitamau-maximum/maxicloud/internal/infra/inmemory"
 	"github.com/saitamau-maximum/maxicloud/internal/infra/k8s"
-	"github.com/saitamau-maximum/maxicloud/internal/infra/postgres"
 	"github.com/saitamau-maximum/maxicloud/internal/usecase"
 	deployuc "github.com/saitamau-maximum/maxicloud/internal/usecase/deployment"
 )
@@ -75,28 +73,21 @@ func runGateway(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%d/%s", cfg.PostgreSQLUser, cfg.PostgreSQLPassword, cfg.PostgreSQLHost, cfg.PostgreSQLPort, cfg.PostgreSQLDB)
-	pool, err := postgres.NewPool(cmd.Context(), dsn)
-	if err != nil {
-		return fmt.Errorf("failed to connect to database: %w", err)
-	}
-	defer pool.Close()
-
 	appRepo := k8s.NewApplicationRepository(k8sClient, cfg.IngressClass)
 	prjRepo := k8s.NewProjectRepository(k8sClient)
-	historyRepo := postgres.NewDeploymentHistoryRepository(pool)
-	userRepo := postgres.NewUserRepository(pool)
+	historyRepo := inmemory.NewDeploymentHistoryRepository()
+	userRepo := inmemory.NewUserRepository()
 	logStreamer := k8s.NewLogStreamer(clientset)
 	deployRepo := k8s.NewDeployRepository(k8sClient, logStreamer)
 	srcRepo := github.NewClient(cfg.GitHubAppID, privateKey, cfg.InstallationID)
 
-	authSvc := usecase.NewAuthService(usecase.AuthConfig{
-		Issuer:        cfg.OIDCIssuer,
-		ClientID:      cfg.OIDCClientID,
-		RedirectURL:   cfg.OIDCRedirectURL,
-		StateSecret:   cfg.StateSecret,
-		SessionSecret: cfg.SessionSecret,
-	}, userRepo)
+	// authSvc := usecase.NewAuthService(usecase.AuthConfig{
+	// 	Issuer:        cfg.OIDCIssuer,
+	// 	ClientID:      cfg.OIDCClientID,
+	// 	RedirectURL:   cfg.OIDCRedirectURL,
+	// 	StateSecret:   cfg.StateSecret,
+	// 	SessionSecret: cfg.SessionSecret,
+	// }, userRepo)
 
 	deploySvc := deployuc.NewDeploymentService(historyRepo, deployRepo)
 	deployEventSvc := deployuc.NewDeploymentEventService(appRepo, deploySvc)
@@ -108,9 +99,7 @@ func runGateway(cmd *cobra.Command, args []string) error {
 	srcSvc := usecase.NewSourceService(srcRepo)
 	appSvc := usecase.NewApplicationService(appRepo, deploySvc, srcSvc)
 
-	protected := connect.WithInterceptors(handler.NewAuthInterceptor(authSvc))
-
-	authHandler := handler.NewAuthHandler(authSvc)
+	// authHandler := handler.NewAuthHandler(authSvc)
 	ghHandler := handler.NewGitHubHandler(deployEventSvc, srcSvc, handler.GitHubHandlerConfig{
 		GitHubAppName:  cfg.GitHubAppName,
 		WebhookSecret:  cfg.GitHubWebhookSecret,
@@ -132,7 +121,7 @@ func runGateway(cmd *cobra.Command, args []string) error {
 	r.Use(middleware.Recoverer)
 	// TODO: 公開前にちゃんと設定する
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"https://*", "http://*"},
+		AllowedOrigins:   []string{"*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"*"},
 		ExposedHeaders:   []string{"*"},
@@ -140,18 +129,18 @@ func runGateway(cmd *cobra.Command, args []string) error {
 	}))
 
 	mountAll(r,
-		svc(maxicloudv1connect.NewAuthServiceHandler(authHandler, protected)),
-		svc(maxicloudv1connect.NewProjectServiceHandler(prjHandler, protected)),
-		svc(maxicloudv1connect.NewUserServiceHandler(userHandler, protected)),
-		svc(maxicloudv1connect.NewApplicationServiceHandler(appHandler, protected)),
-		svc(maxicloudv1connect.NewDeploymentServiceHandler(deployHandler, protected)),
-		svc(maxicloudv1connect.NewGitHubServiceHandler(ghHandler, protected)),
-		svc(maxicloudv1connect.NewDomainServiceHandler(domainHandler, protected)),
+		// svc(maxicloudv1connect.NewAuthServiceHandler(authHandler)),
+		svc(maxicloudv1connect.NewProjectServiceHandler(prjHandler)),
+		svc(maxicloudv1connect.NewUserServiceHandler(userHandler)),
+		svc(maxicloudv1connect.NewApplicationServiceHandler(appHandler)),
+		svc(maxicloudv1connect.NewDeploymentServiceHandler(deployHandler)),
+		svc(maxicloudv1connect.NewGitHubServiceHandler(ghHandler)),
+		svc(maxicloudv1connect.NewDomainServiceHandler(domainHandler)),
 	)
 
 	// Auth ハンドラ（ブラウザリダイレクト）
-	r.Get("/auth/login", authHandler.Login)
-	r.Get("/auth/callback", authHandler.Callback)
+	// r.Get("/auth/login", authHandler.Login)
+	// r.Get("/auth/callback", authHandler.Callback)
 
 	// GitHub App 関連のエンドポイント
 	r.Post("/github/webhook", ghHandler.Webhook)

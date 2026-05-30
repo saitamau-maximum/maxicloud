@@ -93,7 +93,7 @@ func (h *DeploymentHandler) WatchDeployment(ctx context.Context, req *v1.WatchDe
 			protoEvent = &v1.WatchDeploymentResponse{
 				Event: &v1.WatchDeploymentResponse_DeploymentLogChunk{
 					DeploymentLogChunk: &v1.DeploymentLogChunkEvent{
-						Lines: e.Lines,
+						Line: e.Line,
 					},
 				},
 			}

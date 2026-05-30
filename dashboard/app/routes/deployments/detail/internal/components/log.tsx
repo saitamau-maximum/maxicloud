@@ -46,8 +46,8 @@ export const Log = ({ lines }: { lines: string[] }) => {
 						ログを待機中...
 					</span>
 				) : (
-					lines.map((line) => (
-						<div key={line} className={css({ lineHeight: 1.8 })}>
+					lines.map((line, i) => (
+						<div key={i} className={css({ lineHeight: 1.8 })}>
 							<span
 								className={css({
 									fontSize: "sm",

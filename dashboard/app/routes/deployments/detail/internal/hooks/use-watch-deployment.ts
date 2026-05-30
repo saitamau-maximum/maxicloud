@@ -48,7 +48,7 @@ export const useWatchDeployment = (deploymentId: string) => {
 					} else if (e.case === "deploymentLogChunk") {
 						setState((prev) => ({
 							...prev,
-							logLines: [...prev.logLines, ...e.value.lines],
+							logLines: [...prev.logLines, e.value.line],
 						}));
 					}
 				}

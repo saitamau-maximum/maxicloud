@@ -3,7 +3,6 @@ package k8s
 import (
 	"context"
 	"fmt"
-	"io"
 	"regexp"
 	"sort"
 	"strconv"
@@ -103,19 +102,32 @@ func (r *workflowRepository) Delete(ctx context.Context, applicationID string, m
 	return nil
 }
 
-func (r *workflowRepository) Watch(ctx context.Context, deploymentID string) (io.ReadCloser, error) {
+func (r *workflowRepository) Watch(ctx context.Context, deploymentID string) (<-chan string, <-chan error, error) {
 	namespace, err := r.resolveWorkflowNamespace(ctx, deploymentID)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	raw, err := r.streamer.Stream(ctx, logStreamOptions{
+
+	raw, errs, err := r.streamer.StreamLines(ctx, logStreamOptions{
 		Namespace:     namespace,
 		LabelSelector: fmt.Sprintf("job-name=%s", deploymentID),
 	})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return r.streamer.EachLine(raw, sanitizeLog), nil
+
+	lines := make(chan string)
+	go func() {
+		defer close(lines)
+		for line := range raw {
+			select {
+			case <-ctx.Done():
+				return
+			case lines <- sanitizeLog(line):
+			}
+		}
+	}()
+	return lines, errs, nil
 }
 
 func (r *workflowRepository) resolveWorkflowNamespace(ctx context.Context, deploymentID string) (string, error) {
@@ -128,7 +140,6 @@ func (r *workflowRepository) resolveWorkflowNamespace(ctx context.Context, deplo
 	}
 	return list.Items[0].Namespace, nil
 }
-
 
 func crToDeployment(cr *maxicloudv1alpha1.DeploymentPipeline) *domain.Deployment {
 	var startedAt time.Time

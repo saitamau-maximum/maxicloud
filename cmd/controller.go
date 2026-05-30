@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/caarlos0/env/v11"
@@ -13,7 +12,7 @@ import (
 
 	"github.com/saitamau-maximum/maxicloud/internal/controller"
 	"github.com/saitamau-maximum/maxicloud/internal/infra/github"
-	"github.com/saitamau-maximum/maxicloud/internal/infra/postgres"
+	"github.com/saitamau-maximum/maxicloud/internal/infra/inmemory"
 	"github.com/saitamau-maximum/maxicloud/internal/infra/registry"
 )
 
@@ -38,14 +37,14 @@ func runController(cmd *cobra.Command, args []string) error {
 	}
 	ghClient := github.NewClient(cfg.GitHubAppID, privateKey, cfg.InstallationID)
 
-	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%d/%s", cfg.PostgreSQLUser, cfg.PostgreSQLPassword, cfg.PostgreSQLHost, cfg.PostgreSQLPort, cfg.PostgreSQLDB)
-	pool, err := postgres.NewPool(cmd.Context(), dsn)
-	if err != nil {
-		return fmt.Errorf("failed to connect to database: %w", err)
-	}
-	defer pool.Close()
+	// dsn := fmt.Sprintf("postgresql://%s:%s@%s:%d/%s", cfg.PostgreSQLUser, cfg.PostgreSQLPassword, cfg.PostgreSQLHost, cfg.PostgreSQLPort, cfg.PostgreSQLDB)
+	// pool, err := postgres.NewPool(cmd.Context(), dsn)
+	// if err != nil {
+	// 	return fmt.Errorf("failed to connect to database: %w", err)
+	// }
+	// defer pool.Close()
 
-	historyRepo := postgres.NewDeploymentHistoryRepository(pool)
+	historyRepo := inmemory.NewDeploymentHistoryRepository()
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
