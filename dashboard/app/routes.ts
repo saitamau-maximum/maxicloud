@@ -9,6 +9,7 @@ import {
 export default [
 	route("login", "routes/login/page.tsx"),
 	route("register", "routes/register/page.tsx"),
+	route("auth/callback", "routes/auth/callback.tsx"),
 	layout("routes/layout.tsx", [
 		index("routes/home/page.tsx"),
 		...prefix("projects", [

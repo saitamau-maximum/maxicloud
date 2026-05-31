@@ -2,10 +2,7 @@ package k8s
 
 import (
 	"context"
-	"crypto/sha1"
 	"fmt"
-	"regexp"
-	"strings"
 
 	maxicloudv1alpha1 "github.com/saitamau-maximum/maxicloud/api/v1alpha1"
 	"github.com/saitamau-maximum/maxicloud/internal/config"
@@ -48,7 +45,7 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, app domai
 			Labels: map[string]string{
 				labelApplicationID:    app.ID,
 				labelApplicationName:  app.Name,
-				labelApplicationOwner: app.OwnerID,
+				labelApplicationOwner: truncateLabelValue(app.OwnerID),
 				labelSourceRepoOwner:  app.Spec.Source.Repo.Owner,
 				labelSourceRepoName:   app.Spec.Source.Repo.Name,
 				labelSourceBranch:     branchLabel,
@@ -112,7 +109,7 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, app domai
 	}
 	cr := list.Items[0]
 	cr.Labels[labelApplicationName] = app.Name
-	cr.Labels[labelApplicationOwner] = app.OwnerID
+	cr.Labels[labelApplicationOwner] = truncateLabelValue(app.OwnerID)
 	return r.Update(ctx, &cr)
 }
 
@@ -218,34 +215,4 @@ func buildApplicationEnvVar(spec domain.ApplicationSpec) []corev1.EnvVar {
 		})
 	}
 	return env
-}
-
-var nonLabelChar = regexp.MustCompile(`[^A-Za-z0-9._-]+`)
-var edgeNonAlnum = regexp.MustCompile(`^[^A-Za-z0-9]+|[^A-Za-z0-9]+$`)
-
-// Labelには/を使用することができないため正規化する
-func normalizeBranchForLabel(branch string) string {
-	const (
-		maxLabelLen = 63
-		hashBytes   = 4
-	)
-
-	raw := strings.TrimSpace(branch)
-	normalized := nonLabelChar.ReplaceAllString(raw, "-")
-	normalized = edgeNonAlnum.ReplaceAllString(normalized, "")
-	if normalized == "" {
-		normalized = "branch"
-	}
-
-	sum := sha1.Sum([]byte(raw))
-	suffix := fmt.Sprintf("-%x", sum[:hashBytes])
-	maxBaseLen := maxLabelLen - len(suffix)
-	maxBaseLen = max(maxBaseLen, 1)
-
-	if len(normalized) > maxBaseLen {
-		normalized = normalized[:maxBaseLen]
-		normalized = edgeNonAlnum.ReplaceAllString(normalized, "")
-	}
-
-	return normalized + suffix
 }

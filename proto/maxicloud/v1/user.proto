@@ -19,6 +19,13 @@ message GetUserResponse {
   User user = 1;
 }
 
+message GetMeRequest {}
+
+message GetMeResponse {
+  User user = 1;
+}
+
 service UserService {
   rpc GetUser(GetUserRequest) returns (GetUserResponse);
+  rpc GetMe(GetMeRequest) returns (GetMeResponse);
 }

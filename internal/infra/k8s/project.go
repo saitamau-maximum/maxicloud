@@ -41,7 +41,7 @@ func (r *projectRepository) CreateProject(ctx context.Context, project domain.Pr
 			Name: projectNamespace(project.ID),
 			Labels: map[string]string{
 				projectLabelKey:     "true",
-				OwnerUserIDLabelKey: project.OwnerID,
+				OwnerUserIDLabelKey: truncateLabelValue(project.OwnerID),
 				ProjectNameLabelKey: project.Name,
 			},
 			Annotations: map[string]string{
@@ -101,7 +101,7 @@ func (r *projectRepository) UpdateProject(ctx context.Context, params domain.Upd
 			ns.Labels[ProjectNameLabelKey] = *params.Name
 		}
 		if params.OwnerID != nil {
-			ns.Labels[OwnerUserIDLabelKey] = *params.OwnerID
+			ns.Labels[OwnerUserIDLabelKey] = truncateLabelValue(*params.OwnerID)
 		}
 		if params.Description != nil {
 			ns.Annotations[ProjectDescriptionAnnotationKey] = *params.Description

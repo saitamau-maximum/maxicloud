@@ -178,6 +178,86 @@ func (x *GetUserResponse) GetUser() *User {
 	return nil
 }
 
+type GetMeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetMeRequest) Reset() {
+	*x = GetMeRequest{}
+	mi := &file_maxicloud_v1_user_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMeRequest) ProtoMessage() {}
+
+func (x *GetMeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_maxicloud_v1_user_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMeRequest.ProtoReflect.Descriptor instead.
+func (*GetMeRequest) Descriptor() ([]byte, []int) {
+	return file_maxicloud_v1_user_proto_rawDescGZIP(), []int{3}
+}
+
+type GetMeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	User          *User                  `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetMeResponse) Reset() {
+	*x = GetMeResponse{}
+	mi := &file_maxicloud_v1_user_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMeResponse) ProtoMessage() {}
+
+func (x *GetMeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_maxicloud_v1_user_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMeResponse.ProtoReflect.Descriptor instead.
+func (*GetMeResponse) Descriptor() ([]byte, []int) {
+	return file_maxicloud_v1_user_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GetMeResponse) GetUser() *User {
+	if x != nil {
+		return x.User
+	}
+	return nil
+}
+
 var File_maxicloud_v1_user_proto protoreflect.FileDescriptor
 
 const file_maxicloud_v1_user_proto_rawDesc = "" +
@@ -192,9 +272,13 @@ const file_maxicloud_v1_user_proto_rawDesc = "" +
 	"\x0eGetUserRequest\x12\x1f\n" +
 	"\auser_id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x06userId\"9\n" +
 	"\x0fGetUserResponse\x12&\n" +
-	"\x04user\x18\x01 \x01(\v2\x12.maxicloud.v1.UserR\x04user2U\n" +
+	"\x04user\x18\x01 \x01(\v2\x12.maxicloud.v1.UserR\x04user\"\x0e\n" +
+	"\fGetMeRequest\"7\n" +
+	"\rGetMeResponse\x12&\n" +
+	"\x04user\x18\x01 \x01(\v2\x12.maxicloud.v1.UserR\x04user2\x97\x01\n" +
 	"\vUserService\x12F\n" +
-	"\aGetUser\x12\x1c.maxicloud.v1.GetUserRequest\x1a\x1d.maxicloud.v1.GetUserResponseB\xb2\x01\n" +
+	"\aGetUser\x12\x1c.maxicloud.v1.GetUserRequest\x1a\x1d.maxicloud.v1.GetUserResponse\x12@\n" +
+	"\x05GetMe\x12\x1a.maxicloud.v1.GetMeRequest\x1a\x1b.maxicloud.v1.GetMeResponseB\xb2\x01\n" +
 	"\x10com.maxicloud.v1B\tUserProtoP\x01ZBgithub.com/saitamau-maximum/maxicloud/gen/maxicloud/v1;maxicloudv1\xa2\x02\x03MXX\xaa\x02\fMaxicloud.V1\xca\x02\fMaxicloud\\V1\xe2\x02\x18Maxicloud\\V1\\GPBMetadata\xea\x02\rMaxicloud::V1b\x06proto3"
 
 var (
@@ -209,21 +293,26 @@ func file_maxicloud_v1_user_proto_rawDescGZIP() []byte {
 	return file_maxicloud_v1_user_proto_rawDescData
 }
 
-var file_maxicloud_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_maxicloud_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_maxicloud_v1_user_proto_goTypes = []any{
 	(*User)(nil),            // 0: maxicloud.v1.User
 	(*GetUserRequest)(nil),  // 1: maxicloud.v1.GetUserRequest
 	(*GetUserResponse)(nil), // 2: maxicloud.v1.GetUserResponse
+	(*GetMeRequest)(nil),    // 3: maxicloud.v1.GetMeRequest
+	(*GetMeResponse)(nil),   // 4: maxicloud.v1.GetMeResponse
 }
 var file_maxicloud_v1_user_proto_depIdxs = []int32{
 	0, // 0: maxicloud.v1.GetUserResponse.user:type_name -> maxicloud.v1.User
-	1, // 1: maxicloud.v1.UserService.GetUser:input_type -> maxicloud.v1.GetUserRequest
-	2, // 2: maxicloud.v1.UserService.GetUser:output_type -> maxicloud.v1.GetUserResponse
-	2, // [2:3] is the sub-list for method output_type
-	1, // [1:2] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	0, // 1: maxicloud.v1.GetMeResponse.user:type_name -> maxicloud.v1.User
+	1, // 2: maxicloud.v1.UserService.GetUser:input_type -> maxicloud.v1.GetUserRequest
+	3, // 3: maxicloud.v1.UserService.GetMe:input_type -> maxicloud.v1.GetMeRequest
+	2, // 4: maxicloud.v1.UserService.GetUser:output_type -> maxicloud.v1.GetUserResponse
+	4, // 5: maxicloud.v1.UserService.GetMe:output_type -> maxicloud.v1.GetMeResponse
+	4, // [4:6] is the sub-list for method output_type
+	2, // [2:4] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_maxicloud_v1_user_proto_init() }
@@ -237,7 +326,7 @@ func file_maxicloud_v1_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_maxicloud_v1_user_proto_rawDesc), len(file_maxicloud_v1_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

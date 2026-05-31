@@ -1,11 +1,11 @@
-import { useNavigate } from "react-router";
 import { css } from "styled-system/css";
 import { Button } from "~/components/ui/button";
 import { Panel } from "~/components/ui/panel";
 import { APP_NAME } from "~/constants";
+import { useSession } from "~/hooks/use-session";
 
 export default function LoginPage() {
-	const navigate = useNavigate();
+	const { login } = useSession();
 
 	return (
 		<div
@@ -39,17 +39,12 @@ export default function LoginPage() {
 								fontSize: "sm",
 							})}
 						>
-							認証は OIDC
-							連携に置き換える前提です。現時点ではログイン機能は使いません。
+							Maximum ID でログインしてください。
 						</p>
 					</div>
 					<div className={css({ display: "flex", gap: 2, marginTop: 2 })}>
-						<Button
-							type="button"
-							variant="primary"
-							onClick={() => navigate("/")}
-						>
-							Go to Dashboard
+						<Button type="button" variant="primary" onClick={() => login()}>
+							Login with Maximum ID
 						</Button>
 					</div>
 				</Panel>

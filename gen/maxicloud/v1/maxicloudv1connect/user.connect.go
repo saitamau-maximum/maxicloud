@@ -35,11 +35,14 @@ const (
 const (
 	// UserServiceGetUserProcedure is the fully-qualified name of the UserService's GetUser RPC.
 	UserServiceGetUserProcedure = "/maxicloud.v1.UserService/GetUser"
+	// UserServiceGetMeProcedure is the fully-qualified name of the UserService's GetMe RPC.
+	UserServiceGetMeProcedure = "/maxicloud.v1.UserService/GetMe"
 )
 
 // UserServiceClient is a client for the maxicloud.v1.UserService service.
 type UserServiceClient interface {
 	GetUser(context.Context, *v1.GetUserRequest) (*v1.GetUserResponse, error)
+	GetMe(context.Context, *v1.GetMeRequest) (*v1.GetMeResponse, error)
 }
 
 // NewUserServiceClient constructs a client for the maxicloud.v1.UserService service. By default, it
@@ -59,12 +62,19 @@ func NewUserServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(userServiceMethods.ByName("GetUser")),
 			connect.WithClientOptions(opts...),
 		),
+		getMe: connect.NewClient[v1.GetMeRequest, v1.GetMeResponse](
+			httpClient,
+			baseURL+UserServiceGetMeProcedure,
+			connect.WithSchema(userServiceMethods.ByName("GetMe")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // userServiceClient implements UserServiceClient.
 type userServiceClient struct {
 	getUser *connect.Client[v1.GetUserRequest, v1.GetUserResponse]
+	getMe   *connect.Client[v1.GetMeRequest, v1.GetMeResponse]
 }
 
 // GetUser calls maxicloud.v1.UserService.GetUser.
@@ -76,9 +86,19 @@ func (c *userServiceClient) GetUser(ctx context.Context, req *v1.GetUserRequest)
 	return nil, err
 }
 
+// GetMe calls maxicloud.v1.UserService.GetMe.
+func (c *userServiceClient) GetMe(ctx context.Context, req *v1.GetMeRequest) (*v1.GetMeResponse, error) {
+	response, err := c.getMe.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
 // UserServiceHandler is an implementation of the maxicloud.v1.UserService service.
 type UserServiceHandler interface {
 	GetUser(context.Context, *v1.GetUserRequest) (*v1.GetUserResponse, error)
+	GetMe(context.Context, *v1.GetMeRequest) (*v1.GetMeResponse, error)
 }
 
 // NewUserServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -94,10 +114,18 @@ func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(userServiceMethods.ByName("GetUser")),
 		connect.WithHandlerOptions(opts...),
 	)
+	userServiceGetMeHandler := connect.NewUnaryHandlerSimple(
+		UserServiceGetMeProcedure,
+		svc.GetMe,
+		connect.WithSchema(userServiceMethods.ByName("GetMe")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/maxicloud.v1.UserService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case UserServiceGetUserProcedure:
 			userServiceGetUserHandler.ServeHTTP(w, r)
+		case UserServiceGetMeProcedure:
+			userServiceGetMeHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -109,4 +137,8 @@ type UnimplementedUserServiceHandler struct{}
 
 func (UnimplementedUserServiceHandler) GetUser(context.Context, *v1.GetUserRequest) (*v1.GetUserResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("maxicloud.v1.UserService.GetUser is not implemented"))
+}
+
+func (UnimplementedUserServiceHandler) GetMe(context.Context, *v1.GetMeRequest) (*v1.GetMeResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("maxicloud.v1.UserService.GetMe is not implemented"))
 }

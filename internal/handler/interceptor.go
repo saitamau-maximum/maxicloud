@@ -12,7 +12,7 @@ func NewOptionalAuthInterceptor(authSvc usecase.AuthService) connect.UnaryInterc
 	return func(next connect.UnaryFunc) connect.UnaryFunc {
 		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
 			token := req.Header().Get("Authorization")
-			user, _ := authSvc.GetCurrentUser(ctx, token)
+			user, _ := authSvc.Me(ctx, token)
 			if user != nil {
 				ctx = domain.WithUser(ctx, user)
 			}
@@ -25,7 +25,7 @@ func NewAuthInterceptor(authSvc usecase.AuthService) connect.UnaryInterceptorFun
 	return func(next connect.UnaryFunc) connect.UnaryFunc {
 		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
 			token := req.Header().Get("Authorization")
-			user, err := authSvc.GetCurrentUser(ctx, token)
+			user, err := authSvc.Me(ctx, token)
 			if err != nil || user == nil {
 				return nil, connect.NewError(connect.CodeUnauthenticated, nil)
 			}

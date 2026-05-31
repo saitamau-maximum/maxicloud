@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"connectrpc.com/connect"
 	"github.com/caarlos0/env/v11"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -88,13 +89,13 @@ func runGateway(cmd *cobra.Command, args []string) error {
 	deployRepo := k8s.NewDeployRepository(k8sClient, logStreamer)
 	srcRepo := github.NewClient(cfg.GitHubAppID, privateKey, cfg.InstallationID)
 
-	// authSvc := usecase.NewAuthService(usecase.AuthConfig{
-	// 	Issuer:        cfg.OIDCIssuer,
-	// 	ClientID:      cfg.OIDCClientID,
-	// 	RedirectURL:   cfg.OIDCRedirectURL,
-	// 	StateSecret:   cfg.StateSecret,
-	// 	SessionSecret: cfg.SessionSecret,
-	// }, userRepo)
+	authSvc := usecase.NewAuthService(usecase.AuthConfig{
+		Issuer:        cfg.OIDCIssuer,
+		ClientID:      cfg.OIDCClientID,
+		ClientSecret:  cfg.OIDCClientSecret,
+		RedirectURL:   cfg.OIDCRedirectURL,
+		SessionSecret: cfg.SessionSecret,
+	}, userRepo)
 
 	deploySvc := deployuc.NewDeploymentService(historyRepo, deployRepo)
 	deployEventSvc := deployuc.NewDeploymentEventService(appRepo, deploySvc)
@@ -106,7 +107,7 @@ func runGateway(cmd *cobra.Command, args []string) error {
 	srcSvc := usecase.NewSourceService(srcRepo)
 	appSvc := usecase.NewApplicationService(appRepo, deploySvc, srcSvc)
 
-	// authHandler := handler.NewAuthHandler(authSvc)
+	authHandler := handler.NewAuthHandler(authSvc)
 	ghHandler := handler.NewGitHubHandler(deployEventSvc, srcSvc, handler.GitHubHandlerConfig{
 		GitHubAppName:  cfg.GitHubAppName,
 		WebhookSecret:  cfg.GitHubWebhookSecret,
@@ -135,19 +136,18 @@ func runGateway(cmd *cobra.Command, args []string) error {
 		AllowCredentials: false,
 	}))
 
+	authOpt := connect.WithInterceptors(handler.NewOptionalAuthInterceptor(authSvc))
 	mountAll(r,
-		// svc(maxicloudv1connect.NewAuthServiceHandler(authHandler)),
-		svc(maxicloudv1connect.NewProjectServiceHandler(prjHandler)),
-		svc(maxicloudv1connect.NewUserServiceHandler(userHandler)),
-		svc(maxicloudv1connect.NewApplicationServiceHandler(appHandler)),
-		svc(maxicloudv1connect.NewDeploymentServiceHandler(deployHandler)),
-		svc(maxicloudv1connect.NewGitHubServiceHandler(ghHandler)),
-		svc(maxicloudv1connect.NewDomainServiceHandler(domainHandler)),
+		svc(maxicloudv1connect.NewProjectServiceHandler(prjHandler, authOpt)),
+		svc(maxicloudv1connect.NewUserServiceHandler(userHandler, authOpt)),
+		svc(maxicloudv1connect.NewApplicationServiceHandler(appHandler, authOpt)),
+		svc(maxicloudv1connect.NewDeploymentServiceHandler(deployHandler, authOpt)),
+		svc(maxicloudv1connect.NewGitHubServiceHandler(ghHandler, authOpt)),
+		svc(maxicloudv1connect.NewDomainServiceHandler(domainHandler, authOpt)),
 	)
 
-	// Auth ハンドラ（ブラウザリダイレクト）
-	// r.Get("/auth/login", authHandler.Login)
-	// r.Get("/auth/callback", authHandler.Callback)
+	r.Get("/auth/login", authHandler.Login)
+	r.Get("/auth/callback", authHandler.Callback)
 
 	// GitHub App 関連のエンドポイント
 	r.Post("/github/webhook", ghHandler.Webhook)

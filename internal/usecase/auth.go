@@ -3,14 +3,15 @@ package usecase
 import (
 	"context"
 	"crypto/rand"
-	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
@@ -26,14 +27,14 @@ type CallbackResult struct {
 type AuthService interface {
 	Login(ctx context.Context, redirectTo string) (loginURL, state string, err error)
 	Callback(ctx context.Context, code, state string) (*CallbackResult, error)
-	GetCurrentUser(ctx context.Context, bearerToken string) (*domain.User, error)
+	Me(ctx context.Context, bearerToken string) (*domain.User, error)
 }
 
 type AuthConfig struct {
 	Issuer           string
 	ClientID         string
+	ClientSecret     string
 	RedirectURL      string
-	StateSecret      string
 	SessionSecret    string
 	AllowedRedirects []string
 }
@@ -42,13 +43,16 @@ type authService struct {
 	cfg      AuthConfig
 	userRepo domain.UserRepository
 	oauth2   *oauth2.Config
+	oidcMu   sync.Mutex
+	verifier *oidc.IDTokenVerifier
 }
 
 func NewAuthService(cfg AuthConfig, userRepo domain.UserRepository) AuthService {
 	oauthCfg := &oauth2.Config{
-		ClientID:    cfg.ClientID,
-		RedirectURL: cfg.RedirectURL,
-		Scopes:      []string{"openid"},
+		ClientID:     cfg.ClientID,
+		ClientSecret: cfg.ClientSecret,
+		RedirectURL:  cfg.RedirectURL,
+		Scopes:       []string{"openid", "profile", "read:roles"},
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  cfg.Issuer + "/oauth/authorize",
 			TokenURL: cfg.Issuer + "/oauth/access-token",
@@ -63,8 +67,8 @@ func NewAuthService(cfg AuthConfig, userRepo domain.UserRepository) AuthService 
 
 type stateClaims struct {
 	jwt.RegisteredClaims
-	RedirectTo   string `json:"redirect_to"`
-	CodeVerifier string `json:"code_verifier"`
+	RedirectTo string `json:"redirect_to"`
+	Nonce      string `json:"nonce"`
 }
 
 type sessionClaims struct {
@@ -77,9 +81,9 @@ func (s *authService) Login(ctx context.Context, redirectTo string) (string, str
 		return "", "", err
 	}
 
-	codeVerifier, codeChallenge, err := generatePKCE()
+	nonce, err := generateNonce()
 	if err != nil {
-		return "", "", fmt.Errorf("failed to generate PKCE: %w", err)
+		return "", "", fmt.Errorf("failed to generate nonce: %w", err)
 	}
 
 	now := time.Now()
@@ -90,28 +94,34 @@ func (s *authService) Login(ctx context.Context, redirectTo string) (string, str
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(now.Add(10 * time.Minute)),
 		},
-		RedirectTo:   redirectTo,
-		CodeVerifier: codeVerifier,
+		RedirectTo: redirectTo,
+		Nonce:      nonce,
 	}
-	stateToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(s.cfg.StateSecret))
+	stateToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(s.cfg.SessionSecret))
 	if err != nil {
 		return "", "", fmt.Errorf("failed to sign state token: %w", err)
 	}
 
 	authURL := s.oauth2.AuthCodeURL(stateToken,
-		oauth2.SetAuthURLParam("code_challenge", codeChallenge),
-		oauth2.SetAuthURLParam("code_challenge_method", "S256"),
+		oauth2.SetAuthURLParam("nonce", nonce),
 	)
 	return authURL, stateToken, nil
 }
 
 func (s *authService) Callback(ctx context.Context, code, stateToken string) (*CallbackResult, error) {
+	if code == "" {
+		return nil, fmt.Errorf("authorization code is required")
+	}
+	if stateToken == "" {
+		return nil, fmt.Errorf("state is required")
+	}
+
 	claims := &stateClaims{}
 	_, err := jwt.ParseWithClaims(stateToken, claims, func(t *jwt.Token) (any, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 		}
-		return []byte(s.cfg.StateSecret), nil
+		return []byte(s.cfg.SessionSecret), nil
 	})
 	if err != nil {
 		return nil, fmt.Errorf("invalid state token: %w", err)
@@ -124,11 +134,17 @@ func (s *authService) Callback(ctx context.Context, code, stateToken string) (*C
 		return nil, err
 	}
 
-	token, err := s.oauth2.Exchange(ctx, code,
-		oauth2.SetAuthURLParam("code_verifier", claims.CodeVerifier),
-	)
+	token, err := s.exchangeCode(ctx, code)
 	if err != nil {
 		return nil, fmt.Errorf("failed to exchange code: %w", err)
+	}
+
+	rawIDToken, _ := token.Extra("id_token").(string)
+	if rawIDToken == "" {
+		return nil, fmt.Errorf("id_token not found in token response")
+	}
+	if err := s.verifyIDToken(ctx, rawIDToken, claims.Nonce); err != nil {
+		return nil, fmt.Errorf("verify id_token: %w", err)
 	}
 
 	userInfo, err := s.fetchUserInfo(ctx, token.AccessToken)
@@ -153,7 +169,7 @@ func (s *authService) Callback(ctx context.Context, code, stateToken string) (*C
 	}, nil
 }
 
-func (s *authService) GetCurrentUser(ctx context.Context, bearerToken string) (*domain.User, error) {
+func (s *authService) Me(ctx context.Context, bearerToken string) (*domain.User, error) {
 	token := strings.TrimPrefix(bearerToken, "Bearer ")
 	if token == "" {
 		return nil, nil
@@ -211,10 +227,10 @@ func (s *authService) validateRedirect(redirectTo string) error {
 }
 
 type userinfoResponse struct {
-	Sub         string   `json:"sub"`
-	DisplayID   string   `json:"display_id"`
-	DisplayName string   `json:"display_name"`
-	Roles       []string `json:"roles"`
+	Sub               string   `json:"sub"`
+	PreferredUsername string   `json:"preferred_username"`
+	Nickname          string   `json:"nickname"`
+	Roles             []string `json:"roles"`
 }
 
 func (s *authService) fetchUserInfo(ctx context.Context, accessToken string) (*domain.User, error) {
@@ -230,21 +246,71 @@ func (s *authService) fetchUserInfo(ctx context.Context, accessToken string) (*d
 		return nil, err
 	}
 
+	roles := info.Roles
+	if roles == nil {
+		roles = []string{}
+	}
 	return &domain.User{
 		ID:          info.Sub,
-		DisplayID:   info.DisplayID,
-		DisplayName: info.DisplayName,
-		Roles:       info.Roles,
+		DisplayID:   info.PreferredUsername,
+		DisplayName: info.Nickname,
+		Roles:       roles,
 	}, nil
 }
 
-func generatePKCE() (verifier, challenge string, err error) {
+func (s *authService) exchangeCode(ctx context.Context, code string) (*oauth2.Token, error) {
+	token, err := s.oauth2.Exchange(ctx, code)
+	if err != nil {
+		return nil, err
+	}
+	return token, nil
+}
+
+func generateNonce() (string, error) {
 	b := make([]byte, 32)
 	if _, err := rand.Read(b); err != nil {
-		return "", "", err
+		return "", err
 	}
-	verifier = base64.RawURLEncoding.EncodeToString(b)
-	h := sha256.Sum256([]byte(verifier))
-	challenge = base64.RawURLEncoding.EncodeToString(h[:])
-	return verifier, challenge, nil
+	return base64.RawURLEncoding.EncodeToString(b), nil
+}
+
+func (s *authService) verifierFor(ctx context.Context) (*oidc.IDTokenVerifier, error) {
+	s.oidcMu.Lock()
+	defer s.oidcMu.Unlock()
+
+	if s.verifier != nil {
+		return s.verifier, nil
+	}
+
+	provider, err := oidc.NewProvider(ctx, s.cfg.Issuer)
+	if err != nil {
+		return nil, err
+	}
+	s.verifier = provider.Verifier(&oidc.Config{ClientID: s.cfg.ClientID})
+	return s.verifier, nil
+}
+
+func (s *authService) verifyIDToken(ctx context.Context, rawIDToken, expectedNonce string) error {
+	verifier, err := s.verifierFor(ctx)
+	if err != nil {
+		return err
+	}
+	idToken, err := verifier.Verify(ctx, rawIDToken)
+	if err != nil {
+		return err
+	}
+
+	var c struct {
+		Nonce string `json:"nonce"`
+	}
+	if err := idToken.Claims(&c); err != nil {
+		return err
+	}
+	if c.Nonce == "" {
+		return fmt.Errorf("nonce claim is missing")
+	}
+	if c.Nonce != expectedNonce {
+		return fmt.Errorf("nonce mismatch")
+	}
+	return nil
 }

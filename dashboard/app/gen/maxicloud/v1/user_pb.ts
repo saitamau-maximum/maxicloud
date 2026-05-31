@@ -11,7 +11,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file maxicloud/v1/user.proto.
  */
 export const file_maxicloud_v1_user: GenFile = /*@__PURE__*/
-  fileDesc("ChdtYXhpY2xvdWQvdjEvdXNlci5wcm90bxIMbWF4aWNsb3VkLnYxIksKBFVzZXISCgoCaWQYASABKAkSEgoKZGlzcGxheV9pZBgCIAEoCRIUCgxkaXNwbGF5X25hbWUYAyABKAkSDQoFcm9sZXMYBCADKAkiKQoOR2V0VXNlclJlcXVlc3QSFwoHdXNlcl9pZBgBIAEoCUIGukgDyAEBIjMKD0dldFVzZXJSZXNwb25zZRIgCgR1c2VyGAEgASgLMhIubWF4aWNsb3VkLnYxLlVzZXIyVQoLVXNlclNlcnZpY2USRgoHR2V0VXNlchIcLm1heGljbG91ZC52MS5HZXRVc2VyUmVxdWVzdBodLm1heGljbG91ZC52MS5HZXRVc2VyUmVzcG9uc2VCsgEKEGNvbS5tYXhpY2xvdWQudjFCCVVzZXJQcm90b1ABWkJnaXRodWIuY29tL3NhaXRhbWF1LW1heGltdW0vbWF4aWNsb3VkL2dlbi9tYXhpY2xvdWQvdjE7bWF4aWNsb3VkdjGiAgNNWFiqAgxNYXhpY2xvdWQuVjHKAgxNYXhpY2xvdWRcVjHiAhhNYXhpY2xvdWRcVjFcR1BCTWV0YWRhdGHqAg1NYXhpY2xvdWQ6OlYxYgZwcm90bzM", [file_buf_validate_validate]);
+  fileDesc("ChdtYXhpY2xvdWQvdjEvdXNlci5wcm90bxIMbWF4aWNsb3VkLnYxIksKBFVzZXISCgoCaWQYASABKAkSEgoKZGlzcGxheV9pZBgCIAEoCRIUCgxkaXNwbGF5X25hbWUYAyABKAkSDQoFcm9sZXMYBCADKAkiKQoOR2V0VXNlclJlcXVlc3QSFwoHdXNlcl9pZBgBIAEoCUIGukgDyAEBIjMKD0dldFVzZXJSZXNwb25zZRIgCgR1c2VyGAEgASgLMhIubWF4aWNsb3VkLnYxLlVzZXIiDgoMR2V0TWVSZXF1ZXN0IjEKDUdldE1lUmVzcG9uc2USIAoEdXNlchgBIAEoCzISLm1heGljbG91ZC52MS5Vc2VyMpcBCgtVc2VyU2VydmljZRJGCgdHZXRVc2VyEhwubWF4aWNsb3VkLnYxLkdldFVzZXJSZXF1ZXN0Gh0ubWF4aWNsb3VkLnYxLkdldFVzZXJSZXNwb25zZRJACgVHZXRNZRIaLm1heGljbG91ZC52MS5HZXRNZVJlcXVlc3QaGy5tYXhpY2xvdWQudjEuR2V0TWVSZXNwb25zZUKyAQoQY29tLm1heGljbG91ZC52MUIJVXNlclByb3RvUAFaQmdpdGh1Yi5jb20vc2FpdGFtYXUtbWF4aW11bS9tYXhpY2xvdWQvZ2VuL21heGljbG91ZC92MTttYXhpY2xvdWR2MaICA01YWKoCDE1heGljbG91ZC5WMcoCDE1heGljbG91ZFxWMeICGE1heGljbG91ZFxWMVxHUEJNZXRhZGF0YeoCDU1heGljbG91ZDo6VjFiBnByb3RvMw", [file_buf_validate_validate]);
 
 /**
  * @generated from message maxicloud.v1.User
@@ -80,6 +80,36 @@ export const GetUserResponseSchema: GenMessage<GetUserResponse> = /*@__PURE__*/
   messageDesc(file_maxicloud_v1_user, 2);
 
 /**
+ * @generated from message maxicloud.v1.GetMeRequest
+ */
+export type GetMeRequest = Message<"maxicloud.v1.GetMeRequest"> & {
+};
+
+/**
+ * Describes the message maxicloud.v1.GetMeRequest.
+ * Use `create(GetMeRequestSchema)` to create a new message.
+ */
+export const GetMeRequestSchema: GenMessage<GetMeRequest> = /*@__PURE__*/
+  messageDesc(file_maxicloud_v1_user, 3);
+
+/**
+ * @generated from message maxicloud.v1.GetMeResponse
+ */
+export type GetMeResponse = Message<"maxicloud.v1.GetMeResponse"> & {
+  /**
+   * @generated from field: maxicloud.v1.User user = 1;
+   */
+  user?: User | undefined;
+};
+
+/**
+ * Describes the message maxicloud.v1.GetMeResponse.
+ * Use `create(GetMeResponseSchema)` to create a new message.
+ */
+export const GetMeResponseSchema: GenMessage<GetMeResponse> = /*@__PURE__*/
+  messageDesc(file_maxicloud_v1_user, 4);
+
+/**
  * @generated from service maxicloud.v1.UserService
  */
 export const UserService: GenService<{
@@ -90,6 +120,14 @@ export const UserService: GenService<{
     methodKind: "unary";
     input: typeof GetUserRequestSchema;
     output: typeof GetUserResponseSchema;
+  },
+  /**
+   * @generated from rpc maxicloud.v1.UserService.GetMe
+   */
+  getMe: {
+    methodKind: "unary";
+    input: typeof GetMeRequestSchema;
+    output: typeof GetMeResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_maxicloud_v1_user, 0);

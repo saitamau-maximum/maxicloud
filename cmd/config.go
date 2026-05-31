@@ -47,9 +47,9 @@ type GatewayConfig struct {
 	PostgreSQLPassword string `env:"POSTGRESQL_PASSWORD"`
 	PostgreSQLDB       string `env:"POSTGRESQL_DB" envDefault:"maxicloud"`
 
-	// OIDCIssuer      string `env:"OIDC_ISSUER" envDefault:"https://api.id.maximum.vc"`
-	// OIDCClientID    string `env:"OIDC_CLIENT_ID,required"`
-	// OIDCRedirectURL string `env:"OIDC_REDIRECT_URL,required"`
-	// StateSecret     string `env:"STATE_SECRET,required"`
-	// SessionSecret   string `env:"SESSION_SECRET,required"`
+	OIDCIssuer       string `env:"OIDC_ISSUER" envDefault:"https://api.id.maximum.vc"`
+	OIDCClientID     string `env:"OIDC_CLIENT_ID,required"`
+	OIDCClientSecret string `env:"OIDC_CLIENT_SECRET,required"`
+	OIDCRedirectURL  string `env:"OIDC_REDIRECT_URL,required"`
+	SessionSecret    string `env:"SESSION_SECRET,required"`
 }

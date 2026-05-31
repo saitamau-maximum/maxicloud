@@ -1,20 +1,14 @@
 package handler
 
 import (
-	"context"
 	"net/http"
 
-	"connectrpc.com/connect"
-	v1 "github.com/saitamau-maximum/maxicloud/gen/maxicloud/v1"
-	"github.com/saitamau-maximum/maxicloud/gen/maxicloud/v1/maxicloudv1connect"
-	"github.com/saitamau-maximum/maxicloud/internal/domain"
+	ctrl "sigs.k8s.io/controller-runtime"
+
 	"github.com/saitamau-maximum/maxicloud/internal/usecase"
 )
 
-var _ maxicloudv1connect.AuthServiceHandler = (*AuthHandler)(nil)
-
 type AuthHandler struct {
-	maxicloudv1connect.UnimplementedAuthServiceHandler
 	uc usecase.AuthService
 }
 
@@ -35,32 +29,23 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 // GET /auth/callback?code=xxx&state=xxx
 func (h *AuthHandler) Callback(w http.ResponseWriter, r *http.Request) {
+	log := ctrl.Log.WithName("auth")
+	if authErr := r.URL.Query().Get("error"); authErr != "" {
+		desc := r.URL.Query().Get("error_description")
+		log.Error(nil, "oidc callback returned error", "error", authErr, "description", desc)
+		http.Error(w, authErr+": "+desc, http.StatusUnauthorized)
+		return
+	}
+
 	result, err := h.uc.Callback(r.Context(), r.URL.Query().Get("code"), r.URL.Query().Get("state"))
-	if err != nil || result == nil {
+	if err != nil {
+		log.Error(err, "callback failed")
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	if result == nil {
 		http.Error(w, "authentication failed", http.StatusUnauthorized)
 		return
 	}
 	http.Redirect(w, r, result.RedirectTo+"?token="+result.Token, http.StatusFound)
-}
-
-func (h *AuthHandler) Me(ctx context.Context, req *v1.MeRequest) (*v1.MeResponse, error) {
-	user := domain.UserFromContext(ctx)
-	if user == nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, nil)
-	}
-	return &v1.MeResponse{
-		User: toProtoUser(user),
-	}, nil
-}
-
-func toProtoUser(u *domain.User) *v1.User {
-	if u == nil {
-		return nil
-	}
-	return &v1.User{
-		Id:          u.ID,
-		DisplayId:   u.DisplayID,
-		DisplayName: u.DisplayName,
-		Roles:       u.Roles,
-	}
 }

@@ -54,7 +54,7 @@ func (r *workflowRepository) Create(ctx context.Context, deployment domain.Deplo
 			Labels: map[string]string{
 				labelWorkflowID:  deployment.ID,
 				labelAppID:       spec.ApplicationID,
-				labelOwnerUserID: spec.OwnerUserID,
+				labelOwnerUserID: truncateLabelValue(spec.OwnerUserID),
 				labelPreview:     strconv.FormatBool(spec.PRNumber != nil),
 			},
 		},

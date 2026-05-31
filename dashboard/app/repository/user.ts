@@ -1,3 +1,4 @@
+import type { User } from "~/gen/maxicloud/v1/user_pb";
 import { USER_STATUS, type ValueOf } from "~/constants";
 import { connectClient } from "~/utils/connect";
 
@@ -13,50 +14,28 @@ export type UserAccount = {
 };
 
 export interface IUserRepository {
-	listUsers$$key(): readonly ["users"];
-	listUsers(): Promise<UserAccount[]>;
+	getMe$$key(): readonly ["me"];
+	getMe(): Promise<UserAccount | null>;
 }
 
-// TODO: この辺全然適当なんでIdP連携の時にちゃんとやりましょう
-const fallbackUsers: UserAccount[] = [
-	{
-		id: "00000000-0000-0000-0000-000000000001",
-		displayId: "Maximum-test",
-		displayName: "Maximum-Test",
-		email: "test@maximum.vc",
-		status: USER_STATUS.ACTIVE,
-	},
-];
-
-const toUser = (user: {
-	id: string;
-	displayId: string;
-	displayName: string;
-	email: string;
-	joinedAt?: string;
-}): UserAccount => ({
+const toUser = (user: User): UserAccount => ({
 	id: user.id,
 	displayId: user.displayId,
 	displayName: user.displayName,
-	email: user.email,
+	email: "",
 	status: USER_STATUS.ACTIVE,
-	joinedAt: user.joinedAt,
 });
 
 export class UserRepository implements IUserRepository {
-	listUsers$$key() {
-		return ["users"] as const;
+	getMe$$key() {
+		return ["me"] as const;
 	}
 
-	async listUsers(): Promise<UserAccount[]> {
-		try {
-			const res = await connectClient.auth.getCurrentUser({});
-			if (!res.user) {
-				return fallbackUsers;
-			}
-			return [toUser(res.user)];
-		} catch {
-			return fallbackUsers;
+	async getMe(): Promise<UserAccount | null> {
+		const res = await connectClient.user.getMe({});
+		if (!res.user) {
+			return null;
 		}
+		return toUser(res.user);
 	}
 }

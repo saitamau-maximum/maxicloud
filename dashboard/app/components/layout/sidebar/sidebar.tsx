@@ -9,7 +9,7 @@ import { SidebarProfile } from "./profile";
 
 export const Sidebar = () => {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
-	const { currentUser } = useSession();
+	const { me } = useSession();
 	const closeMenu = () => setIsMenuOpen(false);
 
 	return (
@@ -66,7 +66,7 @@ export const Sidebar = () => {
 					<SidebarNavigation onNavigate={closeMenu} />
 				</div>
 
-				<SidebarProfile user={currentUser ?? undefined} />
+				<SidebarProfile user={me ?? undefined} />
 			</aside>
 		</>
 	);

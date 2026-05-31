@@ -48,9 +48,9 @@ export default function RegisterPage() {
 						<Button
 							type="button"
 							variant="primary"
-							onClick={() => navigate("/")}
+							onClick={() => navigate("/login")}
 						>
-							Go to Dashboard
+							Go to Login
 						</Button>
 					</div>
 				</Panel>
