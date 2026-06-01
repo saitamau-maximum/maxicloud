@@ -1,4 +1,4 @@
-package usecase
+package service
 
 import (
 	"context"
@@ -89,7 +89,7 @@ func (s *authService) Callback(ctx context.Context, code, stateToken string) (*C
 		return nil, fmt.Errorf("failed to fetch userinfo: %w", err)
 	}
 
-	user, err := s.userRepo.UpsertUser(ctx, domain.User{
+	user, err := s.userRepo.Upsert(ctx, domain.User{
 		ID:          userInfo.ID,
 		DisplayID:   userInfo.DisplayID,
 		DisplayName: userInfo.DisplayName,

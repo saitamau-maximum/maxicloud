@@ -17,7 +17,7 @@ type stubUserService struct {
 	called bool
 }
 
-func (s *stubUserService) GetUser(ctx context.Context, id string) (*domain.User, error) {
+func (s *stubUserService) Get(ctx context.Context, id string) (*domain.User, error) {
 	s.called = true
 	s.gotID = id
 	return s.user, s.err

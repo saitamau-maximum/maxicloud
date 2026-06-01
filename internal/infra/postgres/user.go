@@ -20,7 +20,7 @@ func NewUserRepository(pool *pgxpool.Pool) domain.UserRepository {
 	return &userRepository{q: db.New(pool)}
 }
 
-func (r *userRepository) GetUserByID(ctx context.Context, id string) (*domain.User, error) {
+func (r *userRepository) Get(ctx context.Context, id string) (*domain.User, error) {
 	row, err := r.q.GetUserByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -31,7 +31,7 @@ func (r *userRepository) GetUserByID(ctx context.Context, id string) (*domain.Us
 	return userRowToDomain(row), nil
 }
 
-func (r *userRepository) UpsertUser(ctx context.Context, u domain.User) (*domain.User, error) {
+func (r *userRepository) Upsert(ctx context.Context, u domain.User) (*domain.User, error) {
 	row, err := r.q.UpsertUser(ctx, db.UpsertUserParams{
 		ID:          u.ID,
 		DisplayID:   u.DisplayID,

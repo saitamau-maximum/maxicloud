@@ -11,8 +11,8 @@ import (
 	v1 "github.com/saitamau-maximum/maxicloud/gen/maxicloud/v1"
 	"github.com/saitamau-maximum/maxicloud/gen/maxicloud/v1/maxicloudv1connect"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
-	"github.com/saitamau-maximum/maxicloud/internal/usecase"
-	"github.com/saitamau-maximum/maxicloud/internal/usecase/deployment"
+	"github.com/saitamau-maximum/maxicloud/internal/service"
+	"github.com/saitamau-maximum/maxicloud/internal/service/deployment"
 	"golang.org/x/oauth2"
 )
 
@@ -27,12 +27,12 @@ type GitHubHandlerConfig struct {
 type GitHubHandler struct {
 	maxicloudv1connect.UnimplementedGitHubServiceHandler
 	deployService deployment.DeploymentEventService
-	srcService    usecase.SourceService
+	srcService    service.SourceService
 	config        GitHubHandlerConfig
 	oauthCfg      *oauth2.Config
 }
 
-func NewGitHubHandler(deploySvc deployment.DeploymentEventService, srcSvc usecase.SourceService, config GitHubHandlerConfig) *GitHubHandler {
+func NewGitHubHandler(deploySvc deployment.DeploymentEventService, srcSvc service.SourceService, config GitHubHandlerConfig) *GitHubHandler {
 	oauthCfg := &oauth2.Config{
 		ClientID:     config.ClientID,
 		ClientSecret: config.ClientSecret,
@@ -105,7 +105,7 @@ func (h *GitHubHandler) Webhook(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *GitHubHandler) ListRepositories(ctx context.Context, req *v1.ListRepositoriesRequest) (*v1.ListRepositoriesResponse, error) {
-	repos, err := h.srcService.GetRepositories(ctx)
+	repos, err := h.srcService.ListRepositories(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +128,7 @@ func (h *GitHubHandler) ListBranches(ctx context.Context, req *v1.ListBranchesRe
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("repository owner and name are required"))
 	}
 
-	branches, err := h.srcService.GetBranches(ctx, domain.Repository{
+	branches, err := h.srcService.ListBranches(ctx, domain.Repository{
 		Owner: repo.GetOwner(),
 		Name:  repo.GetName(),
 	})

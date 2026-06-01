@@ -1,4 +1,4 @@
-package usecase
+package service
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 )
 
 type UserService interface {
-	GetUser(ctx context.Context, id string) (*domain.User, error)
+	Get(ctx context.Context, id string) (*domain.User, error)
 }
 
 type userService struct {
@@ -18,6 +18,6 @@ func NewUserService(repo domain.UserRepository) UserService {
 	return &userService{repo: repo}
 }
 
-func (s *userService) GetUser(ctx context.Context, id string) (*domain.User, error) {
-	return s.repo.GetUserByID(ctx, id)
+func (s *userService) Get(ctx context.Context, id string) (*domain.User, error) {
+	return s.repo.Get(ctx, id)
 }

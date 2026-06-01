@@ -1,4 +1,4 @@
-package usecase
+package service
 
 import (
 	"context"
@@ -6,15 +6,15 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
-	"github.com/saitamau-maximum/maxicloud/internal/usecase/deployment"
+	"github.com/saitamau-maximum/maxicloud/internal/service/deployment"
 )
 
 type ApplicationService interface {
-	CreateApplication(ctx context.Context, params CreateApplicationParams) (*CreateApplicationResult, error)
-	GetApplication(ctx context.Context, id string) (*domain.Application, error)
-	ListApplications(ctx context.Context, projectID string) ([]domain.Application, error)
-	UpdateApplication(ctx context.Context, params UpdateApplicationParams) (*domain.Application, error)
-	DeleteApplication(ctx context.Context, id string) error
+	Create(ctx context.Context, params CreateApplicationParams) (*CreateApplicationResult, error)
+	Get(ctx context.Context, id string) (*domain.Application, error)
+	List(ctx context.Context, projectID string) ([]domain.Application, error)
+	Update(ctx context.Context, params UpdateApplicationParams) (*domain.Application, error)
+	Delete(ctx context.Context, id string) error
 }
 
 type applicationService struct {
@@ -48,11 +48,11 @@ type CreateApplicationResult struct {
 	InitialDeploymentError   string
 }
 
-func (u *applicationService) CreateApplication(ctx context.Context, params CreateApplicationParams) (*CreateApplicationResult, error) {
+func (u *applicationService) Create(ctx context.Context, params CreateApplicationParams) (*CreateApplicationResult, error) {
 	if err := params.Spec.Validate(); err != nil {
 		return nil, err
 	}
-	createdApp, err := u.appRepo.CreateApplication(ctx, domain.CreateApplicationParams{
+	createdApp, err := u.appRepo.Create(ctx, domain.CreateApplicationParams{
 		ID:      uuid.New().String(),
 		Name:    params.Name,
 		OwnerID: params.OwnerID,
@@ -61,7 +61,7 @@ func (u *applicationService) CreateApplication(ctx context.Context, params Creat
 	if err != nil {
 		return nil, err
 	}
-	app, err := u.appRepo.GetApplication(ctx, createdApp.ID)
+	app, err := u.appRepo.Get(ctx, createdApp.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -95,12 +95,12 @@ func (u *applicationService) CreateApplication(ctx context.Context, params Creat
 	return result, nil
 }
 
-func (u *applicationService) GetApplication(ctx context.Context, id string) (*domain.Application, error) {
-	return u.appRepo.GetApplication(ctx, id)
+func (u *applicationService) Get(ctx context.Context, id string) (*domain.Application, error) {
+	return u.appRepo.Get(ctx, id)
 }
 
-func (u *applicationService) ListApplications(ctx context.Context, projectID string) ([]domain.Application, error) {
-	return u.appRepo.ListApplications(ctx, projectID)
+func (u *applicationService) List(ctx context.Context, projectID string) ([]domain.Application, error) {
+	return u.appRepo.List(ctx, projectID)
 }
 
 type UpdateApplicationParams struct {
@@ -110,11 +110,11 @@ type UpdateApplicationParams struct {
 	Spec    domain.ApplicationSpec
 }
 
-func (u *applicationService) UpdateApplication(ctx context.Context, params UpdateApplicationParams) (*domain.Application, error) {
+func (u *applicationService) Update(ctx context.Context, params UpdateApplicationParams) (*domain.Application, error) {
 	if err := params.Spec.Validate(); err != nil {
 		return nil, err
 	}
-	existing, err := u.appRepo.GetApplication(ctx, params.ID)
+	existing, err := u.appRepo.Get(ctx, params.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -122,12 +122,12 @@ func (u *applicationService) UpdateApplication(ctx context.Context, params Updat
 	existing.Name = params.Name
 	existing.OwnerID = params.OwnerID
 	existing.Source = params.Spec.Source
-	if err := u.appRepo.UpdateApplication(ctx, *existing); err != nil {
+	if err := u.appRepo.Update(ctx, *existing); err != nil {
 		return nil, err
 	}
-	return u.appRepo.GetApplication(ctx, params.ID)
+	return u.appRepo.Get(ctx, params.ID)
 }
 
-func (u *applicationService) DeleteApplication(ctx context.Context, id string) error {
-	return u.appRepo.DeleteApplication(ctx, id)
+func (u *applicationService) Delete(ctx context.Context, id string) error {
+	return u.appRepo.Delete(ctx, id)
 }

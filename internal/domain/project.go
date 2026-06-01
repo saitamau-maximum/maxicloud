@@ -23,9 +23,9 @@ type UpdateProjectParams struct {
 }
 
 type ProjectRepository interface {
-	CreateProject(ctx context.Context, project Project) (string, error)
-	GetProject(ctx context.Context, id string) (*Project, error)
-	ListProjects(ctx context.Context) ([]*Project, error)
-	UpdateProject(ctx context.Context, params UpdateProjectParams) error
-	DeleteProject(ctx context.Context, id string) error
+	Create(ctx context.Context, project Project) (string, error)
+	Get(ctx context.Context, id string) (*Project, error)
+	List(ctx context.Context) ([]*Project, error)
+	Update(ctx context.Context, params UpdateProjectParams) error
+	Delete(ctx context.Context, id string) error
 }

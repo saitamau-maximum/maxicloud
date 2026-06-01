@@ -7,38 +7,38 @@ import (
 
 	v1 "github.com/saitamau-maximum/maxicloud/gen/maxicloud/v1"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
-	"github.com/saitamau-maximum/maxicloud/internal/usecase"
+	"github.com/saitamau-maximum/maxicloud/internal/service"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type stubApplicationService struct {
-	createResult *usecase.CreateApplicationResult
+	createResult *service.CreateApplicationResult
 }
 
-func (s *stubApplicationService) CreateApplication(ctx context.Context, params usecase.CreateApplicationParams) (*usecase.CreateApplicationResult, error) {
+func (s *stubApplicationService) Create(ctx context.Context, params service.CreateApplicationParams) (*service.CreateApplicationResult, error) {
 	return s.createResult, nil
 }
 
-func (s *stubApplicationService) GetApplication(ctx context.Context, id string) (*domain.Application, error) {
+func (s *stubApplicationService) Get(ctx context.Context, id string) (*domain.Application, error) {
 	return nil, nil
 }
 
-func (s *stubApplicationService) ListApplications(ctx context.Context, projectID string) ([]domain.Application, error) {
+func (s *stubApplicationService) List(ctx context.Context, projectID string) ([]domain.Application, error) {
 	return nil, nil
 }
 
-func (s *stubApplicationService) UpdateApplication(ctx context.Context, params usecase.UpdateApplicationParams) (*domain.Application, error) {
+func (s *stubApplicationService) Update(ctx context.Context, params service.UpdateApplicationParams) (*domain.Application, error) {
 	return nil, nil
 }
 
-func (s *stubApplicationService) DeleteApplication(ctx context.Context, id string) error {
+func (s *stubApplicationService) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
 func TestCreateApplicationResponseIncludesInitialDeploymentMeta(t *testing.T) {
 	now := time.Now()
 	svc := &stubApplicationService{
-		createResult: &usecase.CreateApplicationResult{
+		createResult: &service.CreateApplicationResult{
 			Application: &domain.Application{
 				ID:        "app-1",
 				ProjectID: "550e8400-e29b-41d4-a716-446655440000",

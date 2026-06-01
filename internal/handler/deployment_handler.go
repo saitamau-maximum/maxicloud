@@ -7,7 +7,7 @@ import (
 	v1 "github.com/saitamau-maximum/maxicloud/gen/maxicloud/v1"
 	"github.com/saitamau-maximum/maxicloud/gen/maxicloud/v1/maxicloudv1connect"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
-	"github.com/saitamau-maximum/maxicloud/internal/usecase/deployment"
+	"github.com/saitamau-maximum/maxicloud/internal/service/deployment"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 

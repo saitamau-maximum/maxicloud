@@ -14,6 +14,6 @@ type User struct {
 }
 
 type UserRepository interface {
-	GetUserByID(ctx context.Context, id string) (*User, error)
-	UpsertUser(ctx context.Context, user User) (*User, error)
+	Get(ctx context.Context, id string) (*User, error)
+	Upsert(ctx context.Context, user User) (*User, error)
 }

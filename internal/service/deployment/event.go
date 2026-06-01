@@ -41,7 +41,7 @@ func (s *eventService) HandleDeploymentEvent(ctx context.Context, event domain.D
 }
 
 func (s *eventService) handleRepoDeploymentEvent(ctx context.Context, event domain.DeploymentEvent, prNumber *int) error {
-	apps, err := s.appRepo.GetApplicationsByRepo(ctx, event.Repo.Owner, event.Repo.Name, event.Branch)
+	apps, err := s.appRepo.ListByRepo(ctx, event.Repo.Owner, event.Repo.Name, event.Branch)
 	if err != nil {
 		return fmt.Errorf("get applications by repo: %w", err)
 	}

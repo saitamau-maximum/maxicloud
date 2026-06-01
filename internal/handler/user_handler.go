@@ -8,22 +8,22 @@ import (
 	"github.com/saitamau-maximum/maxicloud/gen/maxicloud/v1/maxicloudv1connect"
 	"github.com/saitamau-maximum/maxicloud/internal/auth"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
-	"github.com/saitamau-maximum/maxicloud/internal/usecase"
+	"github.com/saitamau-maximum/maxicloud/internal/service"
 )
 
 var _ maxicloudv1connect.UserServiceHandler = (*UserHandler)(nil)
 
 type UserHandler struct {
 	maxicloudv1connect.UnimplementedUserServiceHandler
-	uc usecase.UserService
+	service service.UserService
 }
 
-func NewUserHandler(uc usecase.UserService) *UserHandler {
-	return &UserHandler{uc: uc}
+func NewUserHandler(svc service.UserService) *UserHandler {
+	return &UserHandler{service: svc}
 }
 
 func (h *UserHandler) GetUser(ctx context.Context, req *v1.GetUserRequest) (*v1.GetUserResponse, error) {
-	user, err := h.uc.GetUser(ctx, req.GetUserId())
+	user, err := h.service.Get(ctx, req.GetUserId())
 	if err != nil {
 		return nil, toConnectError(err)
 	}
@@ -38,7 +38,7 @@ func (h *UserHandler) GetMe(ctx context.Context, req *v1.GetMeRequest) (*v1.GetM
 	if userID == "" {
 		return nil, connect.NewError(connect.CodeUnauthenticated, nil)
 	}
-	user, err := h.uc.GetUser(ctx, userID)
+	user, err := h.service.Get(ctx, userID)
 	if err != nil {
 		return nil, toConnectError(err)
 	}

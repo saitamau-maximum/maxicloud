@@ -11,7 +11,7 @@ import (
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
 )
 
-func (c *client) GetRepositories(ctx context.Context) ([]domain.Repository, error) {
+func (c *client) ListRepositories(ctx context.Context) ([]domain.Repository, error) {
 	ghClient, err := c.newGHClient()
 	if err != nil {
 		return nil, err
@@ -45,7 +45,7 @@ func (c *client) GetRepositories(ctx context.Context) ([]domain.Repository, erro
 	return result, nil
 }
 
-func (c *client) GetBranches(ctx context.Context, repo domain.Repository) ([]string, error) {
+func (c *client) ListBranches(ctx context.Context, repo domain.Repository) ([]string, error) {
 	ghClient, err := c.newGHClient()
 	if err != nil {
 		return nil, err

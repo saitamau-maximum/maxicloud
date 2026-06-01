@@ -166,11 +166,11 @@ type CreateApplicationParams struct {
 }
 
 type ApplicationRepository interface {
-	CreateApplication(ctx context.Context, params CreateApplicationParams) (*Application, error)
-	GetApplication(ctx context.Context, id string) (*Application, error)
-	ListApplications(ctx context.Context, projectID string) ([]Application, error)
-	UpdateApplication(ctx context.Context, app Application) error
-	DeleteApplication(ctx context.Context, id string) error
-	GetApplicationsByRepo(ctx context.Context, owner, name, branch string) ([]Application, error)
+	Create(ctx context.Context, params CreateApplicationParams) (*Application, error)
+	Get(ctx context.Context, id string) (*Application, error)
+	List(ctx context.Context, projectID string) ([]Application, error)
+	Update(ctx context.Context, app Application) error
+	Delete(ctx context.Context, id string) error
+	ListByRepo(ctx context.Context, owner, name, branch string) ([]Application, error)
 	ExistsByDomain(ctx context.Context, domain string) (bool, error)
 }

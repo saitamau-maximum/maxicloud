@@ -28,8 +28,8 @@ import (
 	"github.com/saitamau-maximum/maxicloud/internal/infra/k8s"
 	"github.com/saitamau-maximum/maxicloud/internal/infra/oidc"
 	"github.com/saitamau-maximum/maxicloud/internal/infra/postgres"
-	"github.com/saitamau-maximum/maxicloud/internal/usecase"
-	"github.com/saitamau-maximum/maxicloud/internal/usecase/deployment"
+	"github.com/saitamau-maximum/maxicloud/internal/service"
+	"github.com/saitamau-maximum/maxicloud/internal/service/deployment"
 )
 
 var gatewayCmd = &cobra.Command{
@@ -97,7 +97,7 @@ func runGateway(cmd *cobra.Command, args []string) error {
 		RedirectURL:  cfg.OIDCRedirectURL,
 	})
 
-	authSvc := usecase.NewAuthService(usecase.AuthConfig{
+	authSvc := service.NewAuthService(service.AuthConfig{
 		SessionSecret: cfg.SessionSecret,
 	}, userRepo, oidcClient)
 
@@ -105,11 +105,11 @@ func runGateway(cmd *cobra.Command, args []string) error {
 	deployEventSvc := deployment.NewDeploymentEventService(appRepo, deploySvc)
 	deployHistory := deployment.NewHistory(historyRepo)
 	deployWatcher := deployment.NewWatcher(deployHistory, deployRepo)
-	userSvc := usecase.NewUserService(userRepo)
-	prjSvc := usecase.NewProjectService(prjRepo)
-	domainSvc := usecase.NewDomainService(appRepo, strings.Split(cfg.AvailableDomains, ","))
-	srcSvc := usecase.NewSourceService(srcRepo)
-	appSvc := usecase.NewApplicationService(appRepo, deploySvc, srcSvc)
+	userSvc := service.NewUserService(userRepo)
+	prjSvc := service.NewProjectService(prjRepo)
+	domainSvc := service.NewDomainService(appRepo, strings.Split(cfg.AvailableDomains, ","))
+	srcSvc := service.NewSourceService(srcRepo)
+	appSvc := service.NewApplicationService(appRepo, deploySvc, srcSvc)
 
 	authHandler := handler.NewAuthHandler(authSvc)
 	ghHandler := handler.NewGitHubHandler(deployEventSvc, srcSvc, handler.GitHubHandlerConfig{

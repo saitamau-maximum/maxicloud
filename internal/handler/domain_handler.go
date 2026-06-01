@@ -6,22 +6,22 @@ import (
 	v1 "github.com/saitamau-maximum/maxicloud/gen/maxicloud/v1"
 	"github.com/saitamau-maximum/maxicloud/gen/maxicloud/v1/maxicloudv1connect"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
-	"github.com/saitamau-maximum/maxicloud/internal/usecase"
+	"github.com/saitamau-maximum/maxicloud/internal/service"
 )
 
 type DomainHandler struct {
 	maxicloudv1connect.UnimplementedDomainServiceHandler
-	uc usecase.DomainService
+	service service.DomainService
 }
 
-func NewDomainHandler(domainService usecase.DomainService) *DomainHandler {
+func NewDomainHandler(domainService service.DomainService) *DomainHandler {
 	return &DomainHandler{
-		uc: domainService,
+		service: domainService,
 	}
 }
 
 func (h *DomainHandler) ListAvailableDomains(ctx context.Context, req *v1.ListAvailableDomainsRequest) (*v1.ListAvailableDomainsResponse, error) {
-	domains, err := h.uc.ListAvailableDomains(ctx)
+	domains, err := h.service.ListAvailableDomains(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +32,7 @@ func (h *DomainHandler) CheckDomainAvailability(ctx context.Context, req *v1.Che
 	if req.Domain == nil {
 		return &v1.CheckDomainAvailabilityResponse{Available: false}, nil
 	}
-	isAvailable, err := h.uc.CheckDomainAvailability(ctx, domain.Domain{
+	isAvailable, err := h.service.CheckDomainAvailability(ctx, domain.Domain{
 		Subdomain:  req.Domain.Subdomain,
 		RootDomain: req.Domain.RootDomain,
 	})

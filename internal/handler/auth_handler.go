@@ -5,21 +5,21 @@ import (
 
 	ctrl "sigs.k8s.io/controller-runtime"
 
-	"github.com/saitamau-maximum/maxicloud/internal/usecase"
+	"github.com/saitamau-maximum/maxicloud/internal/service"
 )
 
 type AuthHandler struct {
-	uc usecase.AuthService
+	service service.AuthService
 }
 
-func NewAuthHandler(uc usecase.AuthService) *AuthHandler {
-	return &AuthHandler{uc: uc}
+func NewAuthHandler(svc service.AuthService) *AuthHandler {
+	return &AuthHandler{service: svc}
 }
 
 // GET /auth/login?redirect_to=...
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	redirectTo := r.URL.Query().Get("redirect_to")
-	loginURL, _, err := h.uc.Login(r.Context(), redirectTo)
+	loginURL, _, err := h.service.Login(r.Context(), redirectTo)
 	if err != nil {
 		http.Error(w, "login unavailable", http.StatusInternalServerError)
 		return
@@ -37,7 +37,7 @@ func (h *AuthHandler) Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.uc.Callback(r.Context(), r.URL.Query().Get("code"), r.URL.Query().Get("state"))
+	result, err := h.service.Callback(r.Context(), r.URL.Query().Get("code"), r.URL.Query().Get("state"))
 	if err != nil {
 		log.Error(err, "callback failed")
 		http.Error(w, err.Error(), http.StatusUnauthorized)

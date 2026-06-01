@@ -8,17 +8,17 @@ import (
 	v1 "github.com/saitamau-maximum/maxicloud/gen/maxicloud/v1"
 	"github.com/saitamau-maximum/maxicloud/gen/maxicloud/v1/maxicloudv1connect"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
-	"github.com/saitamau-maximum/maxicloud/internal/usecase"
+	"github.com/saitamau-maximum/maxicloud/internal/service"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type ApplicationHandler struct {
 	maxicloudv1connect.UnimplementedApplicationServiceHandler
-	uc usecase.ApplicationService
+	service service.ApplicationService
 }
 
-func NewApplicationHandler(uc usecase.ApplicationService) *ApplicationHandler {
-	return &ApplicationHandler{uc: uc}
+func NewApplicationHandler(svc service.ApplicationService) *ApplicationHandler {
+	return &ApplicationHandler{service: svc}
 }
 
 func (h *ApplicationHandler) CreateApplication(ctx context.Context, req *v1.CreateApplicationRequest) (*v1.CreateApplicationResponse, error) {
@@ -26,7 +26,7 @@ func (h *ApplicationHandler) CreateApplication(ctx context.Context, req *v1.Crea
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	result, err := h.uc.CreateApplication(ctx, usecase.CreateApplicationParams{
+	result, err := h.service.Create(ctx, service.CreateApplicationParams{
 		Name:    req.Name,
 		OwnerID: req.OwnerId,
 		Spec:    spec,
@@ -43,7 +43,7 @@ func (h *ApplicationHandler) CreateApplication(ctx context.Context, req *v1.Crea
 }
 
 func (h *ApplicationHandler) GetApplication(ctx context.Context, req *v1.GetApplicationRequest) (*v1.GetApplicationResponse, error) {
-	app, err := h.uc.GetApplication(ctx, req.ApplicationId)
+	app, err := h.service.Get(ctx, req.ApplicationId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -54,7 +54,7 @@ func (h *ApplicationHandler) GetApplication(ctx context.Context, req *v1.GetAppl
 }
 
 func (h *ApplicationHandler) ListApplications(ctx context.Context, req *v1.ListApplicationsRequest) (*v1.ListApplicationsResponse, error) {
-	apps, err := h.uc.ListApplications(ctx, req.ProjectId)
+	apps, err := h.service.List(ctx, req.ProjectId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -70,7 +70,7 @@ func (h *ApplicationHandler) UpdateApplication(ctx context.Context, req *v1.Upda
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	app, err := h.uc.UpdateApplication(ctx, usecase.UpdateApplicationParams{
+	app, err := h.service.Update(ctx, service.UpdateApplicationParams{
 		ID:      req.ApplicationId,
 		Name:    req.Name,
 		OwnerID: req.OwnerId,
@@ -83,7 +83,7 @@ func (h *ApplicationHandler) UpdateApplication(ctx context.Context, req *v1.Upda
 }
 
 func (h *ApplicationHandler) DeleteApplication(ctx context.Context, req *v1.DeleteApplicationRequest) (*v1.DeleteApplicationResponse, error) {
-	if err := h.uc.DeleteApplication(ctx, req.ApplicationId); err != nil {
+	if err := h.service.Delete(ctx, req.ApplicationId); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return &v1.DeleteApplicationResponse{}, nil
