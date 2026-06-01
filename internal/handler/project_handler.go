@@ -13,10 +13,10 @@ import (
 
 type ProjectHandler struct {
 	maxicloudv1connect.UnimplementedProjectServiceHandler
-	uc usecase.ProjectUsecase
+	uc usecase.ProjectService
 }
 
-func NewProjectHandler(uc usecase.ProjectUsecase) *ProjectHandler {
+func NewProjectHandler(uc usecase.ProjectService) *ProjectHandler {
 	return &ProjectHandler{uc: uc}
 }
 

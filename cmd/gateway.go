@@ -22,12 +22,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	"github.com/saitamau-maximum/maxicloud/gen/maxicloud/v1/maxicloudv1connect"
+	"github.com/saitamau-maximum/maxicloud/internal/auth"
 	"github.com/saitamau-maximum/maxicloud/internal/handler"
 	"github.com/saitamau-maximum/maxicloud/internal/infra/github"
 	"github.com/saitamau-maximum/maxicloud/internal/infra/k8s"
+	"github.com/saitamau-maximum/maxicloud/internal/infra/oidc"
 	"github.com/saitamau-maximum/maxicloud/internal/infra/postgres"
 	"github.com/saitamau-maximum/maxicloud/internal/usecase"
-	deployuc "github.com/saitamau-maximum/maxicloud/internal/usecase/deployment"
+	"github.com/saitamau-maximum/maxicloud/internal/usecase/deployment"
 )
 
 var gatewayCmd = &cobra.Command{
@@ -88,21 +90,23 @@ func runGateway(cmd *cobra.Command, args []string) error {
 	logStreamer := k8s.NewLogStreamer(clientset)
 	deployRepo := k8s.NewDeployRepository(k8sClient, logStreamer)
 	srcRepo := github.NewClient(cfg.GitHubAppID, privateKey, cfg.InstallationID)
+	oidcClient := oidc.NewClient(oidc.Config{
+		Issuer:       cfg.OIDCIssuer,
+		ClientID:     cfg.OIDCClientID,
+		ClientSecret: cfg.OIDCClientSecret,
+		RedirectURL:  cfg.OIDCRedirectURL,
+	})
 
 	authSvc := usecase.NewAuthService(usecase.AuthConfig{
-		Issuer:        cfg.OIDCIssuer,
-		ClientID:      cfg.OIDCClientID,
-		ClientSecret:  cfg.OIDCClientSecret,
-		RedirectURL:   cfg.OIDCRedirectURL,
 		SessionSecret: cfg.SessionSecret,
-	}, userRepo)
+	}, userRepo, oidcClient)
 
-	deploySvc := deployuc.NewDeploymentService(historyRepo, deployRepo)
-	deployEventSvc := deployuc.NewDeploymentEventService(appRepo, deploySvc)
-	deployHistory := deployuc.NewHistory(historyRepo)
-	deployWatcher := deployuc.NewWatcher(deployHistory, deployRepo)
+	deploySvc := deployment.NewDeploymentService(historyRepo, deployRepo)
+	deployEventSvc := deployment.NewDeploymentEventService(appRepo, deploySvc)
+	deployHistory := deployment.NewHistory(historyRepo)
+	deployWatcher := deployment.NewWatcher(deployHistory, deployRepo)
 	userSvc := usecase.NewUserService(userRepo)
-	prjSvc := usecase.NewProjectUsecase(prjRepo)
+	prjSvc := usecase.NewProjectService(prjRepo)
 	domainSvc := usecase.NewDomainService(appRepo, strings.Split(cfg.AvailableDomains, ","))
 	srcSvc := usecase.NewSourceService(srcRepo)
 	appSvc := usecase.NewApplicationService(appRepo, deploySvc, srcSvc)
@@ -136,7 +140,7 @@ func runGateway(cmd *cobra.Command, args []string) error {
 		AllowCredentials: false,
 	}))
 
-	authOpt := connect.WithInterceptors(handler.NewOptionalAuthInterceptor(authSvc))
+	authOpt := connect.WithInterceptors(auth.NewOptionalAuthInterceptor(cfg.SessionSecret))
 	mountAll(r,
 		svc(maxicloudv1connect.NewProjectServiceHandler(prjHandler, authOpt)),
 		svc(maxicloudv1connect.NewUserServiceHandler(userHandler, authOpt)),

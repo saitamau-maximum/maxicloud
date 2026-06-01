@@ -6,15 +6,20 @@ import (
 
 	"connectrpc.com/connect"
 	v1 "github.com/saitamau-maximum/maxicloud/gen/maxicloud/v1"
+	"github.com/saitamau-maximum/maxicloud/internal/auth"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
 )
 
 type stubUserService struct {
-	user *domain.User
-	err  error
+	user   *domain.User
+	err    error
+	gotID  string
+	called bool
 }
 
 func (s *stubUserService) GetUser(ctx context.Context, id string) (*domain.User, error) {
+	s.called = true
+	s.gotID = id
 	return s.user, s.err
 }
 
@@ -59,5 +64,55 @@ func TestUserHandlerGetUserNotFound(t *testing.T) {
 	}
 	if connectErr.Code() != connect.CodeNotFound {
 		t.Fatalf("expected code %v, got %v", connect.CodeNotFound, connectErr.Code())
+	}
+}
+
+func TestUserHandlerGetMe(t *testing.T) {
+	svc := &stubUserService{
+		user: &domain.User{
+			ID:          "user-1",
+			DisplayID:   "kouta",
+			DisplayName: "Kouta",
+			Roles:       []string{"member"},
+		},
+	}
+	h := NewUserHandler(svc)
+
+	res, err := h.GetMe(auth.WithUserID(context.Background(), "user-1"), &v1.GetMeRequest{})
+	if err != nil {
+		t.Fatalf("GetMe returned error: %v", err)
+	}
+	if !svc.called {
+		t.Fatalf("expected service called")
+	}
+	if svc.gotID != "user-1" {
+		t.Fatalf("expected requested user-1, got %q", svc.gotID)
+	}
+	if res.GetUser().GetId() != "user-1" {
+		t.Fatalf("expected id user-1, got %q", res.GetUser().GetId())
+	}
+}
+
+func TestUserHandlerGetMeUnauthenticated(t *testing.T) {
+	h := NewUserHandler(&stubUserService{})
+
+	_, err := h.GetMe(context.Background(), &v1.GetMeRequest{})
+	if err == nil {
+		t.Fatalf("expected error")
+	}
+	if got := connect.CodeOf(err); got != connect.CodeUnauthenticated {
+		t.Fatalf("expected %v, got %v", connect.CodeUnauthenticated, got)
+	}
+}
+
+func TestUserHandlerGetMeNotFound(t *testing.T) {
+	h := NewUserHandler(&stubUserService{user: nil})
+
+	_, err := h.GetMe(auth.WithUserID(context.Background(), "missing"), &v1.GetMeRequest{})
+	if err == nil {
+		t.Fatalf("expected error")
+	}
+	if got := connect.CodeOf(err); got != connect.CodeNotFound {
+		t.Fatalf("expected %v, got %v", connect.CodeNotFound, got)
 	}
 }

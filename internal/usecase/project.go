@@ -8,7 +8,7 @@ import (
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
 )
 
-type ProjectUsecase interface {
+type ProjectService interface {
 	CreateProject(ctx context.Context, name, description, ownerID string) (*domain.Project, error)
 	GetProject(ctx context.Context, id string) (*domain.Project, error)
 	ListProjects(ctx context.Context) ([]*domain.Project, error)
@@ -16,15 +16,15 @@ type ProjectUsecase interface {
 	DeleteProject(ctx context.Context, id string) error
 }
 
-type projectUsecase struct {
+type projectService struct {
 	repo domain.ProjectRepository
 }
 
-func NewProjectUsecase(repo domain.ProjectRepository) ProjectUsecase {
-	return &projectUsecase{repo: repo}
+func NewProjectService(repo domain.ProjectRepository) ProjectService {
+	return &projectService{repo: repo}
 }
 
-func (u *projectUsecase) CreateProject(ctx context.Context, name, description, ownerID string) (*domain.Project, error) {
+func (u *projectService) CreateProject(ctx context.Context, name, description, ownerID string) (*domain.Project, error) {
 	id, err := u.repo.CreateProject(ctx, domain.Project{
 		ID:          uuid.New().String(),
 		Name:        name,
@@ -39,11 +39,11 @@ func (u *projectUsecase) CreateProject(ctx context.Context, name, description, o
 	return u.repo.GetProject(ctx, id)
 }
 
-func (u *projectUsecase) GetProject(ctx context.Context, id string) (*domain.Project, error) {
+func (u *projectService) GetProject(ctx context.Context, id string) (*domain.Project, error) {
 	return u.repo.GetProject(ctx, id)
 }
 
-func (u *projectUsecase) ListProjects(ctx context.Context) ([]*domain.Project, error) {
+func (u *projectService) ListProjects(ctx context.Context) ([]*domain.Project, error) {
 	return u.repo.ListProjects(ctx)
 }
 
@@ -54,7 +54,7 @@ type UpdateProjectParams struct {
 	OwnerID     *string
 }
 
-func (u *projectUsecase) UpdateProject(ctx context.Context, params UpdateProjectParams) (*domain.Project, error) {
+func (u *projectService) UpdateProject(ctx context.Context, params UpdateProjectParams) (*domain.Project, error) {
 	if err := u.repo.UpdateProject(ctx, domain.UpdateProjectParams{
 		ID:          params.ID,
 		Name:        params.Name,
@@ -67,6 +67,6 @@ func (u *projectUsecase) UpdateProject(ctx context.Context, params UpdateProject
 	return u.repo.GetProject(ctx, params.ID)
 }
 
-func (u *projectUsecase) DeleteProject(ctx context.Context, id string) error {
+func (u *projectService) DeleteProject(ctx context.Context, id string) error {
 	return u.repo.DeleteProject(ctx, id)
 }
