@@ -29,7 +29,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	maxicloudv1alpha1 "github.com/saitamau-maximum/maxicloud/api/v1alpha1"
-	"github.com/saitamau-maximum/maxicloud/internal/config"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
 )
 
@@ -77,7 +76,7 @@ func newTestReconciler() *BuildRunReconciler {
 func newTestBuildRun(name, namespace, appName string) *maxicloudv1alpha1.BuildRun {
 	labels := map[string]string{}
 	if appName != "" {
-		labels[config.ApplicationLabelKey] = appName
+		labels[applicationLabelKey] = appName
 	}
 	return &maxicloudv1alpha1.BuildRun{
 		ObjectMeta: metav1.ObjectMeta{
@@ -134,7 +133,7 @@ var _ = Describe("BuildRun Controller", func() {
 			var jobList batchv1.JobList
 			Expect(k8sClient.List(ctx, &jobList,
 				client.InNamespace(ns),
-				client.MatchingLabels{config.ApplicationLabelKey: "my-app"},
+				client.MatchingLabels{applicationLabelKey: "my-app"},
 			)).To(Succeed())
 			Expect(jobList.Items).To(HaveLen(1))
 		})
@@ -148,7 +147,7 @@ var _ = Describe("BuildRun Controller", func() {
 
 			var secret corev1.Secret
 			Expect(k8sClient.Get(ctx, types.NamespacedName{Name: name, Namespace: ns}, &secret)).To(Succeed())
-			Expect(secret.Data).To(HaveKey(config.InstallationAccessTokenKey))
+			Expect(secret.Data).To(HaveKey(installationAccessTokenKey))
 			Expect(secret.Data).To(HaveKey(corev1.DockerConfigJsonKey))
 		})
 	})

@@ -32,7 +32,6 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	maxicloudv1alpha1 "github.com/saitamau-maximum/maxicloud/api/v1alpha1"
-	"github.com/saitamau-maximum/maxicloud/internal/config"
 	"github.com/saitamau-maximum/maxicloud/internal/infra/github"
 	"github.com/saitamau-maximum/maxicloud/internal/infra/registry"
 	batchv1 "k8s.io/api/batch/v1"
@@ -111,13 +110,13 @@ func (r *BuildRunReconciler) reconcileSecret(ctx context.Context, buildRun *maxi
 		if secret.Data == nil {
 			secret.Data = map[string][]byte{}
 		}
-		unchanged := bytes.Equal(secret.Data[config.InstallationAccessTokenKey], installationAccessToken) &&
+		unchanged := bytes.Equal(secret.Data[installationAccessTokenKey], installationAccessToken) &&
 			bytes.Equal(secret.Data[corev1.DockerConfigJsonKey], dockerConfig)
 		if unchanged {
 			return nil
 		}
 
-		secret.Data[config.InstallationAccessTokenKey] = installationAccessToken
+		secret.Data[installationAccessTokenKey] = installationAccessToken
 		secret.Data[corev1.DockerConfigJsonKey] = dockerConfig
 		return r.Update(ctx, &secret)
 	})

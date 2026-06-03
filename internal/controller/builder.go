@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	maxicloudv1alpha1 "github.com/saitamau-maximum/maxicloud/api/v1alpha1"
-	"github.com/saitamau-maximum/maxicloud/internal/config"
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -21,7 +20,7 @@ const (
 func newAppRegistrySecret(app *maxicloudv1alpha1.Application, dockerConfig string) *corev1.Secret {
 	return &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      config.AppRegistrySecretName(app.Name),
+			Name:      appRegistrySecretName(app.Name),
 			Namespace: app.Namespace,
 			OwnerReferences: []metav1.OwnerReference{
 				*metav1.NewControllerRef(app, maxicloudv1alpha1.GroupVersion.WithKind(ApplicationCRKind)),
@@ -45,15 +44,15 @@ func newDeployment(app *maxicloudv1alpha1.Application, image string) *appsv1.Dep
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{"app.kubernetes.io/name": app.Name},
+				MatchLabels: map[string]string{appNameLabel: app.Name},
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{"app.kubernetes.io/name": app.Name},
+					Labels: map[string]string{appNameLabel: app.Name},
 				},
 				Spec: corev1.PodSpec{
 					ImagePullSecrets: []corev1.LocalObjectReference{
-						{Name: config.AppRegistrySecretName(app.Name)},
+						{Name: appRegistrySecretName(app.Name)},
 					},
 					Containers: []corev1.Container{
 						{
@@ -79,7 +78,7 @@ func newService(app *maxicloudv1alpha1.Application) *corev1.Service {
 			},
 		},
 		Spec: corev1.ServiceSpec{
-			Selector: map[string]string{"app.kubernetes.io/name": app.Name},
+			Selector: map[string]string{appNameLabel: app.Name},
 			Ports: []corev1.ServicePort{
 				{
 					Port:       port,
@@ -144,8 +143,8 @@ func newBuildRunSecret(buildRun *maxicloudv1alpha1.BuildRun, dockerConfig, insta
 			},
 		},
 		Data: map[string][]byte{
-			corev1.DockerConfigJsonKey:        []byte(dockerConfig),
-			config.InstallationAccessTokenKey: []byte(installationAccessToken),
+			corev1.DockerConfigJsonKey: []byte(dockerConfig),
+			installationAccessTokenKey: []byte(installationAccessToken),
 		},
 		Type: corev1.SecretTypeOpaque,
 	}
@@ -187,7 +186,7 @@ func newBuildJob(params BuildJobParams) *batchv1.Job {
 									ValueFrom: &corev1.EnvVarSource{
 										SecretKeyRef: &corev1.SecretKeySelector{
 											LocalObjectReference: corev1.LocalObjectReference{Name: params.repoSecretName},
-											Key:                  config.InstallationAccessTokenKey,
+											Key:                  installationAccessTokenKey,
 										},
 									},
 								},

@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -119,8 +118,4 @@ func rowToDomain(row db.DeploymentHistory) *domain.Deployment {
 		StartedAt:  row.StartedAt.Time,
 		FinishedAt: finishedAt,
 	}
-}
-
-func dsnFromConfig(host string, port int, user, password, dbname string) string {
-	return fmt.Sprintf("postgresql://%s:%s@%s:%d/%s", user, password, host, port, dbname)
 }

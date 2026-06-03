@@ -21,7 +21,6 @@ import (
 	"context"
 	"strings"
 
-	"github.com/saitamau-maximum/maxicloud/internal/config"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -117,7 +116,7 @@ func (r *ApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 func (r *ApplicationReconciler) reconcileSecret(ctx context.Context, application *maxicloudv1alpha1.Application) error {
 	log := logf.FromContext(ctx)
 
-	secretName := config.AppRegistrySecretName(application.Name)
+	secretName := appRegistrySecretName(application.Name)
 	key := types.NamespacedName{Name: secretName, Namespace: application.Namespace}
 	dockerConfig := []byte(r.Registry.DockerConfig())
 

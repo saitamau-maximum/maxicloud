@@ -3,26 +3,14 @@ package k8s
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
-	"github.com/saitamau-maximum/maxicloud/internal/config"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
+	"github.com/saitamau-maximum/maxicloud/internal/infra/k8s/meta"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-)
-
-const (
-	projectLabelKey = config.LabelPrefix + "project"
-
-	OwnerUserIDLabelKey = config.LabelPrefix + "owner-user-id"
-	ProjectNameLabelKey = config.LabelPrefix + "project-name"
-
-	ProjectDescriptionAnnotationKey = config.AnnotationPrefix + "project-description"
-	CreatedAtAnnotationKey          = config.AnnotationPrefix + "created-at"
-	UpdatedAtAnnotationKey          = config.AnnotationPrefix + "updated-at"
 )
 
 type projectRepository struct {
@@ -38,28 +26,25 @@ func NewProjectRepository(c client.Client) domain.ProjectRepository {
 func (r *projectRepository) Create(ctx context.Context, project domain.Project) (string, error) {
 	ns := &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: projectNamespace(project.ID),
-			Labels: map[string]string{
-				projectLabelKey:     "true",
-				OwnerUserIDLabelKey: truncateLabelValue(project.OwnerID),
-				ProjectNameLabelKey: project.Name,
-			},
-			Annotations: map[string]string{
-				ProjectDescriptionAnnotationKey: project.Description,
-				CreatedAtAnnotationKey:          project.CreatedAt.Format(time.RFC3339),
-				UpdatedAtAnnotationKey:          project.UpdatedAt.Format(time.RFC3339),
-			},
+			Name: meta.ProjectNamespace(project.ID),
 		},
 	}
+	meta.ProjectMeta{
+		Name:        project.Name,
+		OwnerID:     project.OwnerID,
+		Description: project.Description,
+		CreatedAt:   project.CreatedAt,
+		UpdatedAt:   project.UpdatedAt,
+	}.Apply(&ns.ObjectMeta)
 	if err := r.Client.Create(ctx, ns); err != nil {
 		return "", fmt.Errorf("create namespace: %w", err)
 	}
-	return strings.TrimPrefix(ns.Name, NamespacePrefix), nil
+	return meta.ProjectIDFromNamespace(ns.Name), nil
 }
 
 func (r *projectRepository) Get(ctx context.Context, id string) (*domain.Project, error) {
 	var ns corev1.Namespace
-	if err := r.Client.Get(ctx, client.ObjectKey{Name: projectNamespace(id)}, &ns); err != nil {
+	if err := r.Client.Get(ctx, client.ObjectKey{Name: meta.ProjectNamespace(id)}, &ns); err != nil {
 		return nil, client.IgnoreNotFound(err)
 	}
 	return nsToProject(&ns)
@@ -67,7 +52,7 @@ func (r *projectRepository) Get(ctx context.Context, id string) (*domain.Project
 
 func (r *projectRepository) List(ctx context.Context) ([]*domain.Project, error) {
 	var nsList corev1.NamespaceList
-	if err := r.Client.List(ctx, &nsList, client.MatchingLabels{projectLabelKey: "true"}); err != nil {
+	if err := r.Client.List(ctx, &nsList, meta.SelectProjects()); err != nil {
 		return nil, fmt.Errorf("list namespaces: %w", err)
 	}
 	projects := make([]*domain.Project, 0, len(nsList.Items))
@@ -84,7 +69,7 @@ func (r *projectRepository) List(ctx context.Context) ([]*domain.Project, error)
 func (r *projectRepository) Update(ctx context.Context, params domain.UpdateProjectParams) error {
 	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
 		var ns corev1.Namespace
-		if err := r.Client.Get(ctx, client.ObjectKey{Name: projectNamespace(params.ID)}, &ns); err != nil {
+		if err := r.Client.Get(ctx, client.ObjectKey{Name: meta.ProjectNamespace(params.ID)}, &ns); err != nil {
 			return fmt.Errorf("get namespace: %w", err)
 		}
 
@@ -98,40 +83,36 @@ func (r *projectRepository) Update(ctx context.Context, params domain.UpdateProj
 		}
 
 		if params.Name != nil {
-			ns.Labels[ProjectNameLabelKey] = *params.Name
+			ns.Labels[meta.LabelProjectName] = *params.Name
 		}
 		if params.OwnerID != nil {
-			ns.Labels[OwnerUserIDLabelKey] = truncateLabelValue(*params.OwnerID)
+			meta.SetOwner(&ns.ObjectMeta, *params.OwnerID)
 		}
 		if params.Description != nil {
-			ns.Annotations[ProjectDescriptionAnnotationKey] = *params.Description
+			ns.Annotations[meta.AnnotationProjectDescription] = *params.Description
 		}
-		ns.Annotations[UpdatedAtAnnotationKey] = params.UpdatedAt.Format(time.RFC3339)
+		ns.Annotations[meta.AnnotationUpdatedAt] = params.UpdatedAt.Format(time.RFC3339)
 
 		return r.Client.Patch(ctx, &ns, client.MergeFrom(base))
 	})
 }
 
 func (r *projectRepository) Delete(ctx context.Context, id string) error {
-	ns := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: projectNamespace(id)}}
+	ns := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: meta.ProjectNamespace(id)}}
 	return client.IgnoreNotFound(r.Client.Delete(ctx, ns))
 }
 
 func nsToProject(ns *corev1.Namespace) (*domain.Project, error) {
-	createdAt, err := time.Parse(time.RFC3339, ns.Annotations[CreatedAtAnnotationKey])
+	m, err := meta.ProjectMetaFrom(ns)
 	if err != nil {
-		return nil, fmt.Errorf("parse createdAt: %w", err)
-	}
-	updatedAt, err := time.Parse(time.RFC3339, ns.Annotations[UpdatedAtAnnotationKey])
-	if err != nil {
-		return nil, fmt.Errorf("parse updatedAt: %w", err)
+		return nil, err
 	}
 	return &domain.Project{
-		ID:          projectIDFromNamespace(ns.Name),
-		Name:        ns.Labels[ProjectNameLabelKey],
-		OwnerID:     ns.Labels[OwnerUserIDLabelKey],
-		Description: ns.Annotations[ProjectDescriptionAnnotationKey],
-		CreatedAt:   createdAt,
-		UpdatedAt:   updatedAt,
+		ID:          meta.ProjectIDFromNamespace(ns.Name),
+		Name:        m.Name,
+		OwnerID:     m.OwnerID,
+		Description: m.Description,
+		CreatedAt:   m.CreatedAt,
+		UpdatedAt:   m.UpdatedAt,
 	}, nil
 }
