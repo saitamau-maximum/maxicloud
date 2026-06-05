@@ -40,7 +40,7 @@ func (s *service) Deploy(ctx context.Context, spec domain.DeploymentSpec) (strin
 		return "", fmt.Errorf("create workflow: %w", err)
 	}
 
-	_ = s.cleanPreviousWorkflows(ctx, spec.ApplicationID, spec.PRNumber != nil)
+	_ = s.cleanPreviousWorkflows(ctx, spec.ApplicationID, spec.IsPreview())
 
 	return record.ID, nil
 }

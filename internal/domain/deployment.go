@@ -23,6 +23,10 @@ type DeploymentSpec struct {
 	PRNumber      *int // Preview の時のみ
 }
 
+func (s DeploymentSpec) IsPreview() bool {
+	return s.PRNumber != nil
+}
+
 type Deployment struct {
 	ID         string
 	Spec       DeploymentSpec

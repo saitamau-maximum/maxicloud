@@ -1,5 +1,5 @@
-import type { User } from "~/gen/maxicloud/v1/user_pb";
 import { USER_STATUS, type ValueOf } from "~/constants";
+import type { User } from "~/gen/maxicloud/v1/user_pb";
 import { connectClient } from "~/utils/connect";
 
 export type UserStatus = ValueOf<typeof USER_STATUS>;

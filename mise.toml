@@ -16,17 +16,39 @@ run = '{{vars.controller_gen}} rbac:roleName=manager-role crd webhook paths="./.
 description = "Generate DeepCopy method implementations"
 run = '{{vars.controller_gen}} object:headerFile="hack/boilerplate.go.txt" paths="./..."'
 
-[tasks.fmt]
+[tasks."go:fmt"]
 description = "Run go fmt"
 run = "go fmt ./..."
+
+[tasks."ts:fmt"]
+description = "Run frontend formatter"
+run = "pnpm -C dashboard run fix"
+
+[tasks.fmt]
+description = "Run all formatters"
+run = [
+  { task = "go:fmt" },
+  { task = "ts:fmt" },
+]
 
 [tasks.vet]
 description = "Run go vet"
 run = "go vet ./..."
 
-[tasks.lint]
+[tasks."go:lint"]
 description = "Run golangci-lint"
 run = "./bin/golangci-lint run"
+
+[tasks."ts:lint"]
+description = "Run frontend checks"
+run = "pnpm -C dashboard run check"
+
+[tasks.lint]
+description = "Run all linters"
+run = [
+  { task = "go:lint" },
+  { task = "ts:lint" },
+]
 
 [tasks.test]
 description = "Run tests"
@@ -40,7 +62,11 @@ run = "go build -o bin/manager ./cmd"
 
 [tasks."buf:generate"]
 description = "Generate proto files"
-run = "buf generate"
+run = """
+buf generate
+go fmt ./gen/...
+pnpm -C dashboard exec biome check --write app/gen
+"""
 
 [tasks."docker:build"]
 description = "Build docker image"

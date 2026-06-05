@@ -24,7 +24,7 @@ func NewDeploymentHistoryRepository(pool *pgxpool.Pool) domain.DeploymentHistory
 
 func (r *deploymentHistoryRepository) Create(ctx context.Context, d domain.Deployment) (string, error) {
 	var prNumber *int32
-	if d.Spec.PRNumber != nil {
+	if d.Spec.IsPreview() {
 		v := int32(*d.Spec.PRNumber)
 		prNumber = &v
 	}

@@ -2,103 +2,120 @@
 // @generated from file maxicloud/v1/domain.proto (package maxicloud.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { Message } from "@bufbuild/protobuf";
+import type {
+	GenFile,
+	GenMessage,
+	GenService,
+} from "@bufbuild/protobuf/codegenv2";
+import {
+	fileDesc,
+	messageDesc,
+	serviceDesc,
+} from "@bufbuild/protobuf/codegenv2";
+import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
 import type { Domain } from "./common_pb";
 import { file_maxicloud_v1_common } from "./common_pb";
-import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
-import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file maxicloud/v1/domain.proto.
  */
-export const file_maxicloud_v1_domain: GenFile = /*@__PURE__*/
-  fileDesc("ChltYXhpY2xvdWQvdjEvZG9tYWluLnByb3RvEgxtYXhpY2xvdWQudjEiHQobTGlzdEF2YWlsYWJsZURvbWFpbnNSZXF1ZXN0Ii8KHExpc3RBdmFpbGFibGVEb21haW5zUmVzcG9uc2USDwoHZG9tYWlucxgBIAMoCSJOCh5DaGVja0RvbWFpbkF2YWlsYWJpbGl0eVJlcXVlc3QSLAoGZG9tYWluGAEgASgLMhQubWF4aWNsb3VkLnYxLkRvbWFpbkIGukgDyAEBIjQKH0NoZWNrRG9tYWluQXZhaWxhYmlsaXR5UmVzcG9uc2USEQoJYXZhaWxhYmxlGAEgASgIMvYBCg1Eb21haW5TZXJ2aWNlEm0KFExpc3RBdmFpbGFibGVEb21haW5zEikubWF4aWNsb3VkLnYxLkxpc3RBdmFpbGFibGVEb21haW5zUmVxdWVzdBoqLm1heGljbG91ZC52MS5MaXN0QXZhaWxhYmxlRG9tYWluc1Jlc3BvbnNlEnYKF0NoZWNrRG9tYWluQXZhaWxhYmlsaXR5EiwubWF4aWNsb3VkLnYxLkNoZWNrRG9tYWluQXZhaWxhYmlsaXR5UmVxdWVzdBotLm1heGljbG91ZC52MS5DaGVja0RvbWFpbkF2YWlsYWJpbGl0eVJlc3BvbnNlQrQBChBjb20ubWF4aWNsb3VkLnYxQgtEb21haW5Qcm90b1ABWkJnaXRodWIuY29tL3NhaXRhbWF1LW1heGltdW0vbWF4aWNsb3VkL2dlbi9tYXhpY2xvdWQvdjE7bWF4aWNsb3VkdjGiAgNNWFiqAgxNYXhpY2xvdWQuVjHKAgxNYXhpY2xvdWRcVjHiAhhNYXhpY2xvdWRcVjFcR1BCTWV0YWRhdGHqAg1NYXhpY2xvdWQ6OlYxYgZwcm90bzM", [file_maxicloud_v1_common, file_buf_validate_validate]);
+export const file_maxicloud_v1_domain: GenFile =
+	/*@__PURE__*/
+	fileDesc(
+		"ChltYXhpY2xvdWQvdjEvZG9tYWluLnByb3RvEgxtYXhpY2xvdWQudjEiHQobTGlzdEF2YWlsYWJsZURvbWFpbnNSZXF1ZXN0Ii8KHExpc3RBdmFpbGFibGVEb21haW5zUmVzcG9uc2USDwoHZG9tYWlucxgBIAMoCSJOCh5DaGVja0RvbWFpbkF2YWlsYWJpbGl0eVJlcXVlc3QSLAoGZG9tYWluGAEgASgLMhQubWF4aWNsb3VkLnYxLkRvbWFpbkIGukgDyAEBIjQKH0NoZWNrRG9tYWluQXZhaWxhYmlsaXR5UmVzcG9uc2USEQoJYXZhaWxhYmxlGAEgASgIMvYBCg1Eb21haW5TZXJ2aWNlEm0KFExpc3RBdmFpbGFibGVEb21haW5zEikubWF4aWNsb3VkLnYxLkxpc3RBdmFpbGFibGVEb21haW5zUmVxdWVzdBoqLm1heGljbG91ZC52MS5MaXN0QXZhaWxhYmxlRG9tYWluc1Jlc3BvbnNlEnYKF0NoZWNrRG9tYWluQXZhaWxhYmlsaXR5EiwubWF4aWNsb3VkLnYxLkNoZWNrRG9tYWluQXZhaWxhYmlsaXR5UmVxdWVzdBotLm1heGljbG91ZC52MS5DaGVja0RvbWFpbkF2YWlsYWJpbGl0eVJlc3BvbnNlQrQBChBjb20ubWF4aWNsb3VkLnYxQgtEb21haW5Qcm90b1ABWkJnaXRodWIuY29tL3NhaXRhbWF1LW1heGltdW0vbWF4aWNsb3VkL2dlbi9tYXhpY2xvdWQvdjE7bWF4aWNsb3VkdjGiAgNNWFiqAgxNYXhpY2xvdWQuVjHKAgxNYXhpY2xvdWRcVjHiAhhNYXhpY2xvdWRcVjFcR1BCTWV0YWRhdGHqAg1NYXhpY2xvdWQ6OlYxYgZwcm90bzM",
+		[file_maxicloud_v1_common, file_buf_validate_validate],
+	);
 
 /**
  * @generated from message maxicloud.v1.ListAvailableDomainsRequest
  */
-export type ListAvailableDomainsRequest = Message<"maxicloud.v1.ListAvailableDomainsRequest"> & {
-};
+export type ListAvailableDomainsRequest =
+	Message<"maxicloud.v1.ListAvailableDomainsRequest"> & {};
 
 /**
  * Describes the message maxicloud.v1.ListAvailableDomainsRequest.
  * Use `create(ListAvailableDomainsRequestSchema)` to create a new message.
  */
-export const ListAvailableDomainsRequestSchema: GenMessage<ListAvailableDomainsRequest> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_domain, 0);
+export const ListAvailableDomainsRequestSchema: GenMessage<ListAvailableDomainsRequest> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_domain, 0);
 
 /**
  * @generated from message maxicloud.v1.ListAvailableDomainsResponse
  */
-export type ListAvailableDomainsResponse = Message<"maxicloud.v1.ListAvailableDomainsResponse"> & {
-  /**
-   * @generated from field: repeated string domains = 1;
-   */
-  domains: string[];
-};
+export type ListAvailableDomainsResponse =
+	Message<"maxicloud.v1.ListAvailableDomainsResponse"> & {
+		/**
+		 * @generated from field: repeated string domains = 1;
+		 */
+		domains: string[];
+	};
 
 /**
  * Describes the message maxicloud.v1.ListAvailableDomainsResponse.
  * Use `create(ListAvailableDomainsResponseSchema)` to create a new message.
  */
-export const ListAvailableDomainsResponseSchema: GenMessage<ListAvailableDomainsResponse> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_domain, 1);
+export const ListAvailableDomainsResponseSchema: GenMessage<ListAvailableDomainsResponse> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_domain, 1);
 
 /**
  * @generated from message maxicloud.v1.CheckDomainAvailabilityRequest
  */
-export type CheckDomainAvailabilityRequest = Message<"maxicloud.v1.CheckDomainAvailabilityRequest"> & {
-  /**
-   * @generated from field: maxicloud.v1.Domain domain = 1;
-   */
-  domain?: Domain | undefined;
-};
+export type CheckDomainAvailabilityRequest =
+	Message<"maxicloud.v1.CheckDomainAvailabilityRequest"> & {
+		/**
+		 * @generated from field: maxicloud.v1.Domain domain = 1;
+		 */
+		domain?: Domain | undefined;
+	};
 
 /**
  * Describes the message maxicloud.v1.CheckDomainAvailabilityRequest.
  * Use `create(CheckDomainAvailabilityRequestSchema)` to create a new message.
  */
-export const CheckDomainAvailabilityRequestSchema: GenMessage<CheckDomainAvailabilityRequest> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_domain, 2);
+export const CheckDomainAvailabilityRequestSchema: GenMessage<CheckDomainAvailabilityRequest> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_domain, 2);
 
 /**
  * @generated from message maxicloud.v1.CheckDomainAvailabilityResponse
  */
-export type CheckDomainAvailabilityResponse = Message<"maxicloud.v1.CheckDomainAvailabilityResponse"> & {
-  /**
-   * @generated from field: bool available = 1;
-   */
-  available: boolean;
-};
+export type CheckDomainAvailabilityResponse =
+	Message<"maxicloud.v1.CheckDomainAvailabilityResponse"> & {
+		/**
+		 * @generated from field: bool available = 1;
+		 */
+		available: boolean;
+	};
 
 /**
  * Describes the message maxicloud.v1.CheckDomainAvailabilityResponse.
  * Use `create(CheckDomainAvailabilityResponseSchema)` to create a new message.
  */
-export const CheckDomainAvailabilityResponseSchema: GenMessage<CheckDomainAvailabilityResponse> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_domain, 3);
+export const CheckDomainAvailabilityResponseSchema: GenMessage<CheckDomainAvailabilityResponse> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_domain, 3);
 
 /**
  * @generated from service maxicloud.v1.DomainService
  */
 export const DomainService: GenService<{
-  /**
-   * @generated from rpc maxicloud.v1.DomainService.ListAvailableDomains
-   */
-  listAvailableDomains: {
-    methodKind: "unary";
-    input: typeof ListAvailableDomainsRequestSchema;
-    output: typeof ListAvailableDomainsResponseSchema;
-  },
-  /**
-   * @generated from rpc maxicloud.v1.DomainService.CheckDomainAvailability
-   */
-  checkDomainAvailability: {
-    methodKind: "unary";
-    input: typeof CheckDomainAvailabilityRequestSchema;
-    output: typeof CheckDomainAvailabilityResponseSchema;
-  },
-}> = /*@__PURE__*/
-  serviceDesc(file_maxicloud_v1_domain, 0);
-
+	/**
+	 * @generated from rpc maxicloud.v1.DomainService.ListAvailableDomains
+	 */
+	listAvailableDomains: {
+		methodKind: "unary";
+		input: typeof ListAvailableDomainsRequestSchema;
+		output: typeof ListAvailableDomainsResponseSchema;
+	};
+	/**
+	 * @generated from rpc maxicloud.v1.DomainService.CheckDomainAvailability
+	 */
+	checkDomainAvailability: {
+		methodKind: "unary";
+		input: typeof CheckDomainAvailabilityRequestSchema;
+		output: typeof CheckDomainAvailabilityResponseSchema;
+	};
+}> = /*@__PURE__*/ serviceDesc(file_maxicloud_v1_domain, 0);

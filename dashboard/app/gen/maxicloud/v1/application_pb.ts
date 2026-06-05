@@ -2,679 +2,731 @@
 // @generated from file maxicloud/v1/application.proto (package maxicloud.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
-import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
+import type { Message } from "@bufbuild/protobuf";
+import type {
+	GenEnum,
+	GenFile,
+	GenMessage,
+	GenService,
+} from "@bufbuild/protobuf/codegenv2";
+import {
+	enumDesc,
+	fileDesc,
+	messageDesc,
+	serviceDesc,
+} from "@bufbuild/protobuf/codegenv2";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
+import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
 import type { Domain, Repository } from "./common_pb";
 import { file_maxicloud_v1_common } from "./common_pb";
-import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file maxicloud/v1/application.proto.
  */
-export const file_maxicloud_v1_application: GenFile = /*@__PURE__*/
-  fileDesc("Ch5tYXhpY2xvdWQvdjEvYXBwbGljYXRpb24ucHJvdG8SDG1heGljbG91ZC52MSK3AgoLQXBwbGljYXRpb24SCgoCaWQYASABKAkSEgoKcHJvamVjdF9pZBgCIAEoCRIMCgRuYW1lGAMgASgJEi8KBnNvdXJjZRgEIAEoCzIfLm1heGljbG91ZC52MS5BcHBsaWNhdGlvblNvdXJjZRIOCgZicmFuY2gYBSABKAkSNQoJY29uZGl0aW9uGAYgASgLMiIubWF4aWNsb3VkLnYxLkFwcGxpY2F0aW9uQ29uZGl0aW9uEgsKA3VybBgHIAEoCRIVCg1vd25lcl91c2VyX2lkGAggASgJEi4KCmNyZWF0ZWRfYXQYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYCiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wImEKEUFwcGxpY2F0aW9uU291cmNlEjQKCnJlcG9zaXRvcnkYASABKAsyGC5tYXhpY2xvdWQudjEuUmVwb3NpdG9yeUIGukgDyAEBEhYKBmJyYW5jaBgDIAEoCUIGukgDyAEBIm0KFEFwcGxpY2F0aW9uQ29uZGl0aW9uEi8KBnN0YXR1cxgBIAEoDjIfLm1heGljbG91ZC52MS5BcHBsaWNhdGlvblN0YXR1cxIkCgZkb21haW4YAiABKAsyFC5tYXhpY2xvdWQudjEuRG9tYWluIoMBChVEb2NrZXJmaWxlQnVpbGRDb25maWcSNgoGc291cmNlGAEgASgOMh4ubWF4aWNsb3VkLnYxLkRvY2tlcmZpbGVTb3VyY2VCBrpIA8gBARIXCg9kb2NrZXJmaWxlX3BhdGgYAiABKAkSGQoRZG9ja2VyZmlsZV9pbmxpbmUYAyABKAkihQEKC0J1aWxkQ29uZmlnEjUKCHN0cmF0ZWd5GAEgASgOMhsubWF4aWNsb3VkLnYxLkJ1aWxkU3RyYXRlZ3lCBrpIA8gBARI/Cgpkb2NrZXJmaWxlGAIgASgLMiMubWF4aWNsb3VkLnYxLkRvY2tlcmZpbGVCdWlsZENvbmZpZ0IGukgDyAEBInkKBkFjY2VzcxIuCgRtb2RlGAEgASgOMhgubWF4aWNsb3VkLnYxLkFjY2Vzc01vZGVCBrpIA8gBARIkCgZkb21haW4YAiABKAsyFC5tYXhpY2xvdWQudjEuRG9tYWluEhkKBHBvcnQYAyABKAVCC7pICBoGGP//AyAAIs0DCg9BcHBsaWNhdGlvblNwZWMSHwoKcHJvamVjdF9pZBgBIAEoCUILukgIyAEBcgOwAQESNwoGc291cmNlGAMgASgLMh8ubWF4aWNsb3VkLnYxLkFwcGxpY2F0aW9uU291cmNlQga6SAPIAQESMAoFYnVpbGQYBCABKAsyGS5tYXhpY2xvdWQudjEuQnVpbGRDb25maWdCBrpIA8gBARIsCgZhY2Nlc3MYBSABKAsyFC5tYXhpY2xvdWQudjEuQWNjZXNzQga6SAPIAQESVgoVZW52aXJvbm1lbnRfdmFyaWFibGVzGAggAygLMjcubWF4aWNsb3VkLnYxLkFwcGxpY2F0aW9uU3BlYy5FbnZpcm9ubWVudFZhcmlhYmxlc0VudHJ5EjsKB3NlY3JldHMYCSADKAsyKi5tYXhpY2xvdWQudjEuQXBwbGljYXRpb25TcGVjLlNlY3JldHNFbnRyeRo7ChlFbnZpcm9ubWVudFZhcmlhYmxlc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEaLgoMU2VjcmV0c0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEiswEKGENyZWF0ZUFwcGxpY2F0aW9uUmVxdWVzdBJDCgRuYW1lGAEgASgJQjW6SDLIAQFyLRABGEAyJ15bQS1aYS16MC05XVstQS1aYS16MC05Xy5dKltBLVphLXowLTldJBIdCghvd25lcl9pZBgCIAEoCUILukgIyAEBcgOwAQESMwoEc3BlYxgDIAEoCzIdLm1heGljbG91ZC52MS5BcHBsaWNhdGlvblNwZWNCBrpIA8gBASLxAQoZQ3JlYXRlQXBwbGljYXRpb25SZXNwb25zZRIuCgthcHBsaWNhdGlvbhgBIAEoCzIZLm1heGljbG91ZC52MS5BcHBsaWNhdGlvbhIiChVpbml0aWFsX2RlcGxveW1lbnRfaWQYAiABKAlIAIgBARIiChppbml0aWFsX2RlcGxveW1lbnRfc3RhcnRlZBgDIAEoCBIlChhpbml0aWFsX2RlcGxveW1lbnRfZXJyb3IYBCABKAlIAYgBAUIYChZfaW5pdGlhbF9kZXBsb3ltZW50X2lkQhsKGV9pbml0aWFsX2RlcGxveW1lbnRfZXJyb3IiNwoVR2V0QXBwbGljYXRpb25SZXF1ZXN0Eh4KDmFwcGxpY2F0aW9uX2lkGAEgASgJQga6SAPIAQEiSAoWR2V0QXBwbGljYXRpb25SZXNwb25zZRIuCgthcHBsaWNhdGlvbhgBIAEoCzIZLm1heGljbG91ZC52MS5BcHBsaWNhdGlvbiI1ChdMaXN0QXBwbGljYXRpb25zUmVxdWVzdBIaCgpwcm9qZWN0X2lkGAEgASgJQga6SAPIAQEiSwoYTGlzdEFwcGxpY2F0aW9uc1Jlc3BvbnNlEi8KDGFwcGxpY2F0aW9ucxgBIAMoCzIZLm1heGljbG91ZC52MS5BcHBsaWNhdGlvbiKfAQoYVXBkYXRlQXBwbGljYXRpb25SZXF1ZXN0Eh4KDmFwcGxpY2F0aW9uX2lkGAEgASgJQga6SAPIAQESFAoEbmFtZRgCIAEoCUIGukgDyAEBEhgKCG93bmVyX2lkGAMgASgJQga6SAPIAQESMwoEc3BlYxgEIAEoCzIdLm1heGljbG91ZC52MS5BcHBsaWNhdGlvblNwZWNCBrpIA8gBASJLChlVcGRhdGVBcHBsaWNhdGlvblJlc3BvbnNlEi4KC2FwcGxpY2F0aW9uGAEgASgLMhkubWF4aWNsb3VkLnYxLkFwcGxpY2F0aW9uIjoKGERlbGV0ZUFwcGxpY2F0aW9uUmVxdWVzdBIeCg5hcHBsaWNhdGlvbl9pZBgBIAEoCUIGukgDyAEBIhsKGURlbGV0ZUFwcGxpY2F0aW9uUmVzcG9uc2UidgoNR2l0UmVwb3NpdG9yeRIKCgJpZBgBIAEoCRIWCg5kZWZhdWx0X2JyYW5jaBgCIAEoCRIQCghicmFuY2hlcxgDIAMoCRIVCg1kZXRlY3RlZF9maWxlGAQgAygJEhgKEGRvY2tlcmZpbGVfcGF0aHMYBSADKAkiHAoaTGlzdEdpdFJlcG9zaXRvcmllc1JlcXVlc3QiUAobTGlzdEdpdFJlcG9zaXRvcmllc1Jlc3BvbnNlEjEKDHJlcG9zaXRvcmllcxgBIAMoCzIbLm1heGljbG91ZC52MS5HaXRSZXBvc2l0b3J5KpsBChFBcHBsaWNhdGlvblN0YXR1cxIiCh5BUFBMSUNBVElPTl9TVEFUVVNfVU5TUEVDSUZJRUQQABIeChpBUFBMSUNBVElPTl9TVEFUVVNfUlVOTklORxABEiIKHkFQUExJQ0FUSU9OX1NUQVRVU19VTkFWQUlMQUJMRRACEh4KGkFQUExJQ0FUSU9OX1NUQVRVU19TVE9QUEVEEAMqeAoKQWNjZXNzTW9kZRIbChdBQ0NFU1NfTU9ERV9VTlNQRUNJRklFRBAAEhYKEkFDQ0VTU19NT0RFX1BVQkxJQxABEhcKE0FDQ0VTU19NT0RFX1BSSVZBVEUQAhIcChhBQ0NFU1NfTU9ERV9NRU1CRVJTX09OTFkQAypOCg1CdWlsZFN0cmF0ZWd5Eh4KGkJVSUxEX1NUUkFURUdZX1VOU1BFQ0lGSUVEEAASHQoZQlVJTERfU1RSQVRFR1lfRE9DS0VSRklMRRABKm8KEERvY2tlcmZpbGVTb3VyY2USIQodRE9DS0VSRklMRV9TT1VSQ0VfVU5TUEVDSUZJRUQQABIaChZET0NLRVJGSUxFX1NPVVJDRV9QQVRIEAESHAoYRE9DS0VSRklMRV9TT1VSQ0VfSU5MSU5FEAIy8gQKEkFwcGxpY2F0aW9uU2VydmljZRJkChFDcmVhdGVBcHBsaWNhdGlvbhImLm1heGljbG91ZC52MS5DcmVhdGVBcHBsaWNhdGlvblJlcXVlc3QaJy5tYXhpY2xvdWQudjEuQ3JlYXRlQXBwbGljYXRpb25SZXNwb25zZRJbCg5HZXRBcHBsaWNhdGlvbhIjLm1heGljbG91ZC52MS5HZXRBcHBsaWNhdGlvblJlcXVlc3QaJC5tYXhpY2xvdWQudjEuR2V0QXBwbGljYXRpb25SZXNwb25zZRJhChBMaXN0QXBwbGljYXRpb25zEiUubWF4aWNsb3VkLnYxLkxpc3RBcHBsaWNhdGlvbnNSZXF1ZXN0GiYubWF4aWNsb3VkLnYxLkxpc3RBcHBsaWNhdGlvbnNSZXNwb25zZRJkChFVcGRhdGVBcHBsaWNhdGlvbhImLm1heGljbG91ZC52MS5VcGRhdGVBcHBsaWNhdGlvblJlcXVlc3QaJy5tYXhpY2xvdWQudjEuVXBkYXRlQXBwbGljYXRpb25SZXNwb25zZRJkChFEZWxldGVBcHBsaWNhdGlvbhImLm1heGljbG91ZC52MS5EZWxldGVBcHBsaWNhdGlvblJlcXVlc3QaJy5tYXhpY2xvdWQudjEuRGVsZXRlQXBwbGljYXRpb25SZXNwb25zZRJqChNMaXN0R2l0UmVwb3NpdG9yaWVzEigubWF4aWNsb3VkLnYxLkxpc3RHaXRSZXBvc2l0b3JpZXNSZXF1ZXN0GikubWF4aWNsb3VkLnYxLkxpc3RHaXRSZXBvc2l0b3JpZXNSZXNwb25zZUK5AQoQY29tLm1heGljbG91ZC52MUIQQXBwbGljYXRpb25Qcm90b1ABWkJnaXRodWIuY29tL3NhaXRhbWF1LW1heGltdW0vbWF4aWNsb3VkL2dlbi9tYXhpY2xvdWQvdjE7bWF4aWNsb3VkdjGiAgNNWFiqAgxNYXhpY2xvdWQuVjHKAgxNYXhpY2xvdWRcVjHiAhhNYXhpY2xvdWRcVjFcR1BCTWV0YWRhdGHqAg1NYXhpY2xvdWQ6OlYxYgZwcm90bzM", [file_buf_validate_validate, file_google_protobuf_timestamp, file_maxicloud_v1_common]);
+export const file_maxicloud_v1_application: GenFile =
+	/*@__PURE__*/
+	fileDesc(
+		"Ch5tYXhpY2xvdWQvdjEvYXBwbGljYXRpb24ucHJvdG8SDG1heGljbG91ZC52MSK3AgoLQXBwbGljYXRpb24SCgoCaWQYASABKAkSEgoKcHJvamVjdF9pZBgCIAEoCRIMCgRuYW1lGAMgASgJEi8KBnNvdXJjZRgEIAEoCzIfLm1heGljbG91ZC52MS5BcHBsaWNhdGlvblNvdXJjZRIOCgZicmFuY2gYBSABKAkSNQoJY29uZGl0aW9uGAYgASgLMiIubWF4aWNsb3VkLnYxLkFwcGxpY2F0aW9uQ29uZGl0aW9uEgsKA3VybBgHIAEoCRIVCg1vd25lcl91c2VyX2lkGAggASgJEi4KCmNyZWF0ZWRfYXQYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYCiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wImEKEUFwcGxpY2F0aW9uU291cmNlEjQKCnJlcG9zaXRvcnkYASABKAsyGC5tYXhpY2xvdWQudjEuUmVwb3NpdG9yeUIGukgDyAEBEhYKBmJyYW5jaBgDIAEoCUIGukgDyAEBIm0KFEFwcGxpY2F0aW9uQ29uZGl0aW9uEi8KBnN0YXR1cxgBIAEoDjIfLm1heGljbG91ZC52MS5BcHBsaWNhdGlvblN0YXR1cxIkCgZkb21haW4YAiABKAsyFC5tYXhpY2xvdWQudjEuRG9tYWluIoMBChVEb2NrZXJmaWxlQnVpbGRDb25maWcSNgoGc291cmNlGAEgASgOMh4ubWF4aWNsb3VkLnYxLkRvY2tlcmZpbGVTb3VyY2VCBrpIA8gBARIXCg9kb2NrZXJmaWxlX3BhdGgYAiABKAkSGQoRZG9ja2VyZmlsZV9pbmxpbmUYAyABKAkihQEKC0J1aWxkQ29uZmlnEjUKCHN0cmF0ZWd5GAEgASgOMhsubWF4aWNsb3VkLnYxLkJ1aWxkU3RyYXRlZ3lCBrpIA8gBARI/Cgpkb2NrZXJmaWxlGAIgASgLMiMubWF4aWNsb3VkLnYxLkRvY2tlcmZpbGVCdWlsZENvbmZpZ0IGukgDyAEBInkKBkFjY2VzcxIuCgRtb2RlGAEgASgOMhgubWF4aWNsb3VkLnYxLkFjY2Vzc01vZGVCBrpIA8gBARIkCgZkb21haW4YAiABKAsyFC5tYXhpY2xvdWQudjEuRG9tYWluEhkKBHBvcnQYAyABKAVCC7pICBoGGP//AyAAIs0DCg9BcHBsaWNhdGlvblNwZWMSHwoKcHJvamVjdF9pZBgBIAEoCUILukgIyAEBcgOwAQESNwoGc291cmNlGAMgASgLMh8ubWF4aWNsb3VkLnYxLkFwcGxpY2F0aW9uU291cmNlQga6SAPIAQESMAoFYnVpbGQYBCABKAsyGS5tYXhpY2xvdWQudjEuQnVpbGRDb25maWdCBrpIA8gBARIsCgZhY2Nlc3MYBSABKAsyFC5tYXhpY2xvdWQudjEuQWNjZXNzQga6SAPIAQESVgoVZW52aXJvbm1lbnRfdmFyaWFibGVzGAggAygLMjcubWF4aWNsb3VkLnYxLkFwcGxpY2F0aW9uU3BlYy5FbnZpcm9ubWVudFZhcmlhYmxlc0VudHJ5EjsKB3NlY3JldHMYCSADKAsyKi5tYXhpY2xvdWQudjEuQXBwbGljYXRpb25TcGVjLlNlY3JldHNFbnRyeRo7ChlFbnZpcm9ubWVudFZhcmlhYmxlc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEaLgoMU2VjcmV0c0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEiswEKGENyZWF0ZUFwcGxpY2F0aW9uUmVxdWVzdBJDCgRuYW1lGAEgASgJQjW6SDLIAQFyLRABGEAyJ15bQS1aYS16MC05XVstQS1aYS16MC05Xy5dKltBLVphLXowLTldJBIdCghvd25lcl9pZBgCIAEoCUILukgIyAEBcgOwAQESMwoEc3BlYxgDIAEoCzIdLm1heGljbG91ZC52MS5BcHBsaWNhdGlvblNwZWNCBrpIA8gBASLxAQoZQ3JlYXRlQXBwbGljYXRpb25SZXNwb25zZRIuCgthcHBsaWNhdGlvbhgBIAEoCzIZLm1heGljbG91ZC52MS5BcHBsaWNhdGlvbhIiChVpbml0aWFsX2RlcGxveW1lbnRfaWQYAiABKAlIAIgBARIiChppbml0aWFsX2RlcGxveW1lbnRfc3RhcnRlZBgDIAEoCBIlChhpbml0aWFsX2RlcGxveW1lbnRfZXJyb3IYBCABKAlIAYgBAUIYChZfaW5pdGlhbF9kZXBsb3ltZW50X2lkQhsKGV9pbml0aWFsX2RlcGxveW1lbnRfZXJyb3IiNwoVR2V0QXBwbGljYXRpb25SZXF1ZXN0Eh4KDmFwcGxpY2F0aW9uX2lkGAEgASgJQga6SAPIAQEiSAoWR2V0QXBwbGljYXRpb25SZXNwb25zZRIuCgthcHBsaWNhdGlvbhgBIAEoCzIZLm1heGljbG91ZC52MS5BcHBsaWNhdGlvbiI1ChdMaXN0QXBwbGljYXRpb25zUmVxdWVzdBIaCgpwcm9qZWN0X2lkGAEgASgJQga6SAPIAQEiSwoYTGlzdEFwcGxpY2F0aW9uc1Jlc3BvbnNlEi8KDGFwcGxpY2F0aW9ucxgBIAMoCzIZLm1heGljbG91ZC52MS5BcHBsaWNhdGlvbiKfAQoYVXBkYXRlQXBwbGljYXRpb25SZXF1ZXN0Eh4KDmFwcGxpY2F0aW9uX2lkGAEgASgJQga6SAPIAQESFAoEbmFtZRgCIAEoCUIGukgDyAEBEhgKCG93bmVyX2lkGAMgASgJQga6SAPIAQESMwoEc3BlYxgEIAEoCzIdLm1heGljbG91ZC52MS5BcHBsaWNhdGlvblNwZWNCBrpIA8gBASJLChlVcGRhdGVBcHBsaWNhdGlvblJlc3BvbnNlEi4KC2FwcGxpY2F0aW9uGAEgASgLMhkubWF4aWNsb3VkLnYxLkFwcGxpY2F0aW9uIjoKGERlbGV0ZUFwcGxpY2F0aW9uUmVxdWVzdBIeCg5hcHBsaWNhdGlvbl9pZBgBIAEoCUIGukgDyAEBIhsKGURlbGV0ZUFwcGxpY2F0aW9uUmVzcG9uc2UidgoNR2l0UmVwb3NpdG9yeRIKCgJpZBgBIAEoCRIWCg5kZWZhdWx0X2JyYW5jaBgCIAEoCRIQCghicmFuY2hlcxgDIAMoCRIVCg1kZXRlY3RlZF9maWxlGAQgAygJEhgKEGRvY2tlcmZpbGVfcGF0aHMYBSADKAkiHAoaTGlzdEdpdFJlcG9zaXRvcmllc1JlcXVlc3QiUAobTGlzdEdpdFJlcG9zaXRvcmllc1Jlc3BvbnNlEjEKDHJlcG9zaXRvcmllcxgBIAMoCzIbLm1heGljbG91ZC52MS5HaXRSZXBvc2l0b3J5KpsBChFBcHBsaWNhdGlvblN0YXR1cxIiCh5BUFBMSUNBVElPTl9TVEFUVVNfVU5TUEVDSUZJRUQQABIeChpBUFBMSUNBVElPTl9TVEFUVVNfUlVOTklORxABEiIKHkFQUExJQ0FUSU9OX1NUQVRVU19VTkFWQUlMQUJMRRACEh4KGkFQUExJQ0FUSU9OX1NUQVRVU19TVE9QUEVEEAMqeAoKQWNjZXNzTW9kZRIbChdBQ0NFU1NfTU9ERV9VTlNQRUNJRklFRBAAEhYKEkFDQ0VTU19NT0RFX1BVQkxJQxABEhcKE0FDQ0VTU19NT0RFX1BSSVZBVEUQAhIcChhBQ0NFU1NfTU9ERV9NRU1CRVJTX09OTFkQAypOCg1CdWlsZFN0cmF0ZWd5Eh4KGkJVSUxEX1NUUkFURUdZX1VOU1BFQ0lGSUVEEAASHQoZQlVJTERfU1RSQVRFR1lfRE9DS0VSRklMRRABKm8KEERvY2tlcmZpbGVTb3VyY2USIQodRE9DS0VSRklMRV9TT1VSQ0VfVU5TUEVDSUZJRUQQABIaChZET0NLRVJGSUxFX1NPVVJDRV9QQVRIEAESHAoYRE9DS0VSRklMRV9TT1VSQ0VfSU5MSU5FEAIy8gQKEkFwcGxpY2F0aW9uU2VydmljZRJkChFDcmVhdGVBcHBsaWNhdGlvbhImLm1heGljbG91ZC52MS5DcmVhdGVBcHBsaWNhdGlvblJlcXVlc3QaJy5tYXhpY2xvdWQudjEuQ3JlYXRlQXBwbGljYXRpb25SZXNwb25zZRJbCg5HZXRBcHBsaWNhdGlvbhIjLm1heGljbG91ZC52MS5HZXRBcHBsaWNhdGlvblJlcXVlc3QaJC5tYXhpY2xvdWQudjEuR2V0QXBwbGljYXRpb25SZXNwb25zZRJhChBMaXN0QXBwbGljYXRpb25zEiUubWF4aWNsb3VkLnYxLkxpc3RBcHBsaWNhdGlvbnNSZXF1ZXN0GiYubWF4aWNsb3VkLnYxLkxpc3RBcHBsaWNhdGlvbnNSZXNwb25zZRJkChFVcGRhdGVBcHBsaWNhdGlvbhImLm1heGljbG91ZC52MS5VcGRhdGVBcHBsaWNhdGlvblJlcXVlc3QaJy5tYXhpY2xvdWQudjEuVXBkYXRlQXBwbGljYXRpb25SZXNwb25zZRJkChFEZWxldGVBcHBsaWNhdGlvbhImLm1heGljbG91ZC52MS5EZWxldGVBcHBsaWNhdGlvblJlcXVlc3QaJy5tYXhpY2xvdWQudjEuRGVsZXRlQXBwbGljYXRpb25SZXNwb25zZRJqChNMaXN0R2l0UmVwb3NpdG9yaWVzEigubWF4aWNsb3VkLnYxLkxpc3RHaXRSZXBvc2l0b3JpZXNSZXF1ZXN0GikubWF4aWNsb3VkLnYxLkxpc3RHaXRSZXBvc2l0b3JpZXNSZXNwb25zZUK5AQoQY29tLm1heGljbG91ZC52MUIQQXBwbGljYXRpb25Qcm90b1ABWkJnaXRodWIuY29tL3NhaXRhbWF1LW1heGltdW0vbWF4aWNsb3VkL2dlbi9tYXhpY2xvdWQvdjE7bWF4aWNsb3VkdjGiAgNNWFiqAgxNYXhpY2xvdWQuVjHKAgxNYXhpY2xvdWRcVjHiAhhNYXhpY2xvdWRcVjFcR1BCTWV0YWRhdGHqAg1NYXhpY2xvdWQ6OlYxYgZwcm90bzM",
+		[
+			file_buf_validate_validate,
+			file_google_protobuf_timestamp,
+			file_maxicloud_v1_common,
+		],
+	);
 
 /**
  * @generated from message maxicloud.v1.Application
  */
 export type Application = Message<"maxicloud.v1.Application"> & {
-  /**
-   * @generated from field: string id = 1;
-   */
-  id: string;
+	/**
+	 * @generated from field: string id = 1;
+	 */
+	id: string;
 
-  /**
-   * @generated from field: string project_id = 2;
-   */
-  projectId: string;
+	/**
+	 * @generated from field: string project_id = 2;
+	 */
+	projectId: string;
 
-  /**
-   * @generated from field: string name = 3;
-   */
-  name: string;
+	/**
+	 * @generated from field: string name = 3;
+	 */
+	name: string;
 
-  /**
-   * @generated from field: maxicloud.v1.ApplicationSource source = 4;
-   */
-  source?: ApplicationSource | undefined;
+	/**
+	 * @generated from field: maxicloud.v1.ApplicationSource source = 4;
+	 */
+	source?: ApplicationSource | undefined;
 
-  /**
-   * @generated from field: string branch = 5;
-   */
-  branch: string;
+	/**
+	 * @generated from field: string branch = 5;
+	 */
+	branch: string;
 
-  /**
-   * @generated from field: maxicloud.v1.ApplicationCondition condition = 6;
-   */
-  condition?: ApplicationCondition | undefined;
+	/**
+	 * @generated from field: maxicloud.v1.ApplicationCondition condition = 6;
+	 */
+	condition?: ApplicationCondition | undefined;
 
-  /**
-   * @generated from field: string url = 7;
-   */
-  url: string;
+	/**
+	 * @generated from field: string url = 7;
+	 */
+	url: string;
 
-  /**
-   * @generated from field: string owner_user_id = 8;
-   */
-  ownerUserId: string;
+	/**
+	 * @generated from field: string owner_user_id = 8;
+	 */
+	ownerUserId: string;
 
-  /**
-   * @generated from field: google.protobuf.Timestamp created_at = 9;
-   */
-  createdAt?: Timestamp | undefined;
+	/**
+	 * @generated from field: google.protobuf.Timestamp created_at = 9;
+	 */
+	createdAt?: Timestamp | undefined;
 
-  /**
-   * @generated from field: google.protobuf.Timestamp updated_at = 10;
-   */
-  updatedAt?: Timestamp | undefined;
+	/**
+	 * @generated from field: google.protobuf.Timestamp updated_at = 10;
+	 */
+	updatedAt?: Timestamp | undefined;
 };
 
 /**
  * Describes the message maxicloud.v1.Application.
  * Use `create(ApplicationSchema)` to create a new message.
  */
-export const ApplicationSchema: GenMessage<Application> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_application, 0);
+export const ApplicationSchema: GenMessage<Application> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_application, 0);
 
 /**
  * @generated from message maxicloud.v1.ApplicationSource
  */
 export type ApplicationSource = Message<"maxicloud.v1.ApplicationSource"> & {
-  /**
-   * @generated from field: maxicloud.v1.Repository repository = 1;
-   */
-  repository?: Repository | undefined;
+	/**
+	 * @generated from field: maxicloud.v1.Repository repository = 1;
+	 */
+	repository?: Repository | undefined;
 
-  /**
-   * @generated from field: string branch = 3;
-   */
-  branch: string;
+	/**
+	 * @generated from field: string branch = 3;
+	 */
+	branch: string;
 };
 
 /**
  * Describes the message maxicloud.v1.ApplicationSource.
  * Use `create(ApplicationSourceSchema)` to create a new message.
  */
-export const ApplicationSourceSchema: GenMessage<ApplicationSource> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_application, 1);
+export const ApplicationSourceSchema: GenMessage<ApplicationSource> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_application, 1);
 
 /**
  * @generated from message maxicloud.v1.ApplicationCondition
  */
-export type ApplicationCondition = Message<"maxicloud.v1.ApplicationCondition"> & {
-  /**
-   * @generated from field: maxicloud.v1.ApplicationStatus status = 1;
-   */
-  status: ApplicationStatus;
+export type ApplicationCondition =
+	Message<"maxicloud.v1.ApplicationCondition"> & {
+		/**
+		 * @generated from field: maxicloud.v1.ApplicationStatus status = 1;
+		 */
+		status: ApplicationStatus;
 
-  /**
-   * @generated from field: maxicloud.v1.Domain domain = 2;
-   */
-  domain?: Domain | undefined;
-};
+		/**
+		 * @generated from field: maxicloud.v1.Domain domain = 2;
+		 */
+		domain?: Domain | undefined;
+	};
 
 /**
  * Describes the message maxicloud.v1.ApplicationCondition.
  * Use `create(ApplicationConditionSchema)` to create a new message.
  */
-export const ApplicationConditionSchema: GenMessage<ApplicationCondition> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_application, 2);
+export const ApplicationConditionSchema: GenMessage<ApplicationCondition> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_application, 2);
 
 /**
  * @generated from message maxicloud.v1.DockerfileBuildConfig
  */
-export type DockerfileBuildConfig = Message<"maxicloud.v1.DockerfileBuildConfig"> & {
-  /**
-   * @generated from field: maxicloud.v1.DockerfileSource source = 1;
-   */
-  source: DockerfileSource;
+export type DockerfileBuildConfig =
+	Message<"maxicloud.v1.DockerfileBuildConfig"> & {
+		/**
+		 * @generated from field: maxicloud.v1.DockerfileSource source = 1;
+		 */
+		source: DockerfileSource;
 
-  /**
-   * @generated from field: string dockerfile_path = 2;
-   */
-  dockerfilePath: string;
+		/**
+		 * @generated from field: string dockerfile_path = 2;
+		 */
+		dockerfilePath: string;
 
-  /**
-   * @generated from field: string dockerfile_inline = 3;
-   */
-  dockerfileInline: string;
-};
+		/**
+		 * @generated from field: string dockerfile_inline = 3;
+		 */
+		dockerfileInline: string;
+	};
 
 /**
  * Describes the message maxicloud.v1.DockerfileBuildConfig.
  * Use `create(DockerfileBuildConfigSchema)` to create a new message.
  */
-export const DockerfileBuildConfigSchema: GenMessage<DockerfileBuildConfig> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_application, 3);
+export const DockerfileBuildConfigSchema: GenMessage<DockerfileBuildConfig> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_application, 3);
 
 /**
  * @generated from message maxicloud.v1.BuildConfig
  */
 export type BuildConfig = Message<"maxicloud.v1.BuildConfig"> & {
-  /**
-   * @generated from field: maxicloud.v1.BuildStrategy strategy = 1;
-   */
-  strategy: BuildStrategy;
+	/**
+	 * @generated from field: maxicloud.v1.BuildStrategy strategy = 1;
+	 */
+	strategy: BuildStrategy;
 
-  /**
-   * @generated from field: maxicloud.v1.DockerfileBuildConfig dockerfile = 2;
-   */
-  dockerfile?: DockerfileBuildConfig | undefined;
+	/**
+	 * @generated from field: maxicloud.v1.DockerfileBuildConfig dockerfile = 2;
+	 */
+	dockerfile?: DockerfileBuildConfig | undefined;
 };
 
 /**
  * Describes the message maxicloud.v1.BuildConfig.
  * Use `create(BuildConfigSchema)` to create a new message.
  */
-export const BuildConfigSchema: GenMessage<BuildConfig> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_application, 4);
+export const BuildConfigSchema: GenMessage<BuildConfig> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_application, 4);
 
 /**
  * @generated from message maxicloud.v1.Access
  */
 export type Access = Message<"maxicloud.v1.Access"> & {
-  /**
-   * @generated from field: maxicloud.v1.AccessMode mode = 1;
-   */
-  mode: AccessMode;
+	/**
+	 * @generated from field: maxicloud.v1.AccessMode mode = 1;
+	 */
+	mode: AccessMode;
 
-  /**
-   * @generated from field: maxicloud.v1.Domain domain = 2;
-   */
-  domain?: Domain | undefined;
+	/**
+	 * @generated from field: maxicloud.v1.Domain domain = 2;
+	 */
+	domain?: Domain | undefined;
 
-  /**
-   * @generated from field: int32 port = 3;
-   */
-  port: number;
+	/**
+	 * @generated from field: int32 port = 3;
+	 */
+	port: number;
 };
 
 /**
  * Describes the message maxicloud.v1.Access.
  * Use `create(AccessSchema)` to create a new message.
  */
-export const AccessSchema: GenMessage<Access> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_application, 5);
+export const AccessSchema: GenMessage<Access> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_application, 5);
 
 /**
  * @generated from message maxicloud.v1.ApplicationSpec
  */
 export type ApplicationSpec = Message<"maxicloud.v1.ApplicationSpec"> & {
-  /**
-   * @generated from field: string project_id = 1;
-   */
-  projectId: string;
+	/**
+	 * @generated from field: string project_id = 1;
+	 */
+	projectId: string;
 
-  /**
-   * @generated from field: maxicloud.v1.ApplicationSource source = 3;
-   */
-  source?: ApplicationSource | undefined;
+	/**
+	 * @generated from field: maxicloud.v1.ApplicationSource source = 3;
+	 */
+	source?: ApplicationSource | undefined;
 
-  /**
-   * @generated from field: maxicloud.v1.BuildConfig build = 4;
-   */
-  build?: BuildConfig | undefined;
+	/**
+	 * @generated from field: maxicloud.v1.BuildConfig build = 4;
+	 */
+	build?: BuildConfig | undefined;
 
-  /**
-   * @generated from field: maxicloud.v1.Access access = 5;
-   */
-  access?: Access | undefined;
+	/**
+	 * @generated from field: maxicloud.v1.Access access = 5;
+	 */
+	access?: Access | undefined;
 
-  /**
-   * @generated from field: map<string, string> environment_variables = 8;
-   */
-  environmentVariables: { [key: string]: string };
+	/**
+	 * @generated from field: map<string, string> environment_variables = 8;
+	 */
+	environmentVariables: { [key: string]: string };
 
-  /**
-   * @generated from field: map<string, string> secrets = 9;
-   */
-  secrets: { [key: string]: string };
+	/**
+	 * @generated from field: map<string, string> secrets = 9;
+	 */
+	secrets: { [key: string]: string };
 };
 
 /**
  * Describes the message maxicloud.v1.ApplicationSpec.
  * Use `create(ApplicationSpecSchema)` to create a new message.
  */
-export const ApplicationSpecSchema: GenMessage<ApplicationSpec> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_application, 6);
+export const ApplicationSpecSchema: GenMessage<ApplicationSpec> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_application, 6);
 
 /**
  * @generated from message maxicloud.v1.CreateApplicationRequest
  */
-export type CreateApplicationRequest = Message<"maxicloud.v1.CreateApplicationRequest"> & {
-  /**
-   * @generated from field: string name = 1;
-   */
-  name: string;
+export type CreateApplicationRequest =
+	Message<"maxicloud.v1.CreateApplicationRequest"> & {
+		/**
+		 * @generated from field: string name = 1;
+		 */
+		name: string;
 
-  /**
-   * @generated from field: string owner_id = 2;
-   */
-  ownerId: string;
+		/**
+		 * @generated from field: string owner_id = 2;
+		 */
+		ownerId: string;
 
-  /**
-   * @generated from field: maxicloud.v1.ApplicationSpec spec = 3;
-   */
-  spec?: ApplicationSpec | undefined;
-};
+		/**
+		 * @generated from field: maxicloud.v1.ApplicationSpec spec = 3;
+		 */
+		spec?: ApplicationSpec | undefined;
+	};
 
 /**
  * Describes the message maxicloud.v1.CreateApplicationRequest.
  * Use `create(CreateApplicationRequestSchema)` to create a new message.
  */
-export const CreateApplicationRequestSchema: GenMessage<CreateApplicationRequest> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_application, 7);
+export const CreateApplicationRequestSchema: GenMessage<CreateApplicationRequest> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_application, 7);
 
 /**
  * @generated from message maxicloud.v1.CreateApplicationResponse
  */
-export type CreateApplicationResponse = Message<"maxicloud.v1.CreateApplicationResponse"> & {
-  /**
-   * @generated from field: maxicloud.v1.Application application = 1;
-   */
-  application?: Application | undefined;
+export type CreateApplicationResponse =
+	Message<"maxicloud.v1.CreateApplicationResponse"> & {
+		/**
+		 * @generated from field: maxicloud.v1.Application application = 1;
+		 */
+		application?: Application | undefined;
 
-  /**
-   * @generated from field: optional string initial_deployment_id = 2;
-   */
-  initialDeploymentId?: string | undefined;
+		/**
+		 * @generated from field: optional string initial_deployment_id = 2;
+		 */
+		initialDeploymentId?: string | undefined;
 
-  /**
-   * @generated from field: bool initial_deployment_started = 3;
-   */
-  initialDeploymentStarted: boolean;
+		/**
+		 * @generated from field: bool initial_deployment_started = 3;
+		 */
+		initialDeploymentStarted: boolean;
 
-  /**
-   * @generated from field: optional string initial_deployment_error = 4;
-   */
-  initialDeploymentError?: string | undefined;
-};
+		/**
+		 * @generated from field: optional string initial_deployment_error = 4;
+		 */
+		initialDeploymentError?: string | undefined;
+	};
 
 /**
  * Describes the message maxicloud.v1.CreateApplicationResponse.
  * Use `create(CreateApplicationResponseSchema)` to create a new message.
  */
-export const CreateApplicationResponseSchema: GenMessage<CreateApplicationResponse> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_application, 8);
+export const CreateApplicationResponseSchema: GenMessage<CreateApplicationResponse> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_application, 8);
 
 /**
  * @generated from message maxicloud.v1.GetApplicationRequest
  */
-export type GetApplicationRequest = Message<"maxicloud.v1.GetApplicationRequest"> & {
-  /**
-   * @generated from field: string application_id = 1;
-   */
-  applicationId: string;
-};
+export type GetApplicationRequest =
+	Message<"maxicloud.v1.GetApplicationRequest"> & {
+		/**
+		 * @generated from field: string application_id = 1;
+		 */
+		applicationId: string;
+	};
 
 /**
  * Describes the message maxicloud.v1.GetApplicationRequest.
  * Use `create(GetApplicationRequestSchema)` to create a new message.
  */
-export const GetApplicationRequestSchema: GenMessage<GetApplicationRequest> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_application, 9);
+export const GetApplicationRequestSchema: GenMessage<GetApplicationRequest> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_application, 9);
 
 /**
  * @generated from message maxicloud.v1.GetApplicationResponse
  */
-export type GetApplicationResponse = Message<"maxicloud.v1.GetApplicationResponse"> & {
-  /**
-   * @generated from field: maxicloud.v1.Application application = 1;
-   */
-  application?: Application | undefined;
-};
+export type GetApplicationResponse =
+	Message<"maxicloud.v1.GetApplicationResponse"> & {
+		/**
+		 * @generated from field: maxicloud.v1.Application application = 1;
+		 */
+		application?: Application | undefined;
+	};
 
 /**
  * Describes the message maxicloud.v1.GetApplicationResponse.
  * Use `create(GetApplicationResponseSchema)` to create a new message.
  */
-export const GetApplicationResponseSchema: GenMessage<GetApplicationResponse> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_application, 10);
+export const GetApplicationResponseSchema: GenMessage<GetApplicationResponse> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_application, 10);
 
 /**
  * @generated from message maxicloud.v1.ListApplicationsRequest
  */
-export type ListApplicationsRequest = Message<"maxicloud.v1.ListApplicationsRequest"> & {
-  /**
-   * @generated from field: string project_id = 1;
-   */
-  projectId: string;
-};
+export type ListApplicationsRequest =
+	Message<"maxicloud.v1.ListApplicationsRequest"> & {
+		/**
+		 * @generated from field: string project_id = 1;
+		 */
+		projectId: string;
+	};
 
 /**
  * Describes the message maxicloud.v1.ListApplicationsRequest.
  * Use `create(ListApplicationsRequestSchema)` to create a new message.
  */
-export const ListApplicationsRequestSchema: GenMessage<ListApplicationsRequest> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_application, 11);
+export const ListApplicationsRequestSchema: GenMessage<ListApplicationsRequest> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_application, 11);
 
 /**
  * @generated from message maxicloud.v1.ListApplicationsResponse
  */
-export type ListApplicationsResponse = Message<"maxicloud.v1.ListApplicationsResponse"> & {
-  /**
-   * @generated from field: repeated maxicloud.v1.Application applications = 1;
-   */
-  applications: Application[];
-};
+export type ListApplicationsResponse =
+	Message<"maxicloud.v1.ListApplicationsResponse"> & {
+		/**
+		 * @generated from field: repeated maxicloud.v1.Application applications = 1;
+		 */
+		applications: Application[];
+	};
 
 /**
  * Describes the message maxicloud.v1.ListApplicationsResponse.
  * Use `create(ListApplicationsResponseSchema)` to create a new message.
  */
-export const ListApplicationsResponseSchema: GenMessage<ListApplicationsResponse> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_application, 12);
+export const ListApplicationsResponseSchema: GenMessage<ListApplicationsResponse> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_application, 12);
 
 /**
  * @generated from message maxicloud.v1.UpdateApplicationRequest
  */
-export type UpdateApplicationRequest = Message<"maxicloud.v1.UpdateApplicationRequest"> & {
-  /**
-   * @generated from field: string application_id = 1;
-   */
-  applicationId: string;
+export type UpdateApplicationRequest =
+	Message<"maxicloud.v1.UpdateApplicationRequest"> & {
+		/**
+		 * @generated from field: string application_id = 1;
+		 */
+		applicationId: string;
 
-  /**
-   * @generated from field: string name = 2;
-   */
-  name: string;
+		/**
+		 * @generated from field: string name = 2;
+		 */
+		name: string;
 
-  /**
-   * @generated from field: string owner_id = 3;
-   */
-  ownerId: string;
+		/**
+		 * @generated from field: string owner_id = 3;
+		 */
+		ownerId: string;
 
-  /**
-   * @generated from field: maxicloud.v1.ApplicationSpec spec = 4;
-   */
-  spec?: ApplicationSpec | undefined;
-};
+		/**
+		 * @generated from field: maxicloud.v1.ApplicationSpec spec = 4;
+		 */
+		spec?: ApplicationSpec | undefined;
+	};
 
 /**
  * Describes the message maxicloud.v1.UpdateApplicationRequest.
  * Use `create(UpdateApplicationRequestSchema)` to create a new message.
  */
-export const UpdateApplicationRequestSchema: GenMessage<UpdateApplicationRequest> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_application, 13);
+export const UpdateApplicationRequestSchema: GenMessage<UpdateApplicationRequest> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_application, 13);
 
 /**
  * @generated from message maxicloud.v1.UpdateApplicationResponse
  */
-export type UpdateApplicationResponse = Message<"maxicloud.v1.UpdateApplicationResponse"> & {
-  /**
-   * @generated from field: maxicloud.v1.Application application = 1;
-   */
-  application?: Application | undefined;
-};
+export type UpdateApplicationResponse =
+	Message<"maxicloud.v1.UpdateApplicationResponse"> & {
+		/**
+		 * @generated from field: maxicloud.v1.Application application = 1;
+		 */
+		application?: Application | undefined;
+	};
 
 /**
  * Describes the message maxicloud.v1.UpdateApplicationResponse.
  * Use `create(UpdateApplicationResponseSchema)` to create a new message.
  */
-export const UpdateApplicationResponseSchema: GenMessage<UpdateApplicationResponse> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_application, 14);
+export const UpdateApplicationResponseSchema: GenMessage<UpdateApplicationResponse> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_application, 14);
 
 /**
  * @generated from message maxicloud.v1.DeleteApplicationRequest
  */
-export type DeleteApplicationRequest = Message<"maxicloud.v1.DeleteApplicationRequest"> & {
-  /**
-   * @generated from field: string application_id = 1;
-   */
-  applicationId: string;
-};
+export type DeleteApplicationRequest =
+	Message<"maxicloud.v1.DeleteApplicationRequest"> & {
+		/**
+		 * @generated from field: string application_id = 1;
+		 */
+		applicationId: string;
+	};
 
 /**
  * Describes the message maxicloud.v1.DeleteApplicationRequest.
  * Use `create(DeleteApplicationRequestSchema)` to create a new message.
  */
-export const DeleteApplicationRequestSchema: GenMessage<DeleteApplicationRequest> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_application, 15);
+export const DeleteApplicationRequestSchema: GenMessage<DeleteApplicationRequest> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_application, 15);
 
 /**
  * @generated from message maxicloud.v1.DeleteApplicationResponse
  */
-export type DeleteApplicationResponse = Message<"maxicloud.v1.DeleteApplicationResponse"> & {
-};
+export type DeleteApplicationResponse =
+	Message<"maxicloud.v1.DeleteApplicationResponse"> & {};
 
 /**
  * Describes the message maxicloud.v1.DeleteApplicationResponse.
  * Use `create(DeleteApplicationResponseSchema)` to create a new message.
  */
-export const DeleteApplicationResponseSchema: GenMessage<DeleteApplicationResponse> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_application, 16);
+export const DeleteApplicationResponseSchema: GenMessage<DeleteApplicationResponse> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_application, 16);
 
 /**
  * @generated from message maxicloud.v1.GitRepository
  */
 export type GitRepository = Message<"maxicloud.v1.GitRepository"> & {
-  /**
-   * @generated from field: string id = 1;
-   */
-  id: string;
+	/**
+	 * @generated from field: string id = 1;
+	 */
+	id: string;
 
-  /**
-   * @generated from field: string default_branch = 2;
-   */
-  defaultBranch: string;
+	/**
+	 * @generated from field: string default_branch = 2;
+	 */
+	defaultBranch: string;
 
-  /**
-   * @generated from field: repeated string branches = 3;
-   */
-  branches: string[];
+	/**
+	 * @generated from field: repeated string branches = 3;
+	 */
+	branches: string[];
 
-  /**
-   * @generated from field: repeated string detected_file = 4;
-   */
-  detectedFile: string[];
+	/**
+	 * @generated from field: repeated string detected_file = 4;
+	 */
+	detectedFile: string[];
 
-  /**
-   * @generated from field: repeated string dockerfile_paths = 5;
-   */
-  dockerfilePaths: string[];
+	/**
+	 * @generated from field: repeated string dockerfile_paths = 5;
+	 */
+	dockerfilePaths: string[];
 };
 
 /**
  * Describes the message maxicloud.v1.GitRepository.
  * Use `create(GitRepositorySchema)` to create a new message.
  */
-export const GitRepositorySchema: GenMessage<GitRepository> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_application, 17);
+export const GitRepositorySchema: GenMessage<GitRepository> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_application, 17);
 
 /**
  * @generated from message maxicloud.v1.ListGitRepositoriesRequest
  */
-export type ListGitRepositoriesRequest = Message<"maxicloud.v1.ListGitRepositoriesRequest"> & {
-};
+export type ListGitRepositoriesRequest =
+	Message<"maxicloud.v1.ListGitRepositoriesRequest"> & {};
 
 /**
  * Describes the message maxicloud.v1.ListGitRepositoriesRequest.
  * Use `create(ListGitRepositoriesRequestSchema)` to create a new message.
  */
-export const ListGitRepositoriesRequestSchema: GenMessage<ListGitRepositoriesRequest> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_application, 18);
+export const ListGitRepositoriesRequestSchema: GenMessage<ListGitRepositoriesRequest> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_application, 18);
 
 /**
  * @generated from message maxicloud.v1.ListGitRepositoriesResponse
  */
-export type ListGitRepositoriesResponse = Message<"maxicloud.v1.ListGitRepositoriesResponse"> & {
-  /**
-   * @generated from field: repeated maxicloud.v1.GitRepository repositories = 1;
-   */
-  repositories: GitRepository[];
-};
+export type ListGitRepositoriesResponse =
+	Message<"maxicloud.v1.ListGitRepositoriesResponse"> & {
+		/**
+		 * @generated from field: repeated maxicloud.v1.GitRepository repositories = 1;
+		 */
+		repositories: GitRepository[];
+	};
 
 /**
  * Describes the message maxicloud.v1.ListGitRepositoriesResponse.
  * Use `create(ListGitRepositoriesResponseSchema)` to create a new message.
  */
-export const ListGitRepositoriesResponseSchema: GenMessage<ListGitRepositoriesResponse> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_application, 19);
+export const ListGitRepositoriesResponseSchema: GenMessage<ListGitRepositoriesResponse> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_application, 19);
 
 /**
  * @generated from enum maxicloud.v1.ApplicationStatus
  */
 export enum ApplicationStatus {
-  /**
-   * @generated from enum value: APPLICATION_STATUS_UNSPECIFIED = 0;
-   */
-  UNSPECIFIED = 0,
+	/**
+	 * @generated from enum value: APPLICATION_STATUS_UNSPECIFIED = 0;
+	 */
+	UNSPECIFIED = 0,
 
-  /**
-   * @generated from enum value: APPLICATION_STATUS_RUNNING = 1;
-   */
-  RUNNING = 1,
+	/**
+	 * @generated from enum value: APPLICATION_STATUS_RUNNING = 1;
+	 */
+	RUNNING = 1,
 
-  /**
-   * @generated from enum value: APPLICATION_STATUS_UNAVAILABLE = 2;
-   */
-  UNAVAILABLE = 2,
+	/**
+	 * @generated from enum value: APPLICATION_STATUS_UNAVAILABLE = 2;
+	 */
+	UNAVAILABLE = 2,
 
-  /**
-   * @generated from enum value: APPLICATION_STATUS_STOPPED = 3;
-   */
-  STOPPED = 3,
+	/**
+	 * @generated from enum value: APPLICATION_STATUS_STOPPED = 3;
+	 */
+	STOPPED = 3,
 }
 
 /**
  * Describes the enum maxicloud.v1.ApplicationStatus.
  */
-export const ApplicationStatusSchema: GenEnum<ApplicationStatus> = /*@__PURE__*/
-  enumDesc(file_maxicloud_v1_application, 0);
+export const ApplicationStatusSchema: GenEnum<ApplicationStatus> =
+	/*@__PURE__*/
+	enumDesc(file_maxicloud_v1_application, 0);
 
 /**
  * @generated from enum maxicloud.v1.AccessMode
  */
 export enum AccessMode {
-  /**
-   * @generated from enum value: ACCESS_MODE_UNSPECIFIED = 0;
-   */
-  UNSPECIFIED = 0,
+	/**
+	 * @generated from enum value: ACCESS_MODE_UNSPECIFIED = 0;
+	 */
+	UNSPECIFIED = 0,
 
-  /**
-   * @generated from enum value: ACCESS_MODE_PUBLIC = 1;
-   */
-  PUBLIC = 1,
+	/**
+	 * @generated from enum value: ACCESS_MODE_PUBLIC = 1;
+	 */
+	PUBLIC = 1,
 
-  /**
-   * @generated from enum value: ACCESS_MODE_PRIVATE = 2;
-   */
-  PRIVATE = 2,
+	/**
+	 * @generated from enum value: ACCESS_MODE_PRIVATE = 2;
+	 */
+	PRIVATE = 2,
 
-  /**
-   * @generated from enum value: ACCESS_MODE_MEMBERS_ONLY = 3;
-   */
-  MEMBERS_ONLY = 3,
+	/**
+	 * @generated from enum value: ACCESS_MODE_MEMBERS_ONLY = 3;
+	 */
+	MEMBERS_ONLY = 3,
 }
 
 /**
  * Describes the enum maxicloud.v1.AccessMode.
  */
-export const AccessModeSchema: GenEnum<AccessMode> = /*@__PURE__*/
-  enumDesc(file_maxicloud_v1_application, 1);
+export const AccessModeSchema: GenEnum<AccessMode> =
+	/*@__PURE__*/
+	enumDesc(file_maxicloud_v1_application, 1);
 
 /**
  * @generated from enum maxicloud.v1.BuildStrategy
  */
 export enum BuildStrategy {
-  /**
-   * @generated from enum value: BUILD_STRATEGY_UNSPECIFIED = 0;
-   */
-  UNSPECIFIED = 0,
+	/**
+	 * @generated from enum value: BUILD_STRATEGY_UNSPECIFIED = 0;
+	 */
+	UNSPECIFIED = 0,
 
-  /**
-   * @generated from enum value: BUILD_STRATEGY_DOCKERFILE = 1;
-   */
-  DOCKERFILE = 1,
+	/**
+	 * @generated from enum value: BUILD_STRATEGY_DOCKERFILE = 1;
+	 */
+	DOCKERFILE = 1,
 }
 
 /**
  * Describes the enum maxicloud.v1.BuildStrategy.
  */
-export const BuildStrategySchema: GenEnum<BuildStrategy> = /*@__PURE__*/
-  enumDesc(file_maxicloud_v1_application, 2);
+export const BuildStrategySchema: GenEnum<BuildStrategy> =
+	/*@__PURE__*/
+	enumDesc(file_maxicloud_v1_application, 2);
 
 /**
  * @generated from enum maxicloud.v1.DockerfileSource
  */
 export enum DockerfileSource {
-  /**
-   * @generated from enum value: DOCKERFILE_SOURCE_UNSPECIFIED = 0;
-   */
-  UNSPECIFIED = 0,
+	/**
+	 * @generated from enum value: DOCKERFILE_SOURCE_UNSPECIFIED = 0;
+	 */
+	UNSPECIFIED = 0,
 
-  /**
-   * @generated from enum value: DOCKERFILE_SOURCE_PATH = 1;
-   */
-  PATH = 1,
+	/**
+	 * @generated from enum value: DOCKERFILE_SOURCE_PATH = 1;
+	 */
+	PATH = 1,
 
-  /**
-   * @generated from enum value: DOCKERFILE_SOURCE_INLINE = 2;
-   */
-  INLINE = 2,
+	/**
+	 * @generated from enum value: DOCKERFILE_SOURCE_INLINE = 2;
+	 */
+	INLINE = 2,
 }
 
 /**
  * Describes the enum maxicloud.v1.DockerfileSource.
  */
-export const DockerfileSourceSchema: GenEnum<DockerfileSource> = /*@__PURE__*/
-  enumDesc(file_maxicloud_v1_application, 3);
+export const DockerfileSourceSchema: GenEnum<DockerfileSource> =
+	/*@__PURE__*/
+	enumDesc(file_maxicloud_v1_application, 3);
 
 /**
  * @generated from service maxicloud.v1.ApplicationService
  */
 export const ApplicationService: GenService<{
-  /**
-   * @generated from rpc maxicloud.v1.ApplicationService.CreateApplication
-   */
-  createApplication: {
-    methodKind: "unary";
-    input: typeof CreateApplicationRequestSchema;
-    output: typeof CreateApplicationResponseSchema;
-  },
-  /**
-   * @generated from rpc maxicloud.v1.ApplicationService.GetApplication
-   */
-  getApplication: {
-    methodKind: "unary";
-    input: typeof GetApplicationRequestSchema;
-    output: typeof GetApplicationResponseSchema;
-  },
-  /**
-   * @generated from rpc maxicloud.v1.ApplicationService.ListApplications
-   */
-  listApplications: {
-    methodKind: "unary";
-    input: typeof ListApplicationsRequestSchema;
-    output: typeof ListApplicationsResponseSchema;
-  },
-  /**
-   * @generated from rpc maxicloud.v1.ApplicationService.UpdateApplication
-   */
-  updateApplication: {
-    methodKind: "unary";
-    input: typeof UpdateApplicationRequestSchema;
-    output: typeof UpdateApplicationResponseSchema;
-  },
-  /**
-   * @generated from rpc maxicloud.v1.ApplicationService.DeleteApplication
-   */
-  deleteApplication: {
-    methodKind: "unary";
-    input: typeof DeleteApplicationRequestSchema;
-    output: typeof DeleteApplicationResponseSchema;
-  },
-  /**
-   * @generated from rpc maxicloud.v1.ApplicationService.ListGitRepositories
-   */
-  listGitRepositories: {
-    methodKind: "unary";
-    input: typeof ListGitRepositoriesRequestSchema;
-    output: typeof ListGitRepositoriesResponseSchema;
-  },
-}> = /*@__PURE__*/
-  serviceDesc(file_maxicloud_v1_application, 0);
-
+	/**
+	 * @generated from rpc maxicloud.v1.ApplicationService.CreateApplication
+	 */
+	createApplication: {
+		methodKind: "unary";
+		input: typeof CreateApplicationRequestSchema;
+		output: typeof CreateApplicationResponseSchema;
+	};
+	/**
+	 * @generated from rpc maxicloud.v1.ApplicationService.GetApplication
+	 */
+	getApplication: {
+		methodKind: "unary";
+		input: typeof GetApplicationRequestSchema;
+		output: typeof GetApplicationResponseSchema;
+	};
+	/**
+	 * @generated from rpc maxicloud.v1.ApplicationService.ListApplications
+	 */
+	listApplications: {
+		methodKind: "unary";
+		input: typeof ListApplicationsRequestSchema;
+		output: typeof ListApplicationsResponseSchema;
+	};
+	/**
+	 * @generated from rpc maxicloud.v1.ApplicationService.UpdateApplication
+	 */
+	updateApplication: {
+		methodKind: "unary";
+		input: typeof UpdateApplicationRequestSchema;
+		output: typeof UpdateApplicationResponseSchema;
+	};
+	/**
+	 * @generated from rpc maxicloud.v1.ApplicationService.DeleteApplication
+	 */
+	deleteApplication: {
+		methodKind: "unary";
+		input: typeof DeleteApplicationRequestSchema;
+		output: typeof DeleteApplicationResponseSchema;
+	};
+	/**
+	 * @generated from rpc maxicloud.v1.ApplicationService.ListGitRepositories
+	 */
+	listGitRepositories: {
+		methodKind: "unary";
+		input: typeof ListGitRepositoriesRequestSchema;
+		output: typeof ListGitRepositoriesResponseSchema;
+	};
+}> = /*@__PURE__*/ serviceDesc(file_maxicloud_v1_application, 0);

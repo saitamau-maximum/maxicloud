@@ -56,7 +56,7 @@ func (r *workflowRepository) Create(ctx context.Context, deployment domain.Deplo
 		WorkflowID:  deployment.ID,
 		AppID:       spec.ApplicationID,
 		OwnerUserID: spec.OwnerUserID,
-		IsPreview:   spec.PRNumber != nil,
+		IsPreview:   spec.IsPreview(),
 	}.Apply(&cr.ObjectMeta)
 	if err := r.client.Create(ctx, cr); err != nil {
 		return "", fmt.Errorf("create deployment workflow: %w", err)

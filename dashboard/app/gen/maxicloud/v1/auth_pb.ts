@@ -2,60 +2,71 @@
 // @generated from file maxicloud/v1/auth.proto (package maxicloud.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { Message } from "@bufbuild/protobuf";
+import type {
+	GenFile,
+	GenMessage,
+	GenService,
+} from "@bufbuild/protobuf/codegenv2";
+import {
+	fileDesc,
+	messageDesc,
+	serviceDesc,
+} from "@bufbuild/protobuf/codegenv2";
 import type { User } from "./user_pb";
 import { file_maxicloud_v1_user } from "./user_pb";
-import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file maxicloud/v1/auth.proto.
  */
-export const file_maxicloud_v1_auth: GenFile = /*@__PURE__*/
-  fileDesc("ChdtYXhpY2xvdWQvdjEvYXV0aC5wcm90bxIMbWF4aWNsb3VkLnYxIgsKCU1lUmVxdWVzdCIuCgpNZVJlc3BvbnNlEiAKBHVzZXIYASABKAsyEi5tYXhpY2xvdWQudjEuVXNlcjJGCgtBdXRoU2VydmljZRI3CgJNZRIXLm1heGljbG91ZC52MS5NZVJlcXVlc3QaGC5tYXhpY2xvdWQudjEuTWVSZXNwb25zZUKyAQoQY29tLm1heGljbG91ZC52MUIJQXV0aFByb3RvUAFaQmdpdGh1Yi5jb20vc2FpdGFtYXUtbWF4aW11bS9tYXhpY2xvdWQvZ2VuL21heGljbG91ZC92MTttYXhpY2xvdWR2MaICA01YWKoCDE1heGljbG91ZC5WMcoCDE1heGljbG91ZFxWMeICGE1heGljbG91ZFxWMVxHUEJNZXRhZGF0YeoCDU1heGljbG91ZDo6VjFiBnByb3RvMw", [file_maxicloud_v1_user]);
+export const file_maxicloud_v1_auth: GenFile =
+	/*@__PURE__*/
+	fileDesc(
+		"ChdtYXhpY2xvdWQvdjEvYXV0aC5wcm90bxIMbWF4aWNsb3VkLnYxIgsKCU1lUmVxdWVzdCIuCgpNZVJlc3BvbnNlEiAKBHVzZXIYASABKAsyEi5tYXhpY2xvdWQudjEuVXNlcjJGCgtBdXRoU2VydmljZRI3CgJNZRIXLm1heGljbG91ZC52MS5NZVJlcXVlc3QaGC5tYXhpY2xvdWQudjEuTWVSZXNwb25zZUKyAQoQY29tLm1heGljbG91ZC52MUIJQXV0aFByb3RvUAFaQmdpdGh1Yi5jb20vc2FpdGFtYXUtbWF4aW11bS9tYXhpY2xvdWQvZ2VuL21heGljbG91ZC92MTttYXhpY2xvdWR2MaICA01YWKoCDE1heGljbG91ZC5WMcoCDE1heGljbG91ZFxWMeICGE1heGljbG91ZFxWMVxHUEJNZXRhZGF0YeoCDU1heGljbG91ZDo6VjFiBnByb3RvMw",
+		[file_maxicloud_v1_user],
+	);
 
 /**
  * @generated from message maxicloud.v1.MeRequest
  */
-export type MeRequest = Message<"maxicloud.v1.MeRequest"> & {
-};
+export type MeRequest = Message<"maxicloud.v1.MeRequest"> & {};
 
 /**
  * Describes the message maxicloud.v1.MeRequest.
  * Use `create(MeRequestSchema)` to create a new message.
  */
-export const MeRequestSchema: GenMessage<MeRequest> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_auth, 0);
+export const MeRequestSchema: GenMessage<MeRequest> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_auth, 0);
 
 /**
  * @generated from message maxicloud.v1.MeResponse
  */
 export type MeResponse = Message<"maxicloud.v1.MeResponse"> & {
-  /**
-   * @generated from field: maxicloud.v1.User user = 1;
-   */
-  user?: User | undefined;
+	/**
+	 * @generated from field: maxicloud.v1.User user = 1;
+	 */
+	user?: User | undefined;
 };
 
 /**
  * Describes the message maxicloud.v1.MeResponse.
  * Use `create(MeResponseSchema)` to create a new message.
  */
-export const MeResponseSchema: GenMessage<MeResponse> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_auth, 1);
+export const MeResponseSchema: GenMessage<MeResponse> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_auth, 1);
 
 /**
  * @generated from service maxicloud.v1.AuthService
  */
 export const AuthService: GenService<{
-  /**
-   * @generated from rpc maxicloud.v1.AuthService.Me
-   */
-  me: {
-    methodKind: "unary";
-    input: typeof MeRequestSchema;
-    output: typeof MeResponseSchema;
-  },
-}> = /*@__PURE__*/
-  serviceDesc(file_maxicloud_v1_auth, 0);
-
+	/**
+	 * @generated from rpc maxicloud.v1.AuthService.Me
+	 */
+	me: {
+		methodKind: "unary";
+		input: typeof MeRequestSchema;
+		output: typeof MeResponseSchema;
+	};
+}> = /*@__PURE__*/ serviceDesc(file_maxicloud_v1_auth, 0);
