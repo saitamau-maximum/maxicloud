@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/sha1"
 	"fmt"
-	"maps"
 	"regexp"
 	"strings"
 
@@ -15,6 +14,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -181,11 +181,8 @@ func (r *applicationRepository) CreatePreviewApplication(ctx context.Context, or
 	var existing maxicloudv1alpha1.Application
 	key := client.ObjectKey{Name: previewName, Namespace: namespace}
 	if err := r.Get(ctx, key, &existing); err == nil {
-		updated := existing.DeepCopy()
-		updated.Labels = previewLabelsWithExistingID(existing.Labels[labelApplicationID], desired.Labels)
-		updated.Annotations = desired.Annotations
-		updated.Spec = desired.Spec
-		if err := r.Update(ctx, updated); err != nil {
+		updated, err := r.updatePreviewApplication(ctx, key, desired)
+		if err != nil {
 			return nil, fmt.Errorf("update preview application: %w", err)
 		}
 		return crToApplication(updated), nil
@@ -200,11 +197,8 @@ func (r *applicationRepository) CreatePreviewApplication(ctx context.Context, or
 		if err := r.Get(ctx, key, &existing); err != nil {
 			return nil, fmt.Errorf("get preview application after already exists: %w", err)
 		}
-		updated := existing.DeepCopy()
-		updated.Labels = previewLabelsWithExistingID(existing.Labels[labelApplicationID], desired.Labels)
-		updated.Annotations = desired.Annotations
-		updated.Spec = desired.Spec
-		if err := r.Update(ctx, updated); err != nil {
+		updated, err := r.updatePreviewApplication(ctx, key, desired)
+		if err != nil {
 			return nil, fmt.Errorf("update preview application after already exists: %w", err)
 		}
 		return crToApplication(updated), nil
@@ -250,13 +244,50 @@ func buildPreviewApplicationCR(orig maxicloudv1alpha1.Application, namespace, pr
 	}
 }
 
-func previewLabelsWithExistingID(existingID string, desired map[string]string) map[string]string {
-	labels := make(map[string]string, len(desired))
-	maps.Copy(labels, desired)
-	if existingID != "" {
-		labels[labelApplicationID] = existingID
+func (r *applicationRepository) updatePreviewApplication(ctx context.Context, key client.ObjectKey, desired *maxicloudv1alpha1.Application) (*maxicloudv1alpha1.Application, error) {
+	var updated maxicloudv1alpha1.Application
+	err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		var current maxicloudv1alpha1.Application
+		if err := r.Get(ctx, key, &current); err != nil {
+			return err
+		}
+
+		base := current.DeepCopy()
+		mergePreviewApplication(&current, desired)
+		if err := r.Patch(ctx, &current, client.MergeFrom(base)); err != nil {
+			return err
+		}
+		updated = current
+		return nil
+	})
+	if err != nil {
+		return nil, err
 	}
-	return labels
+	return &updated, nil
+}
+
+func mergePreviewApplication(current, desired *maxicloudv1alpha1.Application) {
+	existingID := ""
+	if current.Labels != nil {
+		existingID = current.Labels[labelApplicationID]
+	} else {
+		current.Labels = map[string]string{}
+	}
+	for k, v := range desired.Labels {
+		current.Labels[k] = v
+	}
+	if existingID != "" {
+		current.Labels[labelApplicationID] = existingID
+	}
+
+	if current.Annotations == nil {
+		current.Annotations = map[string]string{}
+	}
+	for k, v := range desired.Annotations {
+		current.Annotations[k] = v
+	}
+
+	current.Spec = desired.Spec
 }
 
 func crToApplication(app *maxicloudv1alpha1.Application) *domain.Application {
