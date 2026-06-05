@@ -69,7 +69,7 @@ run = "{{vars.kubectl}} rollout restart deployment maxicloud-controller-manager 
 [tasks.release]
 description = "Full build and deploy"
 run = [
- { task = "manifests" },
+  { task = "manifests" },
   { task = "generate" },
   { task = "buf:generate" },
   { task = "docker:build" },

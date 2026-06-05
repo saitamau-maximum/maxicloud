@@ -38,7 +38,15 @@ func runController(cmd *cobra.Command, args []string) error {
 	}
 	ghClient := github.NewClient(cfg.GitHubAppID, privateKey, cfg.InstallationID)
 
-	pool, err := postgres.NewPool(cmd.Context(), fmt.Sprintf("postgresql://%s:%s@%s:%d/%s", cfg.PostgreSQLUser, cfg.PostgreSQLPassword, cfg.PostgreSQLHost, cfg.PostgreSQLPort, cfg.PostgreSQLDB))
+	dsn := fmt.Sprintf(
+		"postgresql://%s:%s@%s:%d/%s",
+		cfg.PostgreSQLUser,
+		cfg.PostgreSQLPassword,
+		cfg.PostgreSQLHost,
+		cfg.PostgreSQLPort,
+		cfg.PostgreSQLDB,
+	)
+	pool, err := postgres.NewPool(cmd.Context(), dsn)
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}

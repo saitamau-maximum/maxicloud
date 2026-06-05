@@ -93,7 +93,7 @@ func (r *projectRepository) Update(ctx context.Context, params domain.UpdateProj
 		}
 		ns.Annotations[meta.AnnotationUpdatedAt] = params.UpdatedAt.Format(time.RFC3339)
 
-		return r.Client.Patch(ctx, &ns, client.MergeFrom(base))
+		return r.Patch(ctx, &ns, client.MergeFrom(base))
 	})
 }
 

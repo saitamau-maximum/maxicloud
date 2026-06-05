@@ -50,7 +50,7 @@ func (s *logStreamer) StreamLines(ctx context.Context, opts logStreamOptions) (<
 	context.AfterFunc(ctx, func() { _ = raw.Close() })
 
 	go func() {
-		defer raw.Close()
+		defer func() { _ = raw.Close() }()
 		defer close(lines)
 		defer close(errs)
 
