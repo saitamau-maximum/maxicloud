@@ -76,7 +76,7 @@ func newTestReconciler() *BuildRunReconciler {
 func newTestBuildRun(name, namespace, appName string) *maxicloudv1alpha1.BuildRun {
 	labels := map[string]string{}
 	if appName != "" {
-		labels[applicationLabelKey] = appName
+		labels[appNameLabel] = appName
 	}
 	return &maxicloudv1alpha1.BuildRun{
 		ObjectMeta: metav1.ObjectMeta{
@@ -133,7 +133,7 @@ var _ = Describe("BuildRun Controller", func() {
 			var jobList batchv1.JobList
 			Expect(k8sClient.List(ctx, &jobList,
 				client.InNamespace(ns),
-				client.MatchingLabels{applicationLabelKey: "my-app"},
+				client.MatchingLabels{appNameLabel: "my-app"},
 			)).To(Succeed())
 			Expect(jobList.Items).To(HaveLen(1))
 		})
