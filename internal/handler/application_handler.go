@@ -33,7 +33,7 @@ func (h *ApplicationHandler) CreateApplication(ctx context.Context, req *v1.Crea
 		Spec:    spec,
 	})
 	if err != nil {
-		return nil, toConnectError(err)
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return &v1.CreateApplicationResponse{
 		Application:              toProtoApplication(result.Application),
@@ -78,7 +78,7 @@ func (h *ApplicationHandler) UpdateApplication(ctx context.Context, req *v1.Upda
 		Spec:    spec,
 	})
 	if err != nil {
-		return nil, toConnectError(err)
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return &v1.UpdateApplicationResponse{Application: toProtoApplication(app)}, nil
 }

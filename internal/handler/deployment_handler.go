@@ -35,7 +35,7 @@ func NewDeploymentHandler(
 func (h *DeploymentHandler) RetryDeployment(ctx context.Context, req *v1.RetryDeploymentRequest) (*v1.RetryDeploymentResponse, error) {
 	deploy, err := h.service.Retry(ctx, req.GetDeploymentId())
 	if err != nil {
-		return nil, toConnectError(err)
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	if deploy == nil {
 		return nil, connect.NewError(connect.CodeNotFound, nil)
@@ -46,7 +46,7 @@ func (h *DeploymentHandler) RetryDeployment(ctx context.Context, req *v1.RetryDe
 func (h *DeploymentHandler) GetDeployment(ctx context.Context, req *v1.GetDeploymentRequest) (*v1.GetDeploymentResponse, error) {
 	deploy, err := h.history.Get(ctx, req.GetDeploymentId())
 	if err != nil {
-		return nil, toConnectError(err)
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	if deploy == nil {
 		return nil, connect.NewError(connect.CodeNotFound, nil)
@@ -57,7 +57,7 @@ func (h *DeploymentHandler) GetDeployment(ctx context.Context, req *v1.GetDeploy
 func (h *DeploymentHandler) ListDeployments(ctx context.Context, req *v1.ListDeploymentsRequest) (*v1.ListDeploymentsResponse, error) {
 	deploys, err := h.history.List(ctx, req.GetApplicationId())
 	if err != nil {
-		return nil, toConnectError(err)
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
 	protoDeploys := make([]*v1.Deployment, 0, len(deploys))
@@ -70,7 +70,7 @@ func (h *DeploymentHandler) ListDeployments(ctx context.Context, req *v1.ListDep
 func (h *DeploymentHandler) WatchDeployment(ctx context.Context, req *v1.WatchDeploymentRequest, stream *connect.ServerStream[v1.WatchDeploymentResponse]) error {
 	events, err := h.watcher.WatchDeployment(ctx, req.GetDeploymentId())
 	if err != nil {
-		return toConnectError(err)
+		return connect.NewError(connect.CodeInternal, err)
 	}
 	for event := range events {
 		var protoEvent *v1.WatchDeploymentResponse
@@ -101,7 +101,7 @@ func (h *DeploymentHandler) WatchDeployment(ctx context.Context, req *v1.WatchDe
 			continue
 		}
 		if err := stream.Send(protoEvent); err != nil {
-			return toConnectError(err)
+			return connect.NewError(connect.CodeInternal, err)
 		}
 	}
 	return nil

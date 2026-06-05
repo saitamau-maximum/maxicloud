@@ -25,7 +25,7 @@ func NewUserHandler(svc service.UserService) *UserHandler {
 func (h *UserHandler) GetUser(ctx context.Context, req *v1.GetUserRequest) (*v1.GetUserResponse, error) {
 	user, err := h.service.Get(ctx, req.GetUserId())
 	if err != nil {
-		return nil, toConnectError(err)
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	if user == nil {
 		return nil, connect.NewError(connect.CodeNotFound, nil)
@@ -40,7 +40,7 @@ func (h *UserHandler) GetMe(ctx context.Context, req *v1.GetMeRequest) (*v1.GetM
 	}
 	user, err := h.service.Get(ctx, userID)
 	if err != nil {
-		return nil, toConnectError(err)
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	if user == nil {
 		return nil, connect.NewError(connect.CodeNotFound, nil)
