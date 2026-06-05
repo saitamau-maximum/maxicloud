@@ -1,12 +1,17 @@
+import { redirect } from "react-router";
 import { css } from "styled-system/css";
-import { Button } from "~/components/ui/button";
-import { Panel } from "~/components/ui/panel";
-import { APP_NAME } from "~/constants";
-import { useSession } from "~/hooks/use-session";
+import { env } from "~/utils/env";
+
+export const clientLoader = () => {
+	const redirectTo = `${window.location.origin}/auth/callback`;
+	return redirect(
+		`${env("BASE_URL")}/auth/login?redirect_to=${encodeURIComponent(
+			redirectTo,
+		)}`,
+	);
+};
 
 export default function LoginPage() {
-	const { login } = useSession();
-
 	return (
 		<div
 			className={css({
@@ -18,37 +23,9 @@ export default function LoginPage() {
 				padding: 4,
 			})}
 		>
-			<div
-				className={css({
-					width: "100%",
-					maxWidth: "520px",
-				})}
-			>
-				<Panel>
-					<div>
-						<h1
-							className={css({ margin: 0, fontSize: "2xl", color: "gray.700" })}
-						>
-							{APP_NAME}
-						</h1>
-						<p
-							className={css({
-								marginTop: 1,
-								marginBottom: 0,
-								color: "gray.500",
-								fontSize: "sm",
-							})}
-						>
-							Maximum ID でログインしてください。
-						</p>
-					</div>
-					<div className={css({ display: "flex", gap: 2, marginTop: 2 })}>
-						<Button type="button" variant="primary" onClick={() => login()}>
-							Login with Maximum ID
-						</Button>
-					</div>
-				</Panel>
-			</div>
+			<p className={css({ color: "gray.500", fontSize: "sm" })}>
+				Redirecting to Maximum ID...
+			</p>
 		</div>
 	);
 }

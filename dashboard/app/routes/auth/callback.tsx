@@ -1,20 +1,15 @@
-import { useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router";
+import { redirect } from "react-router";
 import { setToken } from "~/utils/auth";
 
+export const clientLoader = ({ request }: { request: Request }) => {
+	const token = new URL(request.url).searchParams.get("token");
+	if (!token) {
+		return redirect("/login");
+	}
+	setToken(token);
+	return redirect("/");
+};
+
 export default function AuthCallback() {
-	const navigate = useNavigate();
-	const [params] = useSearchParams();
-
-	useEffect(() => {
-		const token = params.get("token");
-		if (token) {
-			setToken(token);
-			navigate("/", { replace: true });
-		} else {
-			navigate("/login", { replace: true });
-		}
-	}, [params, navigate]);
-
 	return null;
 }

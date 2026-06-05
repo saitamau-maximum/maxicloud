@@ -165,11 +165,18 @@ type CreateApplicationParams struct {
 	Spec    ApplicationSpec
 }
 
+type UpdateApplicationParams struct {
+	ID      string
+	Name    string
+	OwnerID string
+	Spec    ApplicationSpec
+}
+
 type ApplicationRepository interface {
 	Create(ctx context.Context, params CreateApplicationParams) (*Application, error)
 	Get(ctx context.Context, id string) (*Application, error)
 	List(ctx context.Context, projectID string) ([]Application, error)
-	Update(ctx context.Context, app Application) error
+	Update(ctx context.Context, params UpdateApplicationParams) error
 	Delete(ctx context.Context, id string) error
 	ListByRepo(ctx context.Context, owner, name, branch string) ([]Application, error)
 	ExistsByDomain(ctx context.Context, domain string) (bool, error)

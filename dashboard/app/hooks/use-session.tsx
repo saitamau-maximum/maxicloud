@@ -1,22 +1,12 @@
-import {
-	createContext,
-	useCallback,
-	useContext,
-	useEffect,
-	useMemo,
-	useState,
-} from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { UserAccount } from "~/repository/user";
 import { clearToken, getToken } from "~/utils/auth";
-import { env } from "~/utils/env";
 import { useRepository } from "./use-repository";
 
 type SessionContextValue = {
 	isReady: boolean;
 	isLoggedIn: boolean;
 	me: UserAccount | null;
-	login: () => void;
-	logout: () => void;
 };
 
 const SessionContext = createContext<SessionContextValue | null>(null);
@@ -57,28 +47,13 @@ export const SessionProvider = ({
 		};
 	}, [userRepository]);
 
-	const login = useCallback(() => {
-		const redirectTo = `${window.location.origin}/auth/callback`;
-		window.location.href = `${env("BASE_URL")}/auth/login?redirect_to=${encodeURIComponent(
-			redirectTo,
-		)}`;
-	}, []);
-
-	const logout = useCallback(() => {
-		clearToken();
-		setMe(null);
-		window.location.href = "/login";
-	}, []);
-
 	const value = useMemo(
 		() => ({
 			isReady,
 			isLoggedIn: !!me,
 			me,
-			login,
-			logout,
 		}),
-		[me, isReady, login, logout],
+		[me, isReady],
 	);
 
 	return (

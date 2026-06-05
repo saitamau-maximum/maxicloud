@@ -140,7 +140,7 @@ func runGateway(cmd *cobra.Command, args []string) error {
 		AllowCredentials: false,
 	}))
 
-	authOpt := connect.WithInterceptors(auth.NewOptionalAuthInterceptor(cfg.SessionSecret))
+	authOpt := connect.WithInterceptors(auth.NewAuthInterceptor(cfg.SessionSecret))
 	mountAll(r,
 		svc(maxicloudv1connect.NewProjectServiceHandler(prjHandler, authOpt)),
 		svc(maxicloudv1connect.NewUserServiceHandler(userHandler, authOpt)),

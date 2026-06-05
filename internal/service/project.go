@@ -51,7 +51,6 @@ type UpdateProjectParams struct {
 	ID          string
 	Name        *string
 	Description *string
-	OwnerID     *string
 }
 
 func (u *projectService) Update(ctx context.Context, params UpdateProjectParams) (*domain.Project, error) {
@@ -59,7 +58,6 @@ func (u *projectService) Update(ctx context.Context, params UpdateProjectParams)
 		ID:          params.ID,
 		Name:        params.Name,
 		Description: params.Description,
-		OwnerID:     params.OwnerID,
 		UpdatedAt:   time.Now(),
 	}); err != nil {
 		return nil, err

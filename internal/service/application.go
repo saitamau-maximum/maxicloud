@@ -122,7 +122,12 @@ func (u *applicationService) Update(ctx context.Context, params UpdateApplicatio
 	existing.Name = params.Name
 	existing.OwnerID = params.OwnerID
 	existing.Source = params.Spec.Source
-	if err := u.appRepo.Update(ctx, *existing); err != nil {
+	if err := u.appRepo.Update(ctx, domain.UpdateApplicationParams{
+		ID:      existing.ID,
+		Name:    existing.Name,
+		OwnerID: existing.OwnerID,
+		Spec:    params.Spec,
+	}); err != nil {
 		return nil, err
 	}
 	return u.appRepo.Get(ctx, params.ID)

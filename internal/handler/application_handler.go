@@ -7,6 +7,7 @@ import (
 	"connectrpc.com/connect"
 	v1 "github.com/saitamau-maximum/maxicloud/gen/maxicloud/v1"
 	"github.com/saitamau-maximum/maxicloud/gen/maxicloud/v1/maxicloudv1connect"
+	"github.com/saitamau-maximum/maxicloud/internal/auth"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
 	"github.com/saitamau-maximum/maxicloud/internal/service"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -28,7 +29,7 @@ func (h *ApplicationHandler) CreateApplication(ctx context.Context, req *v1.Crea
 	}
 	result, err := h.service.Create(ctx, service.CreateApplicationParams{
 		Name:    req.Name,
-		OwnerID: req.OwnerId,
+		OwnerID: auth.UserID(ctx),
 		Spec:    spec,
 	})
 	if err != nil {

@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"time"
 
-	authpkg "github.com/saitamau-maximum/maxicloud/internal/auth"
+	"github.com/saitamau-maximum/maxicloud/internal/auth"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
 )
 
@@ -45,12 +45,12 @@ func (s *authService) Login(ctx context.Context, redirectTo string) (string, str
 		return "", "", err
 	}
 
-	nonce, err := authpkg.GenerateNonce()
+	nonce, err := auth.GenerateNonce()
 	if err != nil {
 		return "", "", fmt.Errorf("failed to generate nonce: %w", err)
 	}
 
-	stateToken, err := authpkg.IssueStateToken(redirectTo, nonce, s.cfg.SessionSecret, time.Now())
+	stateToken, err := auth.IssueStateToken(redirectTo, nonce, s.cfg.SessionSecret, time.Now())
 	if err != nil {
 		return "", "", fmt.Errorf("failed to sign state token: %w", err)
 	}
@@ -63,7 +63,7 @@ func (s *authService) Callback(ctx context.Context, code, stateToken string) (*C
 		return nil, fmt.Errorf("authorization code is required")
 	}
 
-	state, err := authpkg.ParseStateToken(stateToken, s.cfg.SessionSecret)
+	state, err := auth.ParseStateToken(stateToken, s.cfg.SessionSecret)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +99,7 @@ func (s *authService) Callback(ctx context.Context, code, stateToken string) (*C
 		return nil, fmt.Errorf("failed to upsert user: %w", err)
 	}
 
-	sessionToken, err := authpkg.IssueSessionToken(user.ID, s.cfg.SessionSecret, time.Now())
+	sessionToken, err := auth.IssueSessionToken(user.ID, s.cfg.SessionSecret, time.Now())
 	if err != nil {
 		return nil, fmt.Errorf("failed to issue session token: %w", err)
 	}

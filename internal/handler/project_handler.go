@@ -6,6 +6,7 @@ import (
 	"connectrpc.com/connect"
 	v1 "github.com/saitamau-maximum/maxicloud/gen/maxicloud/v1"
 	"github.com/saitamau-maximum/maxicloud/gen/maxicloud/v1/maxicloudv1connect"
+	"github.com/saitamau-maximum/maxicloud/internal/auth"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
 	"github.com/saitamau-maximum/maxicloud/internal/service"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -21,7 +22,7 @@ func NewProjectHandler(svc service.ProjectService) *ProjectHandler {
 }
 
 func (h *ProjectHandler) CreateProject(ctx context.Context, req *v1.CreateProjectRequest) (*v1.CreateProjectResponse, error) {
-	project, err := h.service.Create(ctx, req.Name, req.Description, req.OwnerUserId)
+	project, err := h.service.Create(ctx, req.Name, req.Description, auth.UserID(ctx))
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -56,7 +57,6 @@ func (h *ProjectHandler) UpdateProject(ctx context.Context, req *v1.UpdateProjec
 		ID:          req.ProjectId,
 		Name:        req.Name,
 		Description: req.Description,
-		OwnerID:     req.OwnerUserId,
 	})
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
