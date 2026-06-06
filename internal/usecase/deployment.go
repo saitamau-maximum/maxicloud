@@ -167,7 +167,7 @@ func (s *deploymentService) HandleGitHubEvent(ctx context.Context, event domain.
 			if err := s.pipelineRepo.DeletePipelinesByPR(ctx, app.ID, *event.PRNumber); err != nil {
 				return fmt.Errorf("delete pipelines for preview app %s: %w", app.ID, err)
 			}
-			
+
 			deps, err := s.deployRepo.ListDeploymentsByApplication(ctx, app.ID)
 			if err != nil {
 				return fmt.Errorf("list deployments for preview app %s: %w", app.ID, err)
@@ -177,7 +177,7 @@ func (s *deploymentService) HandleGitHubEvent(ctx context.Context, event domain.
 					return fmt.Errorf("delete deployment %s: %w", d.ID, err)
 				}
 			}
-			
+
 			if err := s.appRepo.DeleteApplication(ctx, app.ID); err != nil {
 				return fmt.Errorf("delete preview application %s: %w", app.ID, err)
 			}
@@ -206,7 +206,7 @@ func (s *deploymentService) handleRepoDeploymentEvent(ctx context.Context, event
 				return fmt.Errorf("create deployment for application %s: %w", app.ID, err)
 			}
 		} else {
-			
+
 			previewAppID := uuid.New().String()
 			previewApp, err := s.appRepo.CreatePreviewApplication(ctx, app.ID, *prNumber, previewAppID)
 			if err != nil {
