@@ -38,21 +38,6 @@ var gatewayCmd = &cobra.Command{
 	RunE:  runGateway,
 }
 
-type connectSvc struct {
-	path    string
-	handler http.Handler
-}
-
-func svc(path string, h http.Handler) connectSvc {
-	return connectSvc{path, h}
-}
-
-func mountAll(r chi.Router, svcs ...connectSvc) {
-	for _, s := range svcs {
-		r.Mount(s.path, s.handler)
-	}
-}
-
 func runGateway(cmd *cobra.Command, args []string) error {
 	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
 	log := ctrl.Log.WithName("gateway")
@@ -150,12 +135,12 @@ func runGateway(cmd *cobra.Command, args []string) error {
 
 	authOpt := connect.WithInterceptors(auth.NewAuthInterceptor(cfg.SessionSecret))
 	mountAll(r,
-		svc(maxicloudv1connect.NewProjectServiceHandler(prjHandler, authOpt)),
-		svc(maxicloudv1connect.NewUserServiceHandler(userHandler, authOpt)),
-		svc(maxicloudv1connect.NewApplicationServiceHandler(appHandler, authOpt)),
-		svc(maxicloudv1connect.NewDeploymentServiceHandler(deployHandler, authOpt)),
-		svc(maxicloudv1connect.NewGitHubServiceHandler(ghHandler, authOpt)),
-		svc(maxicloudv1connect.NewDomainServiceHandler(domainHandler, authOpt)),
+		route(maxicloudv1connect.NewProjectServiceHandler(prjHandler, authOpt)),
+		route(maxicloudv1connect.NewUserServiceHandler(userHandler, authOpt)),
+		route(maxicloudv1connect.NewApplicationServiceHandler(appHandler, authOpt)),
+		route(maxicloudv1connect.NewDeploymentServiceHandler(deployHandler, authOpt)),
+		route(maxicloudv1connect.NewGitHubServiceHandler(ghHandler, authOpt)),
+		route(maxicloudv1connect.NewDomainServiceHandler(domainHandler, authOpt)),
 	)
 
 	r.Get("/auth/login", authHandler.Login)
@@ -186,4 +171,19 @@ func runGateway(cmd *cobra.Command, args []string) error {
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	return srv.Shutdown(shutdownCtx)
+}
+
+type connectRoute struct {
+	path    string
+	handler http.Handler
+}
+
+func route(path string, handler http.Handler) connectRoute {
+	return connectRoute{path: path, handler: handler}
+}
+
+func mountAll(r chi.Router, routes ...connectRoute) {
+	for _, route := range routes {
+		r.Mount(route.path, route.handler)
+	}
 }
