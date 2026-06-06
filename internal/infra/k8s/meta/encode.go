@@ -34,6 +34,7 @@ func TruncateLabelValue(raw string) string {
 	return raw[:maxLabelLen]
 }
 
+// Kubernetes Label では 英数字、ドット、アンダースコア、ハイフン以外は使用できないため、ブランチ名を正規化する。
 func NormalizeBranchForLabel(branch string) string {
 	const hashBytes = 4
 
