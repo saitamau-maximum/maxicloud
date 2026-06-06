@@ -14,13 +14,13 @@ import (
 )
 
 type projectRepository struct {
-	client.Client
+	client client.Client
 }
 
 var _ domain.ProjectRepository = (*projectRepository)(nil)
 
 func NewProjectRepository(c client.Client) domain.ProjectRepository {
-	return &projectRepository{Client: c}
+	return &projectRepository{client: c}
 }
 
 func (r *projectRepository) Create(ctx context.Context, project domain.Project) (string, error) {
@@ -36,7 +36,7 @@ func (r *projectRepository) Create(ctx context.Context, project domain.Project) 
 		CreatedAt:   project.CreatedAt,
 		UpdatedAt:   project.UpdatedAt,
 	}.Apply(&ns.ObjectMeta)
-	if err := r.Client.Create(ctx, ns); err != nil {
+	if err := r.client.Create(ctx, ns); err != nil {
 		return "", fmt.Errorf("create namespace: %w", err)
 	}
 	return meta.ProjectIDFromNamespace(ns.Name), nil
@@ -44,7 +44,7 @@ func (r *projectRepository) Create(ctx context.Context, project domain.Project) 
 
 func (r *projectRepository) Get(ctx context.Context, id string) (*domain.Project, error) {
 	var ns corev1.Namespace
-	if err := r.Client.Get(ctx, client.ObjectKey{Name: meta.ProjectNamespace(id)}, &ns); err != nil {
+	if err := r.client.Get(ctx, client.ObjectKey{Name: meta.ProjectNamespace(id)}, &ns); err != nil {
 		return nil, client.IgnoreNotFound(err)
 	}
 	return nsToProject(&ns)
@@ -52,7 +52,7 @@ func (r *projectRepository) Get(ctx context.Context, id string) (*domain.Project
 
 func (r *projectRepository) List(ctx context.Context) ([]*domain.Project, error) {
 	var nsList corev1.NamespaceList
-	if err := r.Client.List(ctx, &nsList, meta.SelectProjects()); err != nil {
+	if err := r.client.List(ctx, &nsList, meta.SelectProjects()); err != nil {
 		return nil, fmt.Errorf("list namespaces: %w", err)
 	}
 	projects := make([]*domain.Project, 0, len(nsList.Items))
@@ -69,7 +69,7 @@ func (r *projectRepository) List(ctx context.Context) ([]*domain.Project, error)
 func (r *projectRepository) Update(ctx context.Context, params domain.UpdateProjectParams) error {
 	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
 		var ns corev1.Namespace
-		if err := r.Client.Get(ctx, client.ObjectKey{Name: meta.ProjectNamespace(params.ID)}, &ns); err != nil {
+		if err := r.client.Get(ctx, client.ObjectKey{Name: meta.ProjectNamespace(params.ID)}, &ns); err != nil {
 			return fmt.Errorf("get namespace: %w", err)
 		}
 
@@ -93,13 +93,13 @@ func (r *projectRepository) Update(ctx context.Context, params domain.UpdateProj
 		}
 		ns.Annotations[meta.AnnotationUpdatedAt] = params.UpdatedAt.Format(time.RFC3339)
 
-		return r.Patch(ctx, &ns, client.MergeFrom(base))
+		return r.client.Patch(ctx, &ns, client.MergeFrom(base))
 	})
 }
 
 func (r *projectRepository) Delete(ctx context.Context, id string) error {
 	ns := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: meta.ProjectNamespace(id)}}
-	return client.IgnoreNotFound(r.Client.Delete(ctx, ns))
+	return client.IgnoreNotFound(r.client.Delete(ctx, ns))
 }
 
 func nsToProject(ns *corev1.Namespace) (*domain.Project, error) {

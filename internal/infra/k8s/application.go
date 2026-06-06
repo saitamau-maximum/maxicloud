@@ -18,14 +18,14 @@ import (
 )
 
 type applicationRepository struct {
-	client.Client
+	client           client.Client
 	ingressClassName string
 }
 
 var _ domain.ApplicationRepository = (*applicationRepository)(nil)
 
 func NewApplicationRepository(c client.Client, ingressClassName string) domain.ApplicationRepository {
-	return &applicationRepository{Client: c, ingressClassName: ingressClassName}
+	return &applicationRepository{client: c, ingressClassName: ingressClassName}
 }
 
 func (r *applicationRepository) Create(ctx context.Context, app domain.CreateApplicationParams) (*domain.Application, error) {
@@ -37,7 +37,7 @@ func (r *applicationRepository) Create(ctx context.Context, app domain.CreateApp
 	}
 	applyApplicationMetadata(cr, app.ID, app.Name, app.OwnerID, app.Spec)
 	applyApplicationSpec(&cr.Spec, app.Spec, r.ingressClassName)
-	if err := r.Client.Create(ctx, cr); err != nil {
+	if err := r.client.Create(ctx, cr); err != nil {
 		return nil, fmt.Errorf("create application: %w", err)
 	}
 	return crToApplication(cr), nil
@@ -45,7 +45,7 @@ func (r *applicationRepository) Create(ctx context.Context, app domain.CreateApp
 
 func (r *applicationRepository) Get(ctx context.Context, id string) (*domain.Application, error) {
 	var list maxicloudv1alpha1.ApplicationList
-	if err := r.Client.List(ctx, &list, meta.SelectByAppID(id)); err != nil {
+	if err := r.client.List(ctx, &list, meta.SelectByAppID(id)); err != nil {
 		return nil, fmt.Errorf("list applications: %w", err)
 	}
 	if len(list.Items) == 0 {
@@ -60,7 +60,7 @@ func (r *applicationRepository) List(ctx context.Context, projectID string) ([]d
 	if projectID != "" {
 		opts = append(opts, client.InNamespace(meta.ProjectNamespace(projectID)))
 	}
-	if err := r.Client.List(ctx, &list, opts...); err != nil {
+	if err := r.client.List(ctx, &list, opts...); err != nil {
 		return nil, fmt.Errorf("list applications: %w", err)
 	}
 	apps := make([]domain.Application, 0, len(list.Items))
@@ -72,7 +72,7 @@ func (r *applicationRepository) List(ctx context.Context, projectID string) ([]d
 
 func (r *applicationRepository) Update(ctx context.Context, params domain.UpdateApplicationParams) error {
 	var list maxicloudv1alpha1.ApplicationList
-	if err := r.Client.List(ctx, &list, meta.SelectByAppID(params.ID)); err != nil {
+	if err := r.client.List(ctx, &list, meta.SelectByAppID(params.ID)); err != nil {
 		return fmt.Errorf("list applications: %w", err)
 	}
 	if len(list.Items) == 0 {
@@ -81,23 +81,23 @@ func (r *applicationRepository) Update(ctx context.Context, params domain.Update
 	cr := list.Items[0]
 	applyApplicationMetadata(&cr, params.ID, params.Name, params.OwnerID, params.Spec)
 	applyApplicationSpec(&cr.Spec, params.Spec, r.ingressClassName)
-	return r.Client.Update(ctx, &cr)
+	return r.client.Update(ctx, &cr)
 }
 
 func (r *applicationRepository) Delete(ctx context.Context, id string) error {
 	var list maxicloudv1alpha1.ApplicationList
-	if err := r.Client.List(ctx, &list, meta.SelectByAppID(id)); err != nil {
+	if err := r.client.List(ctx, &list, meta.SelectByAppID(id)); err != nil {
 		return fmt.Errorf("list applications: %w", err)
 	}
 	if len(list.Items) == 0 {
 		return nil
 	}
-	return client.IgnoreNotFound(r.Client.Delete(ctx, &list.Items[0]))
+	return client.IgnoreNotFound(r.client.Delete(ctx, &list.Items[0]))
 }
 
 func (r *applicationRepository) ListByRepo(ctx context.Context, owner, name, branch string) ([]domain.Application, error) {
 	var list maxicloudv1alpha1.ApplicationList
-	if err := r.Client.List(ctx, &list, meta.SelectAppsBySource(owner, name, branch)); err != nil {
+	if err := r.client.List(ctx, &list, meta.SelectAppsBySource(owner, name, branch)); err != nil {
 		return nil, fmt.Errorf("list applications by repo: %w", err)
 	}
 	apps := make([]domain.Application, 0, len(list.Items))
@@ -109,7 +109,7 @@ func (r *applicationRepository) ListByRepo(ctx context.Context, owner, name, bra
 
 func (r *applicationRepository) ExistsByDomain(ctx context.Context, fqdn string) (bool, error) {
 	var list maxicloudv1alpha1.ApplicationList
-	if err := r.Client.List(ctx, &list); err != nil {
+	if err := r.client.List(ctx, &list); err != nil {
 		return false, fmt.Errorf("list applications: %w", err)
 	}
 	for _, cr := range list.Items {
@@ -122,7 +122,7 @@ func (r *applicationRepository) ExistsByDomain(ctx context.Context, fqdn string)
 
 func (r *applicationRepository) CreatePreviewApplication(ctx context.Context, originalApplicationID string, prNumber int, id string) (*domain.Application, error) {
 	var list maxicloudv1alpha1.ApplicationList
-	if err := r.Client.List(ctx, &list, meta.SelectByAppID(originalApplicationID)); err != nil {
+	if err := r.client.List(ctx, &list, meta.SelectByAppID(originalApplicationID)); err != nil {
 		return nil, fmt.Errorf("list original application: %w", err)
 	}
 	if len(list.Items) == 0 {
@@ -139,7 +139,7 @@ func (r *applicationRepository) CreatePreviewApplication(ctx context.Context, or
 
 	var existing maxicloudv1alpha1.Application
 	key := client.ObjectKey{Name: previewName, Namespace: namespace}
-	if err := r.Client.Get(ctx, key, &existing); err == nil {
+	if err := r.client.Get(ctx, key, &existing); err == nil {
 		updated, err := r.updatePreviewApplication(ctx, key, desired)
 		if err != nil {
 			return nil, fmt.Errorf("update preview application: %w", err)
@@ -149,11 +149,11 @@ func (r *applicationRepository) CreatePreviewApplication(ctx context.Context, or
 		return nil, fmt.Errorf("get preview application: %w", err)
 	}
 
-	if err := r.Client.Create(ctx, desired); err != nil {
+	if err := r.client.Create(ctx, desired); err != nil {
 		if !apierrors.IsAlreadyExists(err) {
 			return nil, fmt.Errorf("create preview application: %w", err)
 		}
-		if err := r.Client.Get(ctx, key, &existing); err != nil {
+		if err := r.client.Get(ctx, key, &existing); err != nil {
 			return nil, fmt.Errorf("get preview application after already exists: %w", err)
 		}
 		updated, err := r.updatePreviewApplication(ctx, key, desired)
@@ -207,13 +207,13 @@ func (r *applicationRepository) updatePreviewApplication(ctx context.Context, ke
 	var updated maxicloudv1alpha1.Application
 	err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
 		var current maxicloudv1alpha1.Application
-		if err := r.Client.Get(ctx, key, &current); err != nil {
+		if err := r.client.Get(ctx, key, &current); err != nil {
 			return err
 		}
 
 		base := current.DeepCopy()
 		mergePreviewApplication(&current, desired)
-		if err := r.Patch(ctx, &current, client.MergeFrom(base)); err != nil {
+		if err := r.client.Patch(ctx, &current, client.MergeFrom(base)); err != nil {
 			return err
 		}
 		updated = current
