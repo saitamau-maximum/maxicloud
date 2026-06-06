@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -77,11 +78,13 @@ func (h *GitHubHandler) Callback(w http.ResponseWriter, r *http.Request) {
 func (h *GitHubHandler) Webhook(w http.ResponseWriter, r *http.Request) {
 	payload, err := gh.ValidatePayload(r, []byte(h.config.WebhookSecret))
 	if err != nil {
+		log.Printf("webhook: invalid signature: %v", err)
 		http.Error(w, "invalid signature", http.StatusUnauthorized)
 		return
 	}
 	event, err := gh.ParseWebHook(gh.WebHookType(r), payload)
 	if err != nil {
+		log.Printf("webhook: failed to parse payload: %v", err)
 		http.Error(w, "failed to parse webhook payload", http.StatusBadRequest)
 		return
 	}
@@ -94,9 +97,11 @@ func (h *GitHubHandler) Webhook(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := h.deployService.HandleGitHubEvent(r.Context(), *deployEvent); err != nil {
 		if domain.IsValidationError(err) {
+			log.Printf("webhook: validation error handling event: %v", err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+		log.Printf("webhook: failed to handle deployment event: %v", err)
 		http.Error(w, "failed to handle deployment event", http.StatusInternalServerError)
 		return
 	}
@@ -146,7 +151,7 @@ func toDeploymentEvent(event any) (*domain.DeploymentEvent, bool) {
 				Owner: e.GetRepo().GetOwner().GetLogin(),
 				Name:  e.GetRepo().GetName(),
 			},
-			Branch: pr.GetHead().GetRef(),
+			Branch: pr.GetBase().GetRef(),
 			Commit: domain.Commit{
 				SHA:        pr.GetHead().GetSHA(),
 				Message:    pr.GetTitle(),

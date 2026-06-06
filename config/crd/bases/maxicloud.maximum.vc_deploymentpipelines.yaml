@@ -145,6 +145,11 @@ spec:
                 x-kubernetes-list-map-keys:
                 - type
                 x-kubernetes-list-type: map
+              deploymentSummaryCommentID:
+                description: DeploymentSummaryCommentID is the GitHub PR comment ID
+                  created for this pipeline.
+                format: int64
+                type: integer
               finishedAt:
                 description: FinishedAt is when the pipeline completed.
                 format: date-time

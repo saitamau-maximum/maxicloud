@@ -3,6 +3,7 @@ package k8s
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"regexp"
@@ -156,6 +157,23 @@ func (r *deploymentPipelineRepository) DeleteOldPipelines(ctx context.Context, a
 		}
 	}
 	return nil
+}
+
+func (r *deploymentPipelineRepository) DeletePipelinesByPR(ctx context.Context, applicationID string, prNumber int) error {
+	var list maxicloudv1alpha1.DeploymentPipelineList
+	if err := r.client.List(ctx, &list, client.MatchingLabels{labelAppID: applicationID, labelPreview: strconv.FormatBool(true)}); err != nil {
+		return fmt.Errorf("list deployment pipelines: %w", err)
+	}
+	var errs []error
+	for i := range list.Items {
+		p := &list.Items[i]
+		if p.Spec.PRNumber != nil && *p.Spec.PRNumber == prNumber {
+			if err := client.IgnoreNotFound(r.client.Delete(ctx, p)); err != nil {
+				errs = append(errs, fmt.Errorf("delete pipeline %s: %w", p.Name, err))
+			}
+		}
+	}
+	return errors.Join(errs...)
 }
 
 func filterByPreview(list maxicloudv1alpha1.DeploymentPipelineList, isPreview bool) []maxicloudv1alpha1.DeploymentPipeline {

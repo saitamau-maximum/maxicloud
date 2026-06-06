@@ -84,6 +84,7 @@ type DeploymentPipelineRepository interface {
 	GetPipeline(ctx context.Context, id string) (*DeploymentPipeline, error)
 	DeleteOldPipelines(ctx context.Context, applicationID string, maxHistory int, isPreview bool) error
 	WatchBuildLogs(ctx context.Context, deploymentID string) (io.ReadCloser, error)
+	DeletePipelinesByPR(ctx context.Context, applicationID string, prNumber int) error
 }
 
 type DeploymentEventType string

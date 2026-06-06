@@ -240,6 +240,13 @@ func (r *DeploymentPipelineReconciler) handlePhaseDeploying(ctx context.Context,
 		appDomain = app.Spec.Expose.Domain
 	}
 
+	if pipeline.Spec.PRNumber != nil && appDomain != "" {
+		if err := r.notifyDeploymentSummary(ctx, pipeline, fmt.Sprintf("Preview URL: http://%s:8080", appDomain)); err != nil {
+			// コメント作成/更新失敗はデプロイ成功判定を止めない
+			log.Error(err, "Could not create or update preview comment")
+		}
+	}
+
 	if pipeline.Status.CheckRunID != 0 {
 		if err := r.Reporter.UpdateCommitStatus(ctx, domain.UpdateCommitStatusParams{
 			Owner:      pipeline.Spec.Owner,
@@ -263,6 +270,42 @@ func (r *DeploymentPipelineReconciler) handlePhaseDeploying(ctx context.Context,
 	pipeline.Status.FinishedAt = &now
 	pipeline.Status.Phase = maxicloudv1alpha1.DeploymentPipelinePhaseSucceeded
 	return ctrl.Result{}, r.Status().Patch(ctx, pipeline, client.MergeFrom(base))
+}
+
+func (r *DeploymentPipelineReconciler) notifyDeploymentSummary(ctx context.Context, pipeline *maxicloudv1alpha1.DeploymentPipeline, comment string) error {
+	if pipeline.Status.DeploymentSummaryCommentID != 0 {
+		return r.Reporter.UpdateDeploymentSummary(ctx, domain.UpdateDeploymentSummaryParams{
+			Owner:     pipeline.Spec.Owner,
+			Repo:      pipeline.Spec.Repo,
+			CommentID: pipeline.Status.DeploymentSummaryCommentID,
+			Comment:   comment,
+		})
+	}
+
+	commentID, err := r.Reporter.CreateDeploymentSummary(ctx, domain.CreateDeploymentSummaryParams{
+		Owner:    pipeline.Spec.Owner,
+		Repo:     pipeline.Spec.Repo,
+		PrNumber: *pipeline.Spec.PRNumber,
+		Comment:  comment,
+	})
+	if err != nil {
+		return err
+	}
+	pipeline.Status.DeploymentSummaryCommentID = commentID
+
+	key := types.NamespacedName{Name: pipeline.Name, Namespace: pipeline.Namespace}
+	if err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		var latest maxicloudv1alpha1.DeploymentPipeline
+		if err := r.Get(ctx, key, &latest); err != nil {
+			return err
+		}
+		base := latest.DeepCopy()
+		latest.Status.DeploymentSummaryCommentID = commentID
+		return r.Status().Patch(ctx, &latest, client.MergeFrom(base))
+	}); err != nil {
+		return err
+	}
+	return nil
 }
 
 func newBuildRunForPipeline(pipeline *maxicloudv1alpha1.DeploymentPipeline) *maxicloudv1alpha1.BuildRun {
