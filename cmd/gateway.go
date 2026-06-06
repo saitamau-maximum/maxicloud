@@ -82,7 +82,7 @@ func runGateway(cmd *cobra.Command, args []string) error {
 	historyRepo := postgres.NewDeploymentHistoryRepository(pool)
 	userRepo := postgres.NewUserRepository(pool)
 	logStreamer := k8s.NewLogStreamer(clientset)
-	deployRepo := k8s.NewDeployRepository(k8sClient, logStreamer)
+	deployRepo := k8s.NewDeployRunRepository(k8sClient, logStreamer)
 	srcRepo := github.NewClient(cfg.GitHubAppID, privateKey, cfg.InstallationID)
 	oidcClient := oidc.NewClient(oidc.Config{
 		Issuer:       cfg.OIDCIssuer,

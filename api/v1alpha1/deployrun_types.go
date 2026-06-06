@@ -20,18 +20,18 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type DeploymentPipelinePhase string
+type DeployRunPhase string
 
 const (
-	DeploymentPipelinePhaseQueued    DeploymentPipelinePhase = "Queued"
-	DeploymentPipelinePhaseBuilding  DeploymentPipelinePhase = "Building"
-	DeploymentPipelinePhaseDeploying DeploymentPipelinePhase = "Deploying"
-	DeploymentPipelinePhaseSucceeded DeploymentPipelinePhase = "Succeeded"
-	DeploymentPipelinePhaseFailed    DeploymentPipelinePhase = "Failed"
+	DeployRunPhaseQueued    DeployRunPhase = "Queued"
+	DeployRunPhaseBuilding  DeployRunPhase = "Building"
+	DeployRunPhaseDeploying DeployRunPhase = "Deploying"
+	DeployRunPhaseSucceeded DeployRunPhase = "Succeeded"
+	DeployRunPhaseFailed    DeployRunPhase = "Failed"
 )
 
-// DeploymentPipelineSpec defines the desired state of DeploymentPipeline
-type DeploymentPipelineSpec struct {
+// DeployRunSpec defines the desired state of DeployRun
+type DeployRunSpec struct {
 	// ApplicationName is the name of the Application CR to deploy.
 	// +required
 	ApplicationName string `json:"applicationName"`
@@ -53,12 +53,12 @@ type DeploymentPipelineSpec struct {
 	PRNumber *int `json:"prNumber,omitempty"`
 }
 
-// DeploymentPipelineStatus defines the observed state of DeploymentPipeline.
-type DeploymentPipelineStatus struct {
+// DeployRunStatus defines the observed state of DeployRun.
+type DeployRunStatus struct {
 	// Phase is the current lifecycle phase of the pipeline.
 	// +kubebuilder:validation:Enum=Queued;Building;Deploying;Succeeded;Failed
 	// +optional
-	Phase DeploymentPipelinePhase `json:"phase,omitempty"`
+	Phase DeployRunPhase `json:"phase,omitempty"`
 
 	// CheckRunID is the GitHub Check Run ID created for this pipeline.
 	// +optional
@@ -84,7 +84,7 @@ type DeploymentPipelineStatus struct {
 	// +optional
 	FinishedAt *metav1.Time `json:"finishedAt,omitempty"`
 
-	// Conditions contains the conditions for the DeploymentPipeline.
+	// Conditions contains the conditions for the DeployRun.
 	// +listType=map
 	// +listMapKey=type
 	// +optional
@@ -97,29 +97,29 @@ type DeploymentPipelineStatus struct {
 // +kubebuilder:printcolumn:name="SHA",type="string",JSONPath=".spec.sha"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
-// DeploymentPipeline is the Schema for the deploymentpipelines API
-type DeploymentPipeline struct {
+// DeployRun is the Schema for the deployruns API
+type DeployRun struct {
 	metav1.TypeMeta `json:",inline"`
 
 	// +optional
 	metav1.ObjectMeta `json:"metadata,omitzero"`
 
 	// +required
-	Spec DeploymentPipelineSpec `json:"spec"`
+	Spec DeployRunSpec `json:"spec"`
 
 	// +optional
-	Status DeploymentPipelineStatus `json:"status,omitzero"`
+	Status DeployRunStatus `json:"status,omitzero"`
 }
 
 // +kubebuilder:object:root=true
 
-// DeploymentPipelineList contains a list of DeploymentPipeline
-type DeploymentPipelineList struct {
+// DeployRunList contains a list of DeployRun
+type DeployRunList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitzero"`
-	Items           []DeploymentPipeline `json:"items"`
+	Items           []DeployRun `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&DeploymentPipeline{}, &DeploymentPipelineList{})
+	SchemeBuilder.Register(&DeployRun{}, &DeployRunList{})
 }

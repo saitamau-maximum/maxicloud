@@ -14,17 +14,17 @@ type DeploymentService interface {
 }
 
 type service struct {
-	history  *history
-	workflow domain.DeploymentWorkflowRepository
+	history   *history
+	deployRun domain.DeployRunRepository
 }
 
 func NewDeploymentService(
 	historyRepo domain.DeploymentHistoryRepository,
-	workflowRepo domain.DeploymentWorkflowRepository,
+	deployRunRepo domain.DeployRunRepository,
 ) DeploymentService {
 	return &service{
-		history:  &history{repo: historyRepo},
-		workflow: workflowRepo,
+		history:   &history{repo: historyRepo},
+		deployRun: deployRunRepo,
 	}
 }
 
@@ -34,16 +34,16 @@ func (s *service) Deploy(ctx context.Context, spec domain.DeploymentSpec) (strin
 		return "", err
 	}
 
-	if _, err := s.workflow.Create(ctx, *record); err != nil {
+	if _, err := s.deployRun.Create(ctx, *record); err != nil {
 		if markErr := s.history.MarkFailed(ctx, record.ID); markErr != nil {
-			return "", fmt.Errorf("create workflow: %w (mark failed: %v)", err, markErr)
+			return "", fmt.Errorf("create deploy run: %w (mark failed: %v)", err, markErr)
 		}
-		return "", fmt.Errorf("create workflow: %w", err)
+		return "", fmt.Errorf("create deploy run: %w", err)
 	}
 
-	if err := s.cleanPreviousWorkflows(ctx, spec.ApplicationID, spec.IsPreview()); err != nil {
+	if err := s.cleanPreviousDeployRuns(ctx, spec.ApplicationID, spec.IsPreview()); err != nil {
 		log.Printf(
-			"deployment: failed to clean previous workflows application_id=%s preview=%t: %v",
+			"deployment: failed to clean previous deploy runs application_id=%s preview=%t: %v",
 			spec.ApplicationID,
 			spec.IsPreview(),
 			err,
@@ -74,10 +74,10 @@ const (
 	maxProductionDeployHistory = 3
 )
 
-func (s *service) cleanPreviousWorkflows(ctx context.Context, applicationID string, isPreview bool) error {
+func (s *service) cleanPreviousDeployRuns(ctx context.Context, applicationID string, isPreview bool) error {
 	max := maxProductionDeployHistory
 	if isPreview {
 		max = maxPreviewDeployHistory
 	}
-	return s.workflow.Delete(ctx, applicationID, max, isPreview)
+	return s.deployRun.Delete(ctx, applicationID, max, isPreview)
 }

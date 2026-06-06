@@ -12,7 +12,7 @@ const (
 	LabelSourceRepoOwner = labelPrefix + "source-repo-owner"
 	LabelSourceRepoName  = labelPrefix + "source-repo-name"
 	LabelSourceBranch    = labelPrefix + "source-branch"
-	LabelWorkflowID      = labelPrefix + "workflow-id"
+	LabelDeployRunID     = labelPrefix + "deploy-run-id"
 	LabelPreview         = labelPrefix + "preview"
 	LabelProject         = labelPrefix + "project"
 	LabelProjectName     = labelPrefix + "project-name"

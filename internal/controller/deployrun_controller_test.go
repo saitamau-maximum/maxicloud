@@ -30,7 +30,7 @@ import (
 	maxicloudv1alpha1 "github.com/saitamau-maximum/maxicloud/api/v1alpha1"
 )
 
-var _ = Describe("DeploymentPipeline Controller", func() {
+var _ = Describe("DeployRun Controller", func() {
 	Context("When reconciling a resource", func() {
 		const resourceName = "test-resource"
 
@@ -40,13 +40,13 @@ var _ = Describe("DeploymentPipeline Controller", func() {
 			Name:      resourceName,
 			Namespace: "default", // TODO(user):Modify as needed
 		}
-		deploymentpipeline := &maxicloudv1alpha1.DeploymentPipeline{}
+		deployrun := &maxicloudv1alpha1.DeployRun{}
 
 		BeforeEach(func() {
-			By("creating the custom resource for the Kind DeploymentPipeline")
-			err := k8sClient.Get(ctx, typeNamespacedName, deploymentpipeline)
+			By("creating the custom resource for the Kind DeployRun")
+			err := k8sClient.Get(ctx, typeNamespacedName, deployrun)
 			if err != nil && errors.IsNotFound(err) {
-				resource := &maxicloudv1alpha1.DeploymentPipeline{
+				resource := &maxicloudv1alpha1.DeployRun{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      resourceName,
 						Namespace: "default",
@@ -59,16 +59,16 @@ var _ = Describe("DeploymentPipeline Controller", func() {
 
 		AfterEach(func() {
 			// TODO(user): Cleanup logic after each test, like removing the resource instance.
-			resource := &maxicloudv1alpha1.DeploymentPipeline{}
+			resource := &maxicloudv1alpha1.DeployRun{}
 			err := k8sClient.Get(ctx, typeNamespacedName, resource)
 			Expect(err).NotTo(HaveOccurred())
 
-			By("Cleanup the specific resource instance DeploymentPipeline")
+			By("Cleanup the specific resource instance DeployRun")
 			Expect(k8sClient.Delete(ctx, resource)).To(Succeed())
 		})
 		It("should successfully reconcile the resource", func() {
 			By("Reconciling the created resource")
-			controllerReconciler := &DeploymentPipelineReconciler{
+			controllerReconciler := &DeployRunReconciler{
 				Client:   k8sClient,
 				Scheme:   k8sClient.Scheme(),
 				Reporter: &fakeGitHubClient{},

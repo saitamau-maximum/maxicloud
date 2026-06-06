@@ -11,12 +11,12 @@ metadata:
   labels:
     app.kubernetes.io/name: maxicloud
     app.kubernetes.io/managed-by: kustomize
-  name: deploymentpipeline-editor-role
+  name: deployrun-editor-role
 rules:
 - apiGroups:
   - maxicloud.maximum.vc
   resources:
-  - deploymentpipelines
+  - deployruns
   verbs:
   - create
   - delete
@@ -28,6 +28,6 @@ rules:
 - apiGroups:
   - maxicloud.maximum.vc
   resources:
-  - deploymentpipelines/status
+  - deployruns/status
   verbs:
   - get

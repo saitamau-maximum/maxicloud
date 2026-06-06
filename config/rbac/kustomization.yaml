@@ -22,9 +22,9 @@ resources:
 # default, aiding admins in cluster management. Those roles are
 # not used by the maxicloud itself. You can comment the following lines
 # if you do not want those helpers be installed with your Project.
-- deploymentpipeline_admin_role.yaml
-- deploymentpipeline_editor_role.yaml
-- deploymentpipeline_viewer_role.yaml
+- deployrun_admin_role.yaml
+- deployrun_editor_role.yaml
+- deployrun_viewer_role.yaml
 - buildrun_admin_role.yaml
 - buildrun_editor_role.yaml
 - buildrun_viewer_role.yaml

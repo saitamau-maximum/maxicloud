@@ -32,14 +32,14 @@ type Watcher interface {
 }
 
 type watcher struct {
-	history  History
-	workflow domain.DeploymentWorkflowRepository
+	history   History
+	deployRun domain.DeployRunRepository
 }
 
-func NewWatcher(history History, workflow domain.DeploymentWorkflowRepository) Watcher {
+func NewWatcher(history History, deployRun domain.DeployRunRepository) Watcher {
 	return &watcher{
-		history:  history,
-		workflow: workflow,
+		history:   history,
+		deployRun: deployRun,
 	}
 }
 
@@ -60,7 +60,7 @@ func (w *watcher) WatchDeployment(ctx context.Context, deploymentID string) (<-c
 			close(ch)
 		}()
 
-		if current, err := w.workflow.Get(ctx, deploymentID); err == nil && current != nil {
+		if current, err := w.deployRun.Get(ctx, deploymentID); err == nil && current != nil {
 			deployment.Status = current.Status
 			deployment.FinishedAt = current.FinishedAt
 			if !current.StartedAt.IsZero() {
@@ -84,7 +84,7 @@ func (w *watcher) WatchDeployment(ctx context.Context, deploymentID string) (<-c
 }
 
 func (w *watcher) watchBuildLogStream(ctx context.Context, deploymentID string, ch chan<- DeploymentWatchEvent) {
-	lines, errs, err := w.workflow.Watch(ctx, deploymentID)
+	lines, errs, err := w.deployRun.Watch(ctx, deploymentID)
 	if err != nil {
 		if errors.Is(err, context.Canceled) {
 			return
@@ -130,7 +130,7 @@ func (w *watcher) watchDeploymentStatusLoop(
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			current, err := w.workflow.Get(ctx, deploymentID)
+			current, err := w.deployRun.Get(ctx, deploymentID)
 			if err != nil {
 				sendDeploymentLogChunk(ctx, ch, fmt.Sprintf("[status error] %v", err))
 				continue

@@ -55,11 +55,11 @@ func TestAppMeta_RoundTrip_NoRootDomain(t *testing.T) {
 	}
 }
 
-func TestWorkflowMeta_RoundTrip(t *testing.T) {
+func TestDeployRunMeta_RoundTrip(t *testing.T) {
 	t.Parallel()
 
-	want := WorkflowMeta{
-		WorkflowID:  "wf-1",
+	want := DeployRunMeta{
+		DeployRunID: "dr-1",
 		AppID:       "app-1",
 		OwnerUserID: strings.Repeat("u", 100),
 		IsPreview:   true,
@@ -67,9 +67,9 @@ func TestWorkflowMeta_RoundTrip(t *testing.T) {
 
 	var om metav1.ObjectMeta
 	want.Apply(&om)
-	got := WorkflowMetaFrom(&om)
+	got := DeployRunMetaFrom(&om)
 
 	if got != want {
-		t.Fatalf("WorkflowMetaFrom(Apply(m)) = %+v, want %+v", got, want)
+		t.Fatalf("DeployRunMetaFrom(Apply(m)) = %+v, want %+v", got, want)
 	}
 }

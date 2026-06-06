@@ -56,7 +56,7 @@ rules:
   resources:
   - applications
   - buildruns
-  - deploymentpipelines
+  - deployruns
   verbs:
   - create
   - delete
@@ -70,7 +70,7 @@ rules:
   resources:
   - applications/finalizers
   - buildruns/finalizers
-  - deploymentpipelines/finalizers
+  - deployruns/finalizers
   verbs:
   - update
 - apiGroups:
@@ -78,7 +78,7 @@ rules:
   resources:
   - applications/status
   - buildruns/status
-  - deploymentpipelines/status
+  - deployruns/status
   verbs:
   - get
   - patch

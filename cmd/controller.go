@@ -90,7 +90,7 @@ func runController(cmd *cobra.Command, args []string) error {
 	}).SetupWithManager(mgr); err != nil {
 		return err
 	}
-	if err := (&controller.DeploymentPipelineReconciler{
+	if err := (&controller.DeployRunReconciler{
 		Client:     mgr.GetClient(),
 		Scheme:     mgr.GetScheme(),
 		Reporter:   ghClient,
