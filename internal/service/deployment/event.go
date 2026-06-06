@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
 )
 
@@ -47,15 +48,31 @@ func (s *eventService) handleRepoDeploymentEvent(ctx context.Context, event doma
 	}
 
 	for _, app := range apps {
-		spec := domain.DeploymentSpec{
-			ApplicationID: app.ID,
-			OwnerUserID:   app.OwnerID,
+		if prNumber == nil {
+			if _, err := s.deploySvc.Deploy(ctx, domain.DeploymentSpec{
+				ApplicationID: app.ID,
+				OwnerUserID:   app.OwnerID,
+				Repo:          event.Repo,
+				Commit:        event.Commit,
+				PRNumber:      prNumber,
+			}); err != nil {
+				return fmt.Errorf("create deployment for application %s: %w", app.ID, err)
+			}
+			continue
+		}
+
+		previewApp, err := s.appRepo.CreatePreviewApplication(ctx, app.ID, *prNumber, uuid.New().String())
+		if err != nil {
+			return fmt.Errorf("create preview application for %s: %w", app.ID, err)
+		}
+		if _, err := s.deploySvc.Deploy(ctx, domain.DeploymentSpec{
+			ApplicationID: previewApp.ID,
+			OwnerUserID:   previewApp.OwnerID,
 			Repo:          event.Repo,
 			Commit:        event.Commit,
 			PRNumber:      prNumber,
-		}
-		if _, err := s.deploySvc.Deploy(ctx, spec); err != nil {
-			return fmt.Errorf("create deployment for application %s: %w", app.ID, err)
+		}); err != nil {
+			return fmt.Errorf("create deployment for preview application %s: %w", previewApp.ID, err)
 		}
 	}
 	return nil

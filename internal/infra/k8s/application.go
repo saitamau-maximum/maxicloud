@@ -3,13 +3,17 @@ package k8s
 import (
 	"context"
 	"fmt"
+	"maps"
+	"strings"
 
 	maxicloudv1alpha1 "github.com/saitamau-maximum/maxicloud/api/v1alpha1"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
 	"github.com/saitamau-maximum/maxicloud/internal/infra/k8s/meta"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -114,6 +118,131 @@ func (r *applicationRepository) ExistsByDomain(ctx context.Context, fqdn string)
 		}
 	}
 	return false, nil
+}
+
+func (r *applicationRepository) CreatePreviewApplication(ctx context.Context, originalApplicationID string, prNumber int, id string) (*domain.Application, error) {
+	var list maxicloudv1alpha1.ApplicationList
+	if err := r.Client.List(ctx, &list, meta.SelectByAppID(originalApplicationID)); err != nil {
+		return nil, fmt.Errorf("list original application: %w", err)
+	}
+	if len(list.Items) == 0 {
+		return nil, fmt.Errorf("original application not found: %s", originalApplicationID)
+	}
+	orig := list.Items[0]
+	namespace := orig.Namespace
+
+	previewName := fmt.Sprintf("%s-pr-%d", orig.Name, prNumber)
+	desired := buildPreviewApplicationCR(orig, namespace, previewName, prNumber, id)
+	if desired == nil {
+		return nil, fmt.Errorf("build preview application: nil desired CR")
+	}
+
+	var existing maxicloudv1alpha1.Application
+	key := client.ObjectKey{Name: previewName, Namespace: namespace}
+	if err := r.Client.Get(ctx, key, &existing); err == nil {
+		updated, err := r.updatePreviewApplication(ctx, key, desired)
+		if err != nil {
+			return nil, fmt.Errorf("update preview application: %w", err)
+		}
+		return crToApplication(updated), nil
+	} else if !apierrors.IsNotFound(err) {
+		return nil, fmt.Errorf("get preview application: %w", err)
+	}
+
+	if err := r.Client.Create(ctx, desired); err != nil {
+		if !apierrors.IsAlreadyExists(err) {
+			return nil, fmt.Errorf("create preview application: %w", err)
+		}
+		if err := r.Client.Get(ctx, key, &existing); err != nil {
+			return nil, fmt.Errorf("get preview application after already exists: %w", err)
+		}
+		updated, err := r.updatePreviewApplication(ctx, key, desired)
+		if err != nil {
+			return nil, fmt.Errorf("update preview application after already exists: %w", err)
+		}
+		return crToApplication(updated), nil
+	}
+	return crToApplication(desired), nil
+}
+
+func buildPreviewApplicationCR(orig maxicloudv1alpha1.Application, namespace, previewName string, prNumber int, id string) *maxicloudv1alpha1.Application {
+	newSpec := orig.Spec.DeepCopy()
+	if newSpec.Expose != nil {
+		root := orig.Annotations[meta.AnnotationRootDomain]
+		if root == "" {
+			newSpec.Expose.Domain = fmt.Sprintf("%s-pr-%d", orig.Spec.Expose.Domain, prNumber)
+		} else {
+			fqdn := orig.Spec.Expose.Domain
+			sub := strings.TrimSuffix(fqdn, "."+root)
+			if sub == fqdn {
+				sub = fqdn
+			}
+			newSub := fmt.Sprintf("%s-pr%d", sub, prNumber)
+			newSpec.Expose.Domain = newSub + "." + root
+		}
+	}
+
+	return &maxicloudv1alpha1.Application{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      previewName,
+			Namespace: namespace,
+			Labels: map[string]string{
+				meta.LabelAppID:           id,
+				meta.LabelAppName:         previewName,
+				meta.LabelOwnerUserID:     orig.Labels[meta.LabelOwnerUserID],
+				meta.LabelSourceRepoOwner: orig.Labels[meta.LabelSourceRepoOwner],
+				meta.LabelSourceRepoName:  orig.Labels[meta.LabelSourceRepoName],
+				meta.LabelSourceBranch:    meta.NormalizeBranchForLabel(fmt.Sprintf("pr-%d", prNumber)),
+			},
+			Annotations: map[string]string{
+				meta.AnnotationSourceBranch: fmt.Sprintf("pr-%d", prNumber),
+				meta.AnnotationRootDomain:   orig.Annotations[meta.AnnotationRootDomain],
+			},
+		},
+		Spec: *newSpec,
+	}
+}
+
+func (r *applicationRepository) updatePreviewApplication(ctx context.Context, key client.ObjectKey, desired *maxicloudv1alpha1.Application) (*maxicloudv1alpha1.Application, error) {
+	var updated maxicloudv1alpha1.Application
+	err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		var current maxicloudv1alpha1.Application
+		if err := r.Client.Get(ctx, key, &current); err != nil {
+			return err
+		}
+
+		base := current.DeepCopy()
+		mergePreviewApplication(&current, desired)
+		if err := r.Client.Patch(ctx, &current, client.MergeFrom(base)); err != nil {
+			return err
+		}
+		updated = current
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &updated, nil
+}
+
+func mergePreviewApplication(current, desired *maxicloudv1alpha1.Application) {
+	existingID := ""
+	if current.Labels != nil {
+		existingID = current.Labels[meta.LabelAppID]
+	} else {
+		current.Labels = map[string]string{}
+	}
+	maps.Copy(current.Labels, desired.Labels)
+	if existingID != "" {
+		current.Labels[meta.LabelAppID] = existingID
+	}
+
+	if current.Annotations == nil {
+		current.Annotations = map[string]string{}
+	}
+	maps.Copy(current.Annotations, desired.Annotations)
+
+	current.Spec = desired.Spec
 }
 
 func crToApplication(app *maxicloudv1alpha1.Application) *domain.Application {

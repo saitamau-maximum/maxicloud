@@ -180,4 +180,5 @@ type ApplicationRepository interface {
 	Delete(ctx context.Context, id string) error
 	ListByRepo(ctx context.Context, owner, name, branch string) ([]Application, error)
 	ExistsByDomain(ctx context.Context, domain string) (bool, error)
+	CreatePreviewApplication(ctx context.Context, originalApplicationID string, prNumber int, id string) (*Application, error)
 }

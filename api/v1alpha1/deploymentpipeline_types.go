@@ -64,6 +64,10 @@ type DeploymentPipelineStatus struct {
 	// +optional
 	CheckRunID int64 `json:"checkRunID,omitempty"`
 
+	// DeploymentSummaryCommentID is the GitHub PR comment ID created for this pipeline.
+	// +optional
+	DeploymentSummaryCommentID int64 `json:"deploymentSummaryCommentID,omitempty"`
+
 	// BuildRunRef is the name of the BuildRun CR created for this pipeline.
 	// +optional
 	BuildRunRef string `json:"buildRunRef,omitempty"`
