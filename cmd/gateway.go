@@ -91,6 +91,9 @@ func runGateway(cmd *cobra.Command, args []string) error {
 		RedirectURL:  cfg.OIDCRedirectURL,
 	})
 	allowedRedirects := splitCSV(cfg.AllowedRedirects)
+	if len(allowedRedirects) == 0 {
+		return fmt.Errorf("at least one allowed redirect must be specified")
+	}
 
 	authSvc := service.NewAuthService(service.AuthConfig{
 		SessionSecret:    cfg.SessionSecret,
