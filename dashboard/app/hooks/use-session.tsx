@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { UserAccount } from "~/repository/user";
-import { clearToken, getToken } from "~/utils/auth";
 import { useRepository } from "./use-repository";
 
 type SessionContextValue = {
@@ -24,16 +23,10 @@ export const SessionProvider = ({
 		let cancelled = false;
 
 		const bootstrap = async () => {
-			const token = getToken();
-			if (!token) {
-				if (!cancelled) setIsReady(true);
-				return;
-			}
 			try {
 				const user = await userRepository.getMe();
 				if (!cancelled) setMe(user);
 			} catch {
-				clearToken();
 				if (!cancelled) setMe(null);
 			} finally {
 				if (!cancelled) setIsReady(true);

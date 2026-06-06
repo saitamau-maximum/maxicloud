@@ -51,5 +51,6 @@ type GatewayConfig struct {
 	OIDCClientID     string `env:"OIDC_CLIENT_ID,required"`
 	OIDCClientSecret string `env:"OIDC_CLIENT_SECRET,required"`
 	OIDCRedirectURL  string `env:"OIDC_REDIRECT_URL,required"`
+	AllowedRedirects string `env:"ALLOWED_REDIRECTS" envDefault:"http://localtest.me/auth/callback"`
 	SessionSecret    string `env:"SESSION_SECRET,required"`
 }

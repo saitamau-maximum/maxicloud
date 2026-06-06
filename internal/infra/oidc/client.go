@@ -27,6 +27,8 @@ type Client struct {
 	verifier *coreoidc.IDTokenVerifier
 }
 
+var _ domain.OIDCClient = (*Client)(nil)
+
 func NewClient(cfg Config) *Client {
 	return &Client{
 		cfg: cfg,
@@ -48,11 +50,7 @@ func (c *Client) AuthURL(state, nonce string) string {
 }
 
 func (c *Client) ExchangeCode(ctx context.Context, code string) (*oauth2.Token, error) {
-	token, err := c.oauth2.Exchange(ctx, code)
-	if err != nil {
-		return nil, err
-	}
-	return token, nil
+	return c.oauth2.Exchange(ctx, code)
 }
 
 func (c *Client) VerifyIDToken(ctx context.Context, rawIDToken, expectedNonce string) error {
@@ -131,5 +129,3 @@ func (c *Client) verifierFor(ctx context.Context) (*coreoidc.IDTokenVerifier, er
 	c.verifier = provider.Verifier(&coreoidc.Config{ClientID: c.cfg.ClientID})
 	return c.verifier, nil
 }
-
-var _ domain.OIDCClient = (*Client)(nil)

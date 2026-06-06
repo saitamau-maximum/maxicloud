@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"strings"
@@ -89,9 +90,11 @@ func runGateway(cmd *cobra.Command, args []string) error {
 		ClientSecret: cfg.OIDCClientSecret,
 		RedirectURL:  cfg.OIDCRedirectURL,
 	})
+	allowedRedirects := splitCSV(cfg.AllowedRedirects)
 
 	authSvc := service.NewAuthService(service.AuthConfig{
-		SessionSecret: cfg.SessionSecret,
+		SessionSecret:    cfg.SessionSecret,
+		AllowedRedirects: allowedRedirects,
 	}, userRepo, oidcClient)
 
 	deploySvc := deployment.NewDeploymentService(historyRepo, deployRepo)
@@ -124,13 +127,12 @@ func runGateway(cmd *cobra.Command, args []string) error {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-	// TODO: 公開前にちゃんと設定する
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"*"},
+		AllowedOrigins:   allowedOrigins(allowedRedirects),
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"*"},
 		ExposedHeaders:   []string{"*"},
-		AllowCredentials: false,
+		AllowCredentials: true,
 	}))
 
 	authOpt := connect.WithInterceptors(auth.NewAuthInterceptor(cfg.SessionSecret))
@@ -178,12 +180,46 @@ type connectRoute struct {
 	handler http.Handler
 }
 
-func route(path string, handler http.Handler) connectRoute {
-	return connectRoute{path: path, handler: handler}
+func route(path string, h http.Handler) connectRoute {
+	return connectRoute{path: path, handler: h}
 }
 
 func mountAll(r chi.Router, routes ...connectRoute) {
 	for _, route := range routes {
 		r.Mount(route.path, route.handler)
 	}
+}
+
+func splitCSV(value string) []string {
+	if value == "" {
+		return nil
+	}
+	parts := strings.Split(value, ",")
+	items := make([]string, 0, len(parts))
+	for _, part := range parts {
+		part = strings.TrimSpace(part)
+		if part == "" {
+			continue
+		}
+		items = append(items, part)
+	}
+	return items
+}
+
+func allowedOrigins(redirects []string) []string {
+	origins := make([]string, 0, len(redirects))
+	seen := map[string]struct{}{}
+	for _, redirect := range redirects {
+		u, err := url.Parse(redirect)
+		if err != nil || u.Scheme == "" || u.Host == "" {
+			continue
+		}
+		origin := u.Scheme + "://" + u.Host
+		if _, ok := seen[origin]; ok {
+			continue
+		}
+		seen[origin] = struct{}{}
+		origins = append(origins, origin)
+	}
+	return origins
 }

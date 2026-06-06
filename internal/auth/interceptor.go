@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 	"errors"
-	"strings"
+	"net/http"
 
 	"connectrpc.com/connect"
 )
@@ -13,7 +13,7 @@ var errUnauthenticated = errors.New("authentication required")
 func NewAuthInterceptor(sessionSecret string) connect.UnaryInterceptorFunc {
 	return func(next connect.UnaryFunc) connect.UnaryFunc {
 		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
-			userID, ok := ParseSessionToken(bearerToken(req.Header().Get("Authorization")), sessionSecret)
+			userID, ok := ParseSessionToken(sessionToken(req), sessionSecret)
 			if !ok {
 				return nil, connect.NewError(connect.CodeUnauthenticated, errUnauthenticated)
 			}
@@ -23,6 +23,8 @@ func NewAuthInterceptor(sessionSecret string) connect.UnaryInterceptorFunc {
 	}
 }
 
-func bearerToken(value string) string {
-	return strings.TrimPrefix(value, "Bearer ")
+func sessionToken(req connect.AnyRequest) string {
+	httpReq := &http.Request{Header: req.Header()}
+	token, _ := ReadSessionCookie(httpReq)
+	return token
 }

@@ -213,7 +213,7 @@ func (r *applicationRepository) updatePreviewApplication(ctx context.Context, ke
 
 		base := current.DeepCopy()
 		mergePreviewApplication(&current, desired)
-		if err := r.Client.Patch(ctx, &current, client.MergeFrom(base)); err != nil {
+		if err := r.Patch(ctx, &current, client.MergeFrom(base)); err != nil {
 			return err
 		}
 		updated = current

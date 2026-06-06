@@ -16,9 +16,16 @@ type CallbackResult struct {
 	RedirectTo string
 }
 
+type LoginResult struct {
+	LoginURL   string
+	State      string
+	Nonce      string
+	RedirectTo string
+}
+
 type AuthService interface {
-	Login(ctx context.Context, redirectTo string) (loginURL, state string, err error)
-	Callback(ctx context.Context, code, state string) (*CallbackResult, error)
+	Login(ctx context.Context, redirectTo string) (*LoginResult, error)
+	Callback(ctx context.Context, code, redirectTo, nonce string) (*CallbackResult, error)
 }
 
 type AuthConfig struct {
@@ -40,34 +47,36 @@ func NewAuthService(cfg AuthConfig, userRepo domain.UserRepository, oidcClient d
 	}
 }
 
-func (s *authService) Login(ctx context.Context, redirectTo string) (string, string, error) {
+func (s *authService) Login(ctx context.Context, redirectTo string) (*LoginResult, error) {
 	if err := s.validateRedirect(redirectTo); err != nil {
-		return "", "", err
+		return nil, err
 	}
 
+	state, err := auth.GenerateState()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate state: %w", err)
+	}
 	nonce, err := auth.GenerateNonce()
 	if err != nil {
-		return "", "", fmt.Errorf("failed to generate nonce: %w", err)
+		return nil, fmt.Errorf("failed to generate nonce: %w", err)
 	}
 
-	stateToken, err := auth.IssueStateToken(redirectTo, nonce, s.cfg.SessionSecret, time.Now())
-	if err != nil {
-		return "", "", fmt.Errorf("failed to sign state token: %w", err)
-	}
-
-	return s.oidcClient.AuthURL(stateToken, nonce), stateToken, nil
+	return &LoginResult{
+		LoginURL:   s.oidcClient.AuthURL(state, nonce),
+		State:      state,
+		Nonce:      nonce,
+		RedirectTo: redirectTo,
+	}, nil
 }
 
-func (s *authService) Callback(ctx context.Context, code, stateToken string) (*CallbackResult, error) {
+func (s *authService) Callback(ctx context.Context, code, redirectTo, nonce string) (*CallbackResult, error) {
 	if code == "" {
 		return nil, fmt.Errorf("authorization code is required")
 	}
-
-	state, err := auth.ParseStateToken(stateToken, s.cfg.SessionSecret)
-	if err != nil {
-		return nil, err
+	if nonce == "" {
+		return nil, fmt.Errorf("nonce is required")
 	}
-	if err := s.validateRedirect(state.RedirectTo); err != nil {
+	if err := s.validateRedirect(redirectTo); err != nil {
 		return nil, err
 	}
 
@@ -80,7 +89,7 @@ func (s *authService) Callback(ctx context.Context, code, stateToken string) (*C
 	if rawIDToken == "" {
 		return nil, fmt.Errorf("id_token not found in token response")
 	}
-	if err := s.oidcClient.VerifyIDToken(ctx, rawIDToken, state.Nonce); err != nil {
+	if err := s.oidcClient.VerifyIDToken(ctx, rawIDToken, nonce); err != nil {
 		return nil, fmt.Errorf("verify id_token: %w", err)
 	}
 
@@ -107,11 +116,14 @@ func (s *authService) Callback(ctx context.Context, code, stateToken string) (*C
 	return &CallbackResult{
 		User:       user,
 		Token:      sessionToken,
-		RedirectTo: state.RedirectTo,
+		RedirectTo: redirectTo,
 	}, nil
 }
 
 func (s *authService) validateRedirect(redirectTo string) error {
+	if redirectTo == "" {
+		return fmt.Errorf("redirect_to is required")
+	}
 	if len(s.cfg.AllowedRedirects) == 0 {
 		return nil
 	}
