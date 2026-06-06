@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"connectrpc.com/connect"
 	gh "github.com/google/go-github/v72/github"
@@ -76,13 +77,14 @@ func (h *GitHubHandler) Callback(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *GitHubHandler) Webhook(w http.ResponseWriter, r *http.Request) {
+	eventType := gh.WebHookType(r)
 	payload, err := gh.ValidatePayload(r, []byte(h.config.WebhookSecret))
 	if err != nil {
 		log.Printf("webhook: invalid signature: %v", err)
 		http.Error(w, "invalid signature", http.StatusUnauthorized)
 		return
 	}
-	event, err := gh.ParseWebHook(gh.WebHookType(r), payload)
+	event, err := gh.ParseWebHook(eventType, payload)
 	if err != nil {
 		log.Printf("webhook: failed to parse payload: %v", err)
 		http.Error(w, "failed to parse webhook payload", http.StatusBadRequest)
@@ -90,6 +92,7 @@ func (h *GitHubHandler) Webhook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	deployEvent, handled := toDeploymentEvent(event)
+	log.Printf("webhook: event_type=%s handled=%t", eventType, handled)
 	// どうでもいいイベントは無視して200 OKを返す
 	if !handled {
 		w.WriteHeader(http.StatusOK)
@@ -141,4 +144,59 @@ func (h *GitHubHandler) ListBranches(ctx context.Context, req *v1.ListBranchesRe
 		return nil, err
 	}
 	return &v1.ListBranchesResponse{Branches: branches}, nil
+}
+
+func toDeploymentEvent(event any) (*domain.DeploymentEvent, bool) {
+	switch e := event.(type) {
+	case *gh.PushEvent:
+		if e.GetDeleted() {
+			return nil, false
+		}
+		const refPrefix = "refs/heads/"
+		if !strings.HasPrefix(e.GetRef(), refPrefix) {
+			return nil, false
+		}
+		branch := strings.TrimPrefix(e.GetRef(), refPrefix)
+		return &domain.DeploymentEvent{
+			Type: domain.DeploymentEventTypeProductionRequested,
+			Repo: domain.Repository{
+				Owner: e.GetRepo().GetOwner().GetLogin(),
+				Name:  e.GetRepo().GetName(),
+			},
+			Branch: branch,
+			Commit: domain.Commit{
+				SHA:        e.GetAfter(),
+				Message:    e.GetHeadCommit().GetMessage(),
+				AuthorName: e.GetHeadCommit().GetAuthor().GetName(),
+			},
+		}, true
+	case *gh.PullRequestEvent:
+		var eventType domain.DeploymentEventType
+		switch e.GetAction() {
+		case "opened", "synchronize", "reopened":
+			eventType = domain.DeploymentEventTypePreviewRequested
+		case "closed":
+			eventType = domain.DeploymentEventTypePreviewDeleted
+		default:
+			return nil, false
+		}
+		pr := e.GetPullRequest()
+		prNumber := pr.GetNumber()
+		return &domain.DeploymentEvent{
+			Type: eventType,
+			Repo: domain.Repository{
+				Owner: e.GetRepo().GetOwner().GetLogin(),
+				Name:  e.GetRepo().GetName(),
+			},
+			Branch: pr.GetBase().GetRef(),
+			Commit: domain.Commit{
+				SHA:        pr.GetHead().GetSHA(),
+				Message:    pr.GetTitle(),
+				AuthorName: pr.GetUser().GetLogin(),
+			},
+			PRNumber: &prNumber,
+		}, true
+	default:
+		return nil, false
+	}
 }
