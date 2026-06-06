@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha1"
 	"fmt"
+	"maps"
 	"regexp"
 	"strings"
 
@@ -273,9 +274,7 @@ func mergePreviewApplication(current, desired *maxicloudv1alpha1.Application) {
 	} else {
 		current.Labels = map[string]string{}
 	}
-	for k, v := range desired.Labels {
-		current.Labels[k] = v
-	}
+	maps.Copy(current.Labels, desired.Labels)
 	if existingID != "" {
 		current.Labels[labelApplicationID] = existingID
 	}
@@ -283,9 +282,7 @@ func mergePreviewApplication(current, desired *maxicloudv1alpha1.Application) {
 	if current.Annotations == nil {
 		current.Annotations = map[string]string{}
 	}
-	for k, v := range desired.Annotations {
-		current.Annotations[k] = v
-	}
+	maps.Copy(current.Annotations, desired.Annotations)
 
 	current.Spec = desired.Spec
 }
