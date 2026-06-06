@@ -98,7 +98,7 @@ func (s *logStreamer) openLogStream(ctx context.Context, namespace, podName stri
 	defer ticker.Stop()
 	for {
 		req := s.clientset.CoreV1().Pods(namespace).GetLogs(podName, &corev1.PodLogOptions{Follow: true})
-		if stream, err := req.Stream(ctx); err == nil {
+		if stream, err := req.Stream(openCtx); err == nil {
 			return stream, nil
 		}
 		select {

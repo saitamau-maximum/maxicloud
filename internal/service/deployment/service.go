@@ -3,6 +3,7 @@ package deployment
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
 )
@@ -40,7 +41,14 @@ func (s *service) Deploy(ctx context.Context, spec domain.DeploymentSpec) (strin
 		return "", fmt.Errorf("create workflow: %w", err)
 	}
 
-	_ = s.cleanPreviousWorkflows(ctx, spec.ApplicationID, spec.IsPreview())
+	if err := s.cleanPreviousWorkflows(ctx, spec.ApplicationID, spec.IsPreview()); err != nil {
+		log.Printf(
+			"deployment: failed to clean previous workflows application_id=%s preview=%t: %v",
+			spec.ApplicationID,
+			spec.IsPreview(),
+			err,
+		)
+	}
 
 	return record.ID, nil
 }

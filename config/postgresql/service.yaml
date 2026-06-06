@@ -12,7 +12,7 @@ spec:
     app.kubernetes.io/component: postgresql
     app.kubernetes.io/name: maxicloud
   ports:
-    - name: posgtres
+    - name: postgres
       port: 5432
       targetPort: 5432
       protocol: TCP
