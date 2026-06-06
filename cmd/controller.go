@@ -38,8 +38,7 @@ func runController(cmd *cobra.Command, args []string) error {
 	}
 	ghClient := github.NewClient(cfg.GitHubAppID, privateKey, cfg.InstallationID)
 
-	dsn := fmt.Sprintf(
-		"postgresql://%s:%s@%s:%d/%s",
+	dsn := postgresDSN(
 		cfg.PostgreSQLUser,
 		cfg.PostgreSQLPassword,
 		cfg.PostgreSQLHost,
