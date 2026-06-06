@@ -97,6 +97,21 @@ func (d Domain) URL(scheme string) string {
 	return scheme + "://" + d.FQDN()
 }
 
+func (d Domain) Preview(prNumber int) Domain {
+	return Domain{
+		Subdomain:  fmt.Sprintf("%s-pr%d", d.Subdomain, prNumber),
+		RootDomain: d.RootDomain,
+	}
+}
+
+func PreviewName(appName string, prNumber int) string {
+	return fmt.Sprintf("%s-pr-%d", appName, prNumber)
+}
+
+func PreviewBranch(prNumber int) string {
+	return fmt.Sprintf("pr-%d", prNumber)
+}
+
 type KeyValue struct {
 	Key   string
 	Value string
@@ -180,5 +195,5 @@ type ApplicationRepository interface {
 	Delete(ctx context.Context, id string) error
 	ListByRepo(ctx context.Context, owner, name, branch string) ([]Application, error)
 	ExistsByDomain(ctx context.Context, domain string) (bool, error)
-	CreatePreviewApplication(ctx context.Context, originalApplicationID string, prNumber int, id string) (*Application, error)
+	CreatePreview(ctx context.Context, originalApplicationID string, prNumber int, id string) (*Application, error)
 }

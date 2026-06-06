@@ -28,4 +28,6 @@ type ProjectRepository interface {
 	List(ctx context.Context) ([]*Project, error)
 	Update(ctx context.Context, params UpdateProjectParams) error
 	Delete(ctx context.Context, id string) error
+	// Preview用のProjectを作成
+	CreatePreview(ctx context.Context, original Application, prNumber int) error
 }

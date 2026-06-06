@@ -21,6 +21,7 @@ const (
 const (
 	AnnotationSourceBranch       = annotationPrefix + "source-branch"
 	AnnotationRootDomain         = annotationPrefix + "root-domain"
+	AnnotationProjectID          = annotationPrefix + "project-id"
 	AnnotationOwnerUserID        = annotationPrefix + "owner-user-id"
 	AnnotationProjectDescription = annotationPrefix + "project-description"
 	AnnotationCreatedAt          = annotationPrefix + "created-at"

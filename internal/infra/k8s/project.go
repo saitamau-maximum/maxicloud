@@ -8,6 +8,7 @@ import (
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
 	"github.com/saitamau-maximum/maxicloud/internal/infra/k8s/meta"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -100,6 +101,25 @@ func (r *projectRepository) Update(ctx context.Context, params domain.UpdateProj
 func (r *projectRepository) Delete(ctx context.Context, id string) error {
 	ns := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: meta.ProjectNamespace(id)}}
 	return client.IgnoreNotFound(r.client.Delete(ctx, ns))
+}
+
+func (r *projectRepository) CreatePreview(ctx context.Context, original domain.Application, prNumber int) error {
+	ns := &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: meta.PreviewNamespace(original.ID, prNumber),
+			Labels: map[string]string{
+				meta.LabelPreview:     "true",
+				meta.LabelOwnerUserID: meta.TruncateLabelValue(original.OwnerID),
+			},
+			Annotations: map[string]string{
+				meta.AnnotationProjectID: original.ProjectID,
+			},
+		},
+	}
+	if err := r.client.Create(ctx, ns); err != nil && !apierrors.IsAlreadyExists(err) {
+		return fmt.Errorf("create preview namespace: %w", err)
+	}
+	return nil
 }
 
 func nsToProject(ns *corev1.Namespace) (*domain.Project, error) {

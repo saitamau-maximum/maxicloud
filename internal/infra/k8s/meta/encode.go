@@ -27,6 +27,22 @@ func ProjectIDFromNamespace(namespace string) string {
 	return strings.TrimPrefix(namespace, namespacePrefix)
 }
 
+func PreviewNamespace(originalAppID string, prNumber int) string {
+	base := fmt.Sprintf("%spreview-%s-pr-%d", namespacePrefix, originalAppID, prNumber)
+	if len(base) <= maxLabelLen {
+		return base
+	}
+
+	sum := sha1.Sum([]byte(originalAppID))
+	suffix := fmt.Sprintf("-%x-pr-%d", sum[:4], prNumber)
+	prefix := namespacePrefix + "preview"
+	maxPrefixLen := maxLabelLen - len(suffix)
+	if maxPrefixLen < len(prefix) {
+		prefix = prefix[:max(maxPrefixLen, 1)]
+	}
+	return prefix + suffix
+}
+
 func TruncateLabelValue(raw string) string {
 	if len(raw) <= maxLabelLen {
 		return raw
