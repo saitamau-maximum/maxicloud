@@ -687,7 +687,7 @@ func (x *DeploymentStatusChangedEvent) GetFinishedAt() *timestamppb.Timestamp {
 
 type DeploymentLogChunkEvent struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Lines         []string               `protobuf:"bytes,1,rep,name=lines,proto3" json:"lines,omitempty"`
+	Line          string                 `protobuf:"bytes,1,opt,name=line,proto3" json:"line,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -722,11 +722,11 @@ func (*DeploymentLogChunkEvent) Descriptor() ([]byte, []int) {
 	return file_maxicloud_v1_deployment_proto_rawDescGZIP(), []int{11}
 }
 
-func (x *DeploymentLogChunkEvent) GetLines() []string {
+func (x *DeploymentLogChunkEvent) GetLine() string {
 	if x != nil {
-		return x.Lines
+		return x.Line
 	}
-	return nil
+	return ""
 }
 
 var File_maxicloud_v1_deployment_proto protoreflect.FileDescriptor
@@ -779,9 +779,9 @@ const file_maxicloud_v1_deployment_proto_rawDesc = "" +
 	"\x0felapsed_seconds\x18\x02 \x01(\x03R\x0eelapsedSeconds\x12@\n" +
 	"\vfinished_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampH\x00R\n" +
 	"finishedAt\x88\x01\x01B\x0e\n" +
-	"\f_finished_at\"/\n" +
-	"\x17DeploymentLogChunkEvent\x12\x14\n" +
-	"\x05lines\x18\x01 \x03(\tR\x05lines*\x95\x01\n" +
+	"\f_finished_at\"-\n" +
+	"\x17DeploymentLogChunkEvent\x12\x12\n" +
+	"\x04line\x18\x01 \x01(\tR\x04line*\x95\x01\n" +
 	"\x10DeploymentStatus\x12!\n" +
 	"\x1dDEPLOYMENT_STATUS_UNSPECIFIED\x10\x00\x12\x1d\n" +
 	"\x19DEPLOYMENT_STATUS_SUCCESS\x10\x01\x12!\n" +

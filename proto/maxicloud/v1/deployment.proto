@@ -83,7 +83,7 @@ message DeploymentStatusChangedEvent {
 }
 
 message DeploymentLogChunkEvent {
-  repeated string lines = 1;
+  string line = 1;
 }
 
 service DeploymentService {

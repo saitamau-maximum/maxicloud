@@ -7,8 +7,7 @@
 Permissions:
 - Contents: read only
 - Checks: read and write
-- Issues: read and write
-- PullRequests: read only
+- PullRequests: read and write
 
 Subscribe to events:
 - PullRequest

@@ -2,85 +2,47 @@ package k8s
 
 import (
 	"context"
-	"crypto/sha1"
 	"fmt"
-	"maps"
-	"regexp"
-	"strings"
 
 	maxicloudv1alpha1 "github.com/saitamau-maximum/maxicloud/api/v1alpha1"
-	"github.com/saitamau-maximum/maxicloud/internal/config"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
+	"github.com/saitamau-maximum/maxicloud/internal/infra/k8s/meta"
 	corev1 "k8s.io/api/core/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/meta"
+	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-)
-
-const (
-	labelApplicationID    = config.LabelPrefix + "app-id"
-	labelApplicationName  = config.LabelPrefix + "app-name"
-	labelApplicationOwner = config.LabelPrefix + "owner-user-id"
-	labelSourceRepoOwner  = config.LabelPrefix + "source-repo-owner"
-	labelSourceRepoName   = config.LabelPrefix + "source-repo-name"
-	labelSourceBranch     = config.LabelPrefix + "source-branch"
-
-	annotationSourceBranch = config.AnnotationPrefix + "source-branch"
-	annotationRootDomain   = config.AnnotationPrefix + "root-domain"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 type applicationRepository struct {
-	client.Client
+	client           client.Client
 	ingressClassName string
 }
 
 var _ domain.ApplicationRepository = (*applicationRepository)(nil)
 
 func NewApplicationRepository(c client.Client, ingressClassName string) domain.ApplicationRepository {
-	return &applicationRepository{Client: c, ingressClassName: ingressClassName}
+	return &applicationRepository{client: c, ingressClassName: ingressClassName}
 }
 
-func (r *applicationRepository) CreateApplication(ctx context.Context, app domain.CreateApplicationParams) (*domain.Application, error) {
-	branchLabel := normalizeBranchForLabel(app.Spec.Source.Branch)
+func (r *applicationRepository) Create(ctx context.Context, app domain.CreateApplicationParams) (*domain.Application, error) {
 	cr := &maxicloudv1alpha1.Application{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      app.Name,
-			Namespace: projectNamespace(app.Spec.ProjectID),
-			Labels: map[string]string{
-				labelApplicationID:    app.ID,
-				labelApplicationName:  app.Name,
-				labelApplicationOwner: app.OwnerID,
-				labelSourceRepoOwner:  app.Spec.Source.Repo.Owner,
-				labelSourceRepoName:   app.Spec.Source.Repo.Name,
-				labelSourceBranch:     branchLabel,
-			},
-			Annotations: map[string]string{
-				annotationSourceBranch: app.Spec.Source.Branch,
-				annotationRootDomain:   app.Spec.Domain.RootDomain,
-			},
-		},
-		Spec: maxicloudv1alpha1.ApplicationSpec{
-			Env: buildApplicationEnvVar(app.Spec),
+			Namespace: meta.ProjectNamespace(app.Spec.ProjectID),
 		},
 	}
-	if app.Spec.Domain != nil {
-		cr.Spec.Expose = &maxicloudv1alpha1.ExposeConfig{
-			Domain:           app.Spec.Domain.FQDN(),
-			Port:             app.Spec.Port,
-			IngressClassName: r.ingressClassName,
-		}
-	}
-	if err := r.Create(ctx, cr); err != nil {
+	applyApplicationMetadata(cr, app.ID, app.Name, app.OwnerID, app.Spec)
+	applyApplicationSpec(&cr.Spec, app.Spec, r.ingressClassName)
+	if err := r.client.Create(ctx, cr); err != nil {
 		return nil, fmt.Errorf("create application: %w", err)
 	}
 	return crToApplication(cr), nil
 }
 
-func (r *applicationRepository) GetApplication(ctx context.Context, id string) (*domain.Application, error) {
+func (r *applicationRepository) Get(ctx context.Context, id string) (*domain.Application, error) {
 	var list maxicloudv1alpha1.ApplicationList
-	if err := r.List(ctx, &list, client.MatchingLabels{labelApplicationID: id}); err != nil {
+	if err := r.client.List(ctx, &list, meta.SelectByAppID(id)); err != nil {
 		return nil, fmt.Errorf("list applications: %w", err)
 	}
 	if len(list.Items) == 0 {
@@ -89,13 +51,13 @@ func (r *applicationRepository) GetApplication(ctx context.Context, id string) (
 	return crToApplication(&list.Items[0]), nil
 }
 
-func (r *applicationRepository) ListApplications(ctx context.Context, projectID string) ([]domain.Application, error) {
+func (r *applicationRepository) List(ctx context.Context, projectID string) ([]domain.Application, error) {
 	var list maxicloudv1alpha1.ApplicationList
 	opts := []client.ListOption{}
 	if projectID != "" {
-		opts = append(opts, client.InNamespace(projectNamespace(projectID)))
+		opts = append(opts, client.InNamespace(meta.ProjectNamespace(projectID)))
 	}
-	if err := r.List(ctx, &list, opts...); err != nil {
+	if err := r.client.List(ctx, &list, opts...); err != nil {
 		return nil, fmt.Errorf("list applications: %w", err)
 	}
 	apps := make([]domain.Application, 0, len(list.Items))
@@ -105,41 +67,34 @@ func (r *applicationRepository) ListApplications(ctx context.Context, projectID 
 	return apps, nil
 }
 
-func (r *applicationRepository) UpdateApplication(ctx context.Context, app domain.Application) error {
+func (r *applicationRepository) Update(ctx context.Context, params domain.UpdateApplicationParams) error {
 	var list maxicloudv1alpha1.ApplicationList
-	if err := r.List(ctx, &list, client.MatchingLabels{labelApplicationID: app.ID}); err != nil {
+	if err := r.client.List(ctx, &list, meta.SelectByAppID(params.ID)); err != nil {
 		return fmt.Errorf("list applications: %w", err)
 	}
 	if len(list.Items) == 0 {
-		return fmt.Errorf("application not found: %s", app.ID)
+		return fmt.Errorf("application not found: %s", params.ID)
 	}
 	cr := list.Items[0]
-	cr.Labels[labelApplicationName] = app.Name
-	cr.Labels[labelApplicationOwner] = app.OwnerID
-	return r.Update(ctx, &cr)
+	applyApplicationMetadata(&cr, params.ID, params.Name, params.OwnerID, params.Spec)
+	applyApplicationSpec(&cr.Spec, params.Spec, r.ingressClassName)
+	return r.client.Update(ctx, &cr)
 }
 
-func (r *applicationRepository) DeleteApplication(ctx context.Context, id string) error {
+func (r *applicationRepository) Delete(ctx context.Context, id string) error {
 	var list maxicloudv1alpha1.ApplicationList
-	if err := r.List(ctx, &list, client.MatchingLabels{labelApplicationID: id}); err != nil {
+	if err := r.client.List(ctx, &list, meta.SelectByAppID(id)); err != nil {
 		return fmt.Errorf("list applications: %w", err)
 	}
 	if len(list.Items) == 0 {
 		return nil
 	}
-	return client.IgnoreNotFound(r.Delete(ctx, &list.Items[0]))
+	return client.IgnoreNotFound(r.client.Delete(ctx, &list.Items[0]))
 }
 
-func (r *applicationRepository) GetApplicationsByRepo(ctx context.Context, owner, name, branch string) ([]domain.Application, error) {
-	matchLabels := client.MatchingLabels{
-		labelSourceRepoOwner: owner,
-		labelSourceRepoName:  name,
-	}
-	if branch != "" {
-		matchLabels[labelSourceBranch] = normalizeBranchForLabel(branch)
-	}
+func (r *applicationRepository) ListByRepo(ctx context.Context, owner, name, branch string) ([]domain.Application, error) {
 	var list maxicloudv1alpha1.ApplicationList
-	if err := r.List(ctx, &list, matchLabels); err != nil {
+	if err := r.client.List(ctx, &list, meta.SelectAppsBySource(owner, name, branch)); err != nil {
 		return nil, fmt.Errorf("list applications by repo: %w", err)
 	}
 	apps := make([]domain.Application, 0, len(list.Items))
@@ -151,7 +106,7 @@ func (r *applicationRepository) GetApplicationsByRepo(ctx context.Context, owner
 
 func (r *applicationRepository) ExistsByDomain(ctx context.Context, fqdn string) (bool, error) {
 	var list maxicloudv1alpha1.ApplicationList
-	if err := r.List(ctx, &list); err != nil {
+	if err := r.client.List(ctx, &list); err != nil {
 		return false, fmt.Errorf("list applications: %w", err)
 	}
 	for _, cr := range list.Items {
@@ -162,143 +117,84 @@ func (r *applicationRepository) ExistsByDomain(ctx context.Context, fqdn string)
 	return false, nil
 }
 
-func (r *applicationRepository) CreatePreviewApplication(ctx context.Context, originalApplicationID string, prNumber int, id string) (*domain.Application, error) {
-	var list maxicloudv1alpha1.ApplicationList
-	if err := r.List(ctx, &list, client.MatchingLabels{labelApplicationID: originalApplicationID}); err != nil {
-		return nil, fmt.Errorf("list original application: %w", err)
-	}
-	if len(list.Items) == 0 {
-		return nil, fmt.Errorf("original application not found: %s", originalApplicationID)
-	}
-	orig := list.Items[0]
-	namespace := orig.Namespace
-
-	previewName := fmt.Sprintf("%s-pr-%d", orig.Name, prNumber)
-	desired := buildPreviewApplicationCR(orig, namespace, previewName, prNumber, id)
-	if desired == nil {
-		return nil, fmt.Errorf("build preview application: nil desired CR")
-	}
-
-	var existing maxicloudv1alpha1.Application
-	key := client.ObjectKey{Name: previewName, Namespace: namespace}
-	if err := r.Get(ctx, key, &existing); err == nil {
-		updated, err := r.updatePreviewApplication(ctx, key, desired)
-		if err != nil {
-			return nil, fmt.Errorf("update preview application: %w", err)
-		}
-		return crToApplication(updated), nil
-	} else if !apierrors.IsNotFound(err) {
-		return nil, fmt.Errorf("get preview application: %w", err)
-	}
-
-	if err := r.Create(ctx, desired); err != nil {
-		if !apierrors.IsAlreadyExists(err) {
-			return nil, fmt.Errorf("create preview application: %w", err)
-		}
-		if err := r.Get(ctx, key, &existing); err != nil {
-			return nil, fmt.Errorf("get preview application after already exists: %w", err)
-		}
-		updated, err := r.updatePreviewApplication(ctx, key, desired)
-		if err != nil {
-			return nil, fmt.Errorf("update preview application after already exists: %w", err)
-		}
-		return crToApplication(updated), nil
-	}
-	return crToApplication(desired), nil
-}
-
-func buildPreviewApplicationCR(orig maxicloudv1alpha1.Application, namespace, previewName string, prNumber int, id string) *maxicloudv1alpha1.Application {
-	newSpec := orig.Spec.DeepCopy()
-	if newSpec.Expose != nil {
-		root := orig.Annotations[annotationRootDomain]
-		if root == "" {
-			newSpec.Expose.Domain = fmt.Sprintf("%s-pr-%d", orig.Spec.Expose.Domain, prNumber)
-		} else {
-			fqdn := orig.Spec.Expose.Domain
-			sub := strings.TrimSuffix(fqdn, "."+root)
-			if sub == fqdn {
-				sub = fqdn
-			}
-			newSub := fmt.Sprintf("%s-pr%d", sub, prNumber)
-			newSpec.Expose.Domain = newSub + "." + root
-		}
-	}
-
-	return &maxicloudv1alpha1.Application{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      previewName,
-			Namespace: namespace,
-			Labels: map[string]string{
-				labelApplicationID:    id,
-				labelApplicationName:  previewName,
-				labelApplicationOwner: orig.Labels[labelApplicationOwner],
-				labelSourceRepoOwner:  orig.Labels[labelSourceRepoOwner],
-				labelSourceRepoName:   orig.Labels[labelSourceRepoName],
-				labelSourceBranch:     normalizeBranchForLabel(fmt.Sprintf("pr-%d", prNumber)),
-			},
-			Annotations: map[string]string{
-				annotationSourceBranch: fmt.Sprintf("pr-%d", prNumber),
-				annotationRootDomain:   orig.Annotations[annotationRootDomain],
-			},
-		},
-		Spec: *newSpec,
-	}
-}
-
-func (r *applicationRepository) updatePreviewApplication(ctx context.Context, key client.ObjectKey, desired *maxicloudv1alpha1.Application) (*maxicloudv1alpha1.Application, error) {
-	var updated maxicloudv1alpha1.Application
-	err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-		var current maxicloudv1alpha1.Application
-		if err := r.Get(ctx, key, &current); err != nil {
-			return err
-		}
-
-		base := current.DeepCopy()
-		mergePreviewApplication(&current, desired)
-		if err := r.Patch(ctx, &current, client.MergeFrom(base)); err != nil {
-			return err
-		}
-		updated = current
-		return nil
-	})
+func (r *applicationRepository) CreatePreview(ctx context.Context, originalApplicationID string, prNumber int, id string) (*domain.Application, error) {
+	orig, err := r.findByAppID(ctx, originalApplicationID)
 	if err != nil {
 		return nil, err
 	}
-	return &updated, nil
+	if orig == nil {
+		return nil, fmt.Errorf("original application not found: %s", originalApplicationID)
+	}
+
+	cr := &maxicloudv1alpha1.Application{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      domain.PreviewName(orig.Name, prNumber),
+			Namespace: meta.PreviewNamespace(originalApplicationID, prNumber),
+		},
+	}
+	spec := previewSpec(*orig, prNumber)
+	appMeta := previewAppMeta(*orig, prNumber, id)
+	projectID := meta.ProjectIDFromNamespace(orig.Namespace)
+
+	if _, err := controllerutil.CreateOrUpdate(ctx, r.client, cr, func() error {
+		if existingID := cr.Labels[meta.LabelAppID]; existingID != "" {
+			appMeta.ID = existingID
+		}
+		appMeta.Apply(&cr.ObjectMeta)
+		cr.Annotations[meta.AnnotationProjectID] = projectID
+		cr.Spec = spec
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("apply preview application: %w", err)
+	}
+	return crToApplication(cr), nil
 }
 
-func mergePreviewApplication(current, desired *maxicloudv1alpha1.Application) {
-	existingID := ""
-	if current.Labels != nil {
-		existingID = current.Labels[labelApplicationID]
-	} else {
-		current.Labels = map[string]string{}
+func (r *applicationRepository) findByAppID(ctx context.Context, id string) (*maxicloudv1alpha1.Application, error) {
+	var list maxicloudv1alpha1.ApplicationList
+	if err := r.client.List(ctx, &list, meta.SelectByAppID(id)); err != nil {
+		return nil, fmt.Errorf("list applications: %w", err)
 	}
-	maps.Copy(current.Labels, desired.Labels)
-	if existingID != "" {
-		current.Labels[labelApplicationID] = existingID
+	if len(list.Items) == 0 {
+		return nil, nil
 	}
+	return &list.Items[0], nil
+}
 
-	if current.Annotations == nil {
-		current.Annotations = map[string]string{}
+func previewSpec(orig maxicloudv1alpha1.Application, prNumber int) maxicloudv1alpha1.ApplicationSpec {
+	spec := orig.Spec.DeepCopy()
+	if spec.Expose != nil {
+		spec.Expose.Domain = previewFQDN(orig, prNumber)
 	}
-	maps.Copy(current.Annotations, desired.Annotations)
+	return *spec
+}
 
-	current.Spec = desired.Spec
+func previewFQDN(orig maxicloudv1alpha1.Application, prNumber int) string {
+	d, err := domain.NewDomainByFQDN(orig.Spec.Expose.Domain, orig.Annotations[meta.AnnotationRootDomain])
+	if err != nil {
+		return fmt.Sprintf("%s-pr-%d", orig.Spec.Expose.Domain, prNumber)
+	}
+	return d.Preview(prNumber).FQDN()
+}
+
+func previewAppMeta(orig maxicloudv1alpha1.Application, prNumber int, id string) meta.AppMeta {
+	m := meta.AppMetaFrom(&orig)
+	m.ID = id
+	m.Name = domain.PreviewName(orig.Name, prNumber)
+	m.Branch = domain.PreviewBranch(prNumber)
+	return m
 }
 
 func crToApplication(app *maxicloudv1alpha1.Application) *domain.Application {
+	m := meta.AppMetaFrom(app)
 	return &domain.Application{
-		ID:        app.Labels[labelApplicationID],
-		ProjectID: projectIDFromNamespace(app.Namespace),
-		Name:      app.Labels[labelApplicationName],
-		OwnerID:   app.Labels[labelApplicationOwner],
+		ID:        m.ID,
+		ProjectID: projectIDFromApp(app),
+		Name:      m.Name,
+		OwnerID:   m.OwnerID,
 		Source: domain.ApplicationSource{
-			Repo: domain.Repository{
-				Owner: app.Labels[labelSourceRepoOwner],
-				Name:  app.Labels[labelSourceRepoName],
-			},
-			Branch: app.Annotations[annotationSourceBranch],
+			Repo:   m.Repo,
+			Branch: m.Branch,
 		},
 		Condition: domain.ApplicationCondition{
 			Status: getAppStatus(app),
@@ -309,8 +205,15 @@ func crToApplication(app *maxicloudv1alpha1.Application) *domain.Application {
 	}
 }
 
+func projectIDFromApp(app *maxicloudv1alpha1.Application) string {
+	if id := app.Annotations[meta.AnnotationProjectID]; id != "" {
+		return id
+	}
+	return meta.ProjectIDFromNamespace(app.Namespace)
+}
+
 func getAppStatus(app *maxicloudv1alpha1.Application) domain.ApplicationStatus {
-	status := meta.FindStatusCondition(app.Status.Conditions, "Ready")
+	status := apimeta.FindStatusCondition(app.Status.Conditions, "Ready")
 	if status == nil {
 		return domain.ApplicationStatusUnavailable
 	}
@@ -324,7 +227,7 @@ func getAppDomain(app *maxicloudv1alpha1.Application) *domain.Domain {
 	if app.Spec.Expose == nil {
 		return nil
 	}
-	d, err := domain.NewDomainByFQDN(app.Spec.Expose.Domain, app.Annotations[annotationRootDomain])
+	d, err := domain.NewDomainByFQDN(app.Spec.Expose.Domain, app.Annotations[meta.AnnotationRootDomain])
 	if err != nil {
 		return nil
 	}
@@ -348,32 +251,39 @@ func buildApplicationEnvVar(spec domain.ApplicationSpec) []corev1.EnvVar {
 	return env
 }
 
-var nonLabelChar = regexp.MustCompile(`[^A-Za-z0-9._-]+`)
-var edgeNonAlnum = regexp.MustCompile(`^[^A-Za-z0-9]+|[^A-Za-z0-9]+$`)
-
-// Labelには/を使用することができないため正規化する
-func normalizeBranchForLabel(branch string) string {
-	const (
-		maxLabelLen = 63
-		hashBytes   = 4
-	)
-
-	raw := strings.TrimSpace(branch)
-	normalized := nonLabelChar.ReplaceAllString(raw, "-")
-	normalized = edgeNonAlnum.ReplaceAllString(normalized, "")
-	if normalized == "" {
-		normalized = "branch"
+func applyApplicationMetadata(
+	cr *maxicloudv1alpha1.Application,
+	id string,
+	name string,
+	ownerID string,
+	spec domain.ApplicationSpec,
+) {
+	m := meta.AppMeta{
+		ID:      id,
+		Name:    name,
+		OwnerID: ownerID,
+		Repo:    spec.Source.Repo,
+		Branch:  spec.Source.Branch,
 	}
-
-	sum := sha1.Sum([]byte(raw))
-	suffix := fmt.Sprintf("-%x", sum[:hashBytes])
-	maxBaseLen := maxLabelLen - len(suffix)
-	maxBaseLen = max(maxBaseLen, 1)
-
-	if len(normalized) > maxBaseLen {
-		normalized = normalized[:maxBaseLen]
-		normalized = edgeNonAlnum.ReplaceAllString(normalized, "")
+	if spec.Domain != nil {
+		m.RootDomain = spec.Domain.RootDomain
 	}
+	m.Apply(&cr.ObjectMeta)
+}
 
-	return normalized + suffix
+func applyApplicationSpec(
+	spec *maxicloudv1alpha1.ApplicationSpec,
+	params domain.ApplicationSpec,
+	ingressClassName string,
+) {
+	spec.Env = buildApplicationEnvVar(params)
+	if params.Domain == nil {
+		spec.Expose = nil
+		return
+	}
+	spec.Expose = &maxicloudv1alpha1.ExposeConfig{
+		Domain:           params.Domain.FQDN(),
+		Port:             params.Port,
+		IngressClassName: ingressClassName,
+	}
 }

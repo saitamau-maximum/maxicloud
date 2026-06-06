@@ -16,6 +16,12 @@ type ControllerConfig struct {
 
 	// Downward APIからControllerのPodのNSを渡す
 	Namespace string `env:"POD_NAMESPACE,required"`
+
+	PostgreSQLHost     string `env:"POSTGRESQL_HOST" envDefault:"localhost"`
+	PostgreSQLPort     int    `env:"POSTGRESQL_PORT" envDefault:"5432"`
+	PostgreSQLUser     string `env:"POSTGRESQL_USER" envDefault:"postgres"`
+	PostgreSQLPassword string `env:"POSTGRESQL_PASSWORD"`
+	PostgreSQLDB       string `env:"POSTGRESQL_DB" envDefault:"maxicloud"`
 }
 
 type GatewayConfig struct {
@@ -34,4 +40,17 @@ type GatewayConfig struct {
 	IngressClass string `env:"INGRESS_CLASS" envDefault:"nginx"`
 	// Downward APIからGatewayのPodのNSを渡す
 	Namespace string `env:"POD_NAMESPACE,required"`
+
+	PostgreSQLHost     string `env:"POSTGRESQL_HOST" envDefault:"localhost"`
+	PostgreSQLPort     int    `env:"POSTGRESQL_PORT" envDefault:"5432"`
+	PostgreSQLUser     string `env:"POSTGRESQL_USER" envDefault:"postgres"`
+	PostgreSQLPassword string `env:"POSTGRESQL_PASSWORD"`
+	PostgreSQLDB       string `env:"POSTGRESQL_DB" envDefault:"maxicloud"`
+
+	OIDCIssuer       string `env:"OIDC_ISSUER" envDefault:"https://api.id.maximum.vc"`
+	OIDCClientID     string `env:"OIDC_CLIENT_ID,required"`
+	OIDCClientSecret string `env:"OIDC_CLIENT_SECRET,required"`
+	OIDCRedirectURL  string `env:"OIDC_REDIRECT_URL,required"`
+	AllowedRedirects string `env:"ALLOWED_REDIRECTS" envDefault:"http://localtest.me/auth/callback"`
+	SessionSecret    string `env:"SESSION_SECRET,required"`
 }

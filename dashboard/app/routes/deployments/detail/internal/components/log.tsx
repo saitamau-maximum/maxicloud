@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { css } from "styled-system/css";
 
-export const Log = ({ lines }: { lines: string[] }) => {
+type LogLine = {
+	id: number;
+	line: string;
+};
+
+export const Log = ({ lines }: { lines: LogLine[] }) => {
 	const viewportRef = useRef<HTMLDivElement>(null);
 	const [stickToBottom, setStickToBottom] = useState(true);
 
@@ -46,20 +51,22 @@ export const Log = ({ lines }: { lines: string[] }) => {
 						ログを待機中...
 					</span>
 				) : (
-					lines.map((line) => (
-						<div key={line} className={css({ lineHeight: 1.8 })}>
-							<span
-								className={css({
-									fontSize: "sm",
-									color: "gray.700",
-									whiteSpace: "pre-wrap",
-									wordBreak: "break-word",
-								})}
-							>
-								{line}
-							</span>
-						</div>
-					))
+					lines.map((entry) => {
+						return (
+							<div key={entry.id} className={css({ lineHeight: 1.8 })}>
+								<span
+									className={css({
+										fontSize: "sm",
+										color: "gray.700",
+										whiteSpace: "pre-wrap",
+										wordBreak: "break-word",
+									})}
+								>
+									{entry.line}
+								</span>
+							</div>
+						);
+					})
 				)}
 			</div>
 		</div>

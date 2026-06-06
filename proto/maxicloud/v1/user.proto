@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package maxicloud.v1;
+
+import "buf/validate/validate.proto";
+
+message User {
+  string id = 1;
+  string display_id = 2;
+  string display_name = 3;
+  repeated string roles = 4;
+}
+
+message GetUserRequest {
+  string user_id = 1 [(buf.validate.field).required = true];
+}
+
+message GetUserResponse {
+  User user = 1;
+}
+
+message GetMeRequest {}
+
+message GetMeResponse {
+  User user = 1;
+}
+
+service UserService {
+  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+  rpc GetMe(GetMeRequest) returns (GetMeResponse);
+}

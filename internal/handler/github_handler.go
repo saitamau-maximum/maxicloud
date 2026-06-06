@@ -13,7 +13,8 @@ import (
 	v1 "github.com/saitamau-maximum/maxicloud/gen/maxicloud/v1"
 	"github.com/saitamau-maximum/maxicloud/gen/maxicloud/v1/maxicloudv1connect"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
-	"github.com/saitamau-maximum/maxicloud/internal/usecase"
+	"github.com/saitamau-maximum/maxicloud/internal/service"
+	"github.com/saitamau-maximum/maxicloud/internal/service/deployment"
 	"golang.org/x/oauth2"
 )
 
@@ -27,13 +28,13 @@ type GitHubHandlerConfig struct {
 
 type GitHubHandler struct {
 	maxicloudv1connect.UnimplementedGitHubServiceHandler
-	deployService usecase.DeploymentService
-	srcService    usecase.SourceService
+	deployService deployment.DeploymentEventService
+	srcService    service.SourceService
 	config        GitHubHandlerConfig
 	oauthCfg      *oauth2.Config
 }
 
-func NewGitHubHandler(deploySvc usecase.DeploymentService, srcSvc usecase.SourceService, config GitHubHandlerConfig) *GitHubHandler {
+func NewGitHubHandler(deploySvc deployment.DeploymentEventService, srcSvc service.SourceService, config GitHubHandlerConfig) *GitHubHandler {
 	oauthCfg := &oauth2.Config{
 		ClientID:     config.ClientID,
 		ClientSecret: config.ClientSecret,
@@ -76,13 +77,14 @@ func (h *GitHubHandler) Callback(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *GitHubHandler) Webhook(w http.ResponseWriter, r *http.Request) {
+	eventType := gh.WebHookType(r)
 	payload, err := gh.ValidatePayload(r, []byte(h.config.WebhookSecret))
 	if err != nil {
 		log.Printf("webhook: invalid signature: %v", err)
 		http.Error(w, "invalid signature", http.StatusUnauthorized)
 		return
 	}
-	event, err := gh.ParseWebHook(gh.WebHookType(r), payload)
+	event, err := gh.ParseWebHook(eventType, payload)
 	if err != nil {
 		log.Printf("webhook: failed to parse payload: %v", err)
 		http.Error(w, "failed to parse webhook payload", http.StatusBadRequest)
@@ -90,12 +92,13 @@ func (h *GitHubHandler) Webhook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	deployEvent, handled := toDeploymentEvent(event)
+	log.Printf("webhook: event_type=%s handled=%t", eventType, handled)
 	// どうでもいいイベントは無視して200 OKを返す
 	if !handled {
 		w.WriteHeader(http.StatusOK)
 		return
 	}
-	if err := h.deployService.HandleGitHubEvent(r.Context(), *deployEvent); err != nil {
+	if err := h.deployService.HandleDeploymentEvent(r.Context(), *deployEvent); err != nil {
 		if domain.IsValidationError(err) {
 			log.Printf("webhook: validation error handling event: %v", err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -107,6 +110,40 @@ func (h *GitHubHandler) Webhook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func (h *GitHubHandler) ListRepositories(ctx context.Context, req *v1.ListRepositoriesRequest) (*v1.ListRepositoriesResponse, error) {
+	repos, err := h.srcService.ListRepositories(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var responseRepos []*v1.Repository
+	for _, r := range repos {
+		responseRepos = append(responseRepos, &v1.Repository{
+			Owner: r.Owner,
+			Name:  r.Name,
+		})
+	}
+	return &v1.ListRepositoriesResponse{Repositories: responseRepos}, nil
+}
+
+func (h *GitHubHandler) ListBranches(ctx context.Context, req *v1.ListBranchesRequest) (*v1.ListBranchesResponse, error) {
+	repo := req.GetRepository()
+	if repo == nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("repository is required"))
+	}
+	if repo.GetOwner() == "" || repo.GetName() == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("repository owner and name are required"))
+	}
+
+	branches, err := h.srcService.ListBranches(ctx, domain.Repository{
+		Owner: repo.GetOwner(),
+		Name:  repo.GetName(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &v1.ListBranchesResponse{Branches: branches}, nil
 }
 
 func toDeploymentEvent(event any) (*domain.DeploymentEvent, bool) {
@@ -162,38 +199,4 @@ func toDeploymentEvent(event any) (*domain.DeploymentEvent, bool) {
 	default:
 		return nil, false
 	}
-}
-
-func (h *GitHubHandler) ListRepositories(ctx context.Context, req *v1.ListRepositoriesRequest) (*v1.ListRepositoriesResponse, error) {
-	repos, err := h.srcService.GetRepositories(ctx)
-	if err != nil {
-		return nil, err
-	}
-	var responseRepos []*v1.Repository
-	for _, r := range repos {
-		responseRepos = append(responseRepos, &v1.Repository{
-			Owner: r.Owner,
-			Name:  r.Name,
-		})
-	}
-	return &v1.ListRepositoriesResponse{Repositories: responseRepos}, nil
-}
-
-func (h *GitHubHandler) ListBranches(ctx context.Context, req *v1.ListBranchesRequest) (*v1.ListBranchesResponse, error) {
-	repo := req.GetRepository()
-	if repo == nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("repository is required"))
-	}
-	if repo.GetOwner() == "" || repo.GetName() == "" {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("repository owner and name are required"))
-	}
-
-	branches, err := h.srcService.GetBranches(ctx, domain.Repository{
-		Owner: repo.GetOwner(),
-		Name:  repo.GetName(),
-	})
-	if err != nil {
-		return nil, err
-	}
-	return &v1.ListBranchesResponse{Branches: branches}, nil
 }

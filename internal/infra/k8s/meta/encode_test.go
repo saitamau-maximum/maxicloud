@@ -1,4 +1,4 @@
-package k8s
+package meta
 
 import (
 	"regexp"
@@ -62,15 +62,15 @@ func TestNormalizeBranchForLabel(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got := normalizeBranchForLabel(tt.in)
+			got := NormalizeBranchForLabel(tt.in)
 			if !strings.HasPrefix(got, tt.expectPrefix) {
-				t.Fatalf("normalizeBranchForLabel(%q) = %q, want prefix %q", tt.in, got, tt.expectPrefix)
+				t.Fatalf("NormalizeBranchForLabel(%q) = %q, want prefix %q", tt.in, got, tt.expectPrefix)
 			}
 			if !hexSuffixPattern.MatchString(got) {
-				t.Fatalf("normalizeBranchForLabel(%q) = %q, want suffix matching %q", tt.in, got, hexSuffixPattern.String())
+				t.Fatalf("NormalizeBranchForLabel(%q) = %q, want suffix matching %q", tt.in, got, hexSuffixPattern.String())
 			}
 			if len(got) > 63 {
-				t.Fatalf("normalizeBranchForLabel(%q) len = %d, want <= 63", tt.in, len(got))
+				t.Fatalf("NormalizeBranchForLabel(%q) len = %d, want <= 63", tt.in, len(got))
 			}
 		})
 	}
@@ -79,8 +79,8 @@ func TestNormalizeBranchForLabel(t *testing.T) {
 func TestNormalizeBranchForLabel_DifferentInputsDifferentOutputs(t *testing.T) {
 	t.Parallel()
 
-	a := normalizeBranchForLabel("feat/hogehoge-fugafuga")
-	b := normalizeBranchForLabel("feat-hogehoge-fugafuga")
+	a := NormalizeBranchForLabel("feat/hogehoge-fugafuga")
+	b := NormalizeBranchForLabel("feat-hogehoge-fugafuga")
 	if a == b {
 		t.Fatalf("expected different outputs for potentially colliding branches, got %q", a)
 	}

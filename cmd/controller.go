@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/caarlos0/env/v11"
@@ -37,7 +38,21 @@ func runController(cmd *cobra.Command, args []string) error {
 	}
 	ghClient := github.NewClient(cfg.GitHubAppID, privateKey, cfg.InstallationID)
 
-	deployRepo := postgres.NewDeploymentRepository()
+	dsn := fmt.Sprintf(
+		"postgresql://%s:%s@%s:%d/%s",
+		cfg.PostgreSQLUser,
+		cfg.PostgreSQLPassword,
+		cfg.PostgreSQLHost,
+		cfg.PostgreSQLPort,
+		cfg.PostgreSQLDB,
+	)
+	pool, err := postgres.NewPool(cmd.Context(), dsn)
+	if err != nil {
+		return fmt.Errorf("failed to connect to database: %w", err)
+	}
+	defer pool.Close()
+
+	historyRepo := postgres.NewDeploymentHistoryRepository(pool)
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
@@ -79,7 +94,7 @@ func runController(cmd *cobra.Command, args []string) error {
 		Client:     mgr.GetClient(),
 		Scheme:     mgr.GetScheme(),
 		Reporter:   ghClient,
-		DeployRepo: deployRepo,
+		DeployRepo: historyRepo,
 	}).SetupWithManager(mgr); err != nil {
 		return err
 	}

@@ -53,7 +53,7 @@ const parseRepositoryFullName = (fullName: string) => {
 };
 
 export default function NewApplicationPage() {
-	const { currentUser } = useSession();
+	const { me } = useSession();
 	const { mutate: createApplication, isPending } = useCreateApplication();
 	const { data: githubRepositories = [] } = useGitHubRepositories();
 
@@ -87,7 +87,7 @@ export default function NewApplicationPage() {
 	} = methods;
 
 	const onSubmit = (data: CreateApplicationOutput) => {
-		const ownerId = currentUser?.id;
+		const ownerId = me?.id;
 		if (!ownerId) return;
 
 		const repository = githubRepositories.find(

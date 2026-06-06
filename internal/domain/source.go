@@ -22,7 +22,7 @@ type Commit struct {
 }
 
 type SourceRepository interface {
-	GetRepositories(ctx context.Context) ([]Repository, error)
-	GetBranches(ctx context.Context, repo Repository) ([]string, error)
+	ListRepositories(ctx context.Context) ([]Repository, error)
+	ListBranches(ctx context.Context, repo Repository) ([]string, error)
 	GetHeadCommit(ctx context.Context, repo Repository, branch string) (Commit, error)
 }

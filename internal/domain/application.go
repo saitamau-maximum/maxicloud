@@ -97,6 +97,21 @@ func (d Domain) URL(scheme string) string {
 	return scheme + "://" + d.FQDN()
 }
 
+func (d Domain) Preview(prNumber int) Domain {
+	return Domain{
+		Subdomain:  fmt.Sprintf("%s-pr%d", d.Subdomain, prNumber),
+		RootDomain: d.RootDomain,
+	}
+}
+
+func PreviewName(appName string, prNumber int) string {
+	return fmt.Sprintf("%s-pr-%d", appName, prNumber)
+}
+
+func PreviewBranch(prNumber int) string {
+	return fmt.Sprintf("pr-%d", prNumber)
+}
+
 type KeyValue struct {
 	Key   string
 	Value string
@@ -165,13 +180,20 @@ type CreateApplicationParams struct {
 	Spec    ApplicationSpec
 }
 
+type UpdateApplicationParams struct {
+	ID      string
+	Name    string
+	OwnerID string
+	Spec    ApplicationSpec
+}
+
 type ApplicationRepository interface {
-	CreateApplication(ctx context.Context, params CreateApplicationParams) (*Application, error)
-	GetApplication(ctx context.Context, id string) (*Application, error)
-	ListApplications(ctx context.Context, projectID string) ([]Application, error)
-	UpdateApplication(ctx context.Context, app Application) error
-	DeleteApplication(ctx context.Context, id string) error
-	GetApplicationsByRepo(ctx context.Context, owner, name, branch string) ([]Application, error)
+	Create(ctx context.Context, params CreateApplicationParams) (*Application, error)
+	Get(ctx context.Context, id string) (*Application, error)
+	List(ctx context.Context, projectID string) ([]Application, error)
+	Update(ctx context.Context, params UpdateApplicationParams) error
+	Delete(ctx context.Context, id string) error
+	ListByRepo(ctx context.Context, owner, name, branch string) ([]Application, error)
 	ExistsByDomain(ctx context.Context, domain string) (bool, error)
-	CreatePreviewApplication(ctx context.Context, originalApplicationID string, prNumber int, id string) (*Application, error)
+	CreatePreview(ctx context.Context, originalApplicationID string, prNumber int, id string) (*Application, error)
 }

@@ -18,7 +18,7 @@ import {
 
 export default function NewProjectPage() {
 	const navigate = useNavigate();
-	const { currentUser } = useSession();
+	const { me } = useSession();
 	const { data: users } = useUsersQuery();
 	const { mutateAsync: createProject, isPending } = useCreateProject();
 
@@ -38,9 +38,9 @@ export default function NewProjectPage() {
 
 	// ユーザー一覧取得後にデフォルト owner をセット
 	useEffect(() => {
-		const defaultId = currentUser?.id ?? users[0]?.id;
+		const defaultId = me?.id ?? users[0]?.id;
 		if (defaultId) setValue("ownerId", defaultId);
-	}, [currentUser, users, setValue]);
+	}, [me, users, setValue]);
 
 	const onSubmit = async (data: CreateProjectOutput) => {
 		await createProject(data);

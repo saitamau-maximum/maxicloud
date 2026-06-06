@@ -2,97 +2,120 @@ package postgres
 
 import (
 	"context"
-	"fmt"
-	"sync"
+	"errors"
+	"time"
 
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
+	"github.com/saitamau-maximum/maxicloud/internal/infra/postgres/db"
 )
 
-// TODO: あとでちゃんとなんかしらのDBにする
-type deploymentRepository struct {
-	mu   sync.RWMutex
-	data map[string]domain.Deployment
+type deploymentHistoryRepository struct {
+	q *db.Queries
 }
 
-var _ domain.DeploymentRepository = (*deploymentRepository)(nil)
+var _ domain.DeploymentHistoryRepository = (*deploymentHistoryRepository)(nil)
 
-func NewDeploymentRepository() domain.DeploymentRepository {
-	return &deploymentRepository{
-		data: make(map[string]domain.Deployment),
+func NewDeploymentHistoryRepository(pool *pgxpool.Pool) domain.DeploymentHistoryRepository {
+	return &deploymentHistoryRepository{q: db.New(pool)}
+}
+
+func (r *deploymentHistoryRepository) Create(ctx context.Context, d domain.Deployment) (string, error) {
+	var prNumber *int32
+	if d.Spec.IsPreview() {
+		v := int32(*d.Spec.PRNumber)
+		prNumber = &v
 	}
+	return r.q.CreateDeploymentHistory(ctx, db.CreateDeploymentHistoryParams{
+		ID:            d.ID,
+		ApplicationID: d.Spec.ApplicationID,
+		OwnerUserID:   d.Spec.OwnerUserID,
+		RepoOwner:     d.Spec.Repo.Owner,
+		RepoName:      d.Spec.Repo.Name,
+		CommitSha:     d.Spec.Commit.SHA,
+		CommitMessage: d.Spec.Commit.Message,
+		CommitAuthor:  d.Spec.Commit.AuthorName,
+		CommitAt:      pgtype.Timestamptz{Time: d.Spec.Commit.Timestamp, Valid: true},
+		PrNumber:      prNumber,
+		Status:        string(d.Status),
+		StartedAt:     pgtype.Timestamptz{Time: d.StartedAt, Valid: true},
+	})
 }
 
-func (r *deploymentRepository) CreateDeployment(ctx context.Context, deployment domain.Deployment) (string, error) {
-	id := uuid.NewString()
-	deployment.ID = id
-	r.mu.Lock()
-	r.data[id] = deployment
-	r.mu.Unlock()
-	return id, nil
-}
-
-func (r *deploymentRepository) GetDeployment(ctx context.Context, id string) (*domain.Deployment, error) {
-	r.mu.RLock()
-	d, ok := r.data[id]
-	r.mu.RUnlock()
-	if !ok {
-		return nil, fmt.Errorf("deployment %s not found", id)
+func (r *deploymentHistoryRepository) Get(ctx context.Context, id string) (*domain.Deployment, error) {
+	row, err := r.q.GetDeploymentHistory(ctx, id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
 	}
-	return &d, nil
+	return rowToDomain(row), nil
 }
 
-func (r *deploymentRepository) UpdateDeployment(ctx context.Context, deployment domain.Deployment) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	if _, ok := r.data[deployment.ID]; !ok {
-		return fmt.Errorf("deployment %s not found", deployment.ID)
-	}
-	r.data[deployment.ID] = deployment
-	return nil
-}
-
-func (r *deploymentRepository) RecordDeploymentStatus(ctx context.Context, params domain.RecordDeploymentStatusParams) error {
+func (r *deploymentHistoryRepository) RecordStatus(ctx context.Context, params domain.RecordStatusParams) error {
 	if err := params.Validate(); err != nil {
 		return err
 	}
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	if _, ok := r.data[params.ID]; !ok {
-		return fmt.Errorf("deployment %s not found", params.ID)
+	var finishedAt pgtype.Timestamptz
+	if params.FinishedAt != nil {
+		finishedAt = pgtype.Timestamptz{Time: *params.FinishedAt, Valid: true}
 	}
-	r.data[params.ID] = domain.Deployment{
-		ID:            params.ID,
-		ApplicationID: r.data[params.ID].ApplicationID,
-		OwnerUserID:   r.data[params.ID].OwnerUserID,
-		Repo:          r.data[params.ID].Repo,
-		Commit:        r.data[params.ID].Commit,
-		PRNumber:      r.data[params.ID].PRNumber,
-		Status:        params.Status,
-		StartedAt:     r.data[params.ID].StartedAt,
-		FinishedAt:    params.FinishedAt,
-	}
-	return nil
+	return r.q.UpdateDeploymentHistoryStatus(ctx, db.UpdateDeploymentHistoryStatusParams{
+		ID:         params.ID,
+		Status:     string(params.Status),
+		FinishedAt: finishedAt,
+	})
 }
 
-func (r *deploymentRepository) DeleteDeployment(ctx context.Context, id string) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	if _, ok := r.data[id]; !ok {
-		return fmt.Errorf("deployment %s not found", id)
-	}
-	delete(r.data, id)
-	return nil
+func (r *deploymentHistoryRepository) Delete(ctx context.Context, id string) error {
+	return r.q.DeleteDeploymentHistory(ctx, id)
 }
 
-func (r *deploymentRepository) ListDeploymentsByApplication(ctx context.Context, applicationID string) ([]domain.Deployment, error) {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-	var result []domain.Deployment
-	for _, d := range r.data {
-		if d.ApplicationID == applicationID {
-			result = append(result, d)
-		}
+func (r *deploymentHistoryRepository) ListByApplication(ctx context.Context, applicationID string) ([]domain.Deployment, error) {
+	rows, err := r.q.ListDeploymentHistoriesByApplication(ctx, applicationID)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]domain.Deployment, len(rows))
+	for i, row := range rows {
+		result[i] = *rowToDomain(row)
 	}
 	return result, nil
+}
+
+func rowToDomain(row db.DeploymentHistory) *domain.Deployment {
+	var prNumber *int
+	if row.PrNumber != nil {
+		v := int(*row.PrNumber)
+		prNumber = &v
+	}
+	var finishedAt *time.Time
+	if row.FinishedAt.Valid {
+		t := row.FinishedAt.Time
+		finishedAt = &t
+	}
+	return &domain.Deployment{
+		ID: row.ID,
+		Spec: domain.DeploymentSpec{
+			ApplicationID: row.ApplicationID,
+			OwnerUserID:   row.OwnerUserID,
+			Repo: domain.Repository{
+				Owner: row.RepoOwner,
+				Name:  row.RepoName,
+			},
+			Commit: domain.Commit{
+				SHA:        row.CommitSha,
+				Message:    row.CommitMessage,
+				AuthorName: row.CommitAuthor,
+				Timestamp:  row.CommitAt.Time,
+			},
+			PRNumber: prNumber,
+		},
+		Status:     domain.DeploymentStatus(row.Status),
+		StartedAt:  row.StartedAt.Time,
+		FinishedAt: finishedAt,
+	}
 }

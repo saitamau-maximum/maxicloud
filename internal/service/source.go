@@ -1,4 +1,4 @@
-package usecase
+package service
 
 import (
 	"context"
@@ -7,8 +7,8 @@ import (
 )
 
 type SourceService interface {
-	GetRepositories(ctx context.Context) ([]domain.Repository, error)
-	GetBranches(ctx context.Context, repo domain.Repository) ([]string, error)
+	ListRepositories(ctx context.Context) ([]domain.Repository, error)
+	ListBranches(ctx context.Context, repo domain.Repository) ([]string, error)
 	GetHeadCommit(ctx context.Context, repo domain.Repository, branch string) (domain.Commit, error)
 }
 
@@ -22,12 +22,12 @@ func NewSourceService(srcRepo domain.SourceRepository) SourceService {
 	}
 }
 
-func (s *sourceService) GetRepositories(ctx context.Context) ([]domain.Repository, error) {
-	return s.srcRepo.GetRepositories(ctx)
+func (s *sourceService) ListRepositories(ctx context.Context) ([]domain.Repository, error) {
+	return s.srcRepo.ListRepositories(ctx)
 }
 
-func (s *sourceService) GetBranches(ctx context.Context, repo domain.Repository) ([]string, error) {
-	return s.srcRepo.GetBranches(ctx, repo)
+func (s *sourceService) ListBranches(ctx context.Context, repo domain.Repository) ([]string, error) {
+	return s.srcRepo.ListBranches(ctx, repo)
 }
 
 func (s *sourceService) GetHeadCommit(ctx context.Context, repo domain.Repository, branch string) (domain.Commit, error) {

@@ -44,7 +44,7 @@ type DeploymentPipelineReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 
-	DeployRepo domain.DeploymentRepository
+	DeployRepo domain.DeploymentHistoryRepository
 	Reporter   domain.DeploymentReporter
 }
 

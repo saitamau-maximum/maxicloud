@@ -6,22 +6,23 @@ import (
 	"connectrpc.com/connect"
 	v1 "github.com/saitamau-maximum/maxicloud/gen/maxicloud/v1"
 	"github.com/saitamau-maximum/maxicloud/gen/maxicloud/v1/maxicloudv1connect"
+	"github.com/saitamau-maximum/maxicloud/internal/auth"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
-	"github.com/saitamau-maximum/maxicloud/internal/usecase"
+	"github.com/saitamau-maximum/maxicloud/internal/service"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type ProjectHandler struct {
 	maxicloudv1connect.UnimplementedProjectServiceHandler
-	uc usecase.ProjectUsecase
+	service service.ProjectService
 }
 
-func NewProjectHandler(uc usecase.ProjectUsecase) *ProjectHandler {
-	return &ProjectHandler{uc: uc}
+func NewProjectHandler(svc service.ProjectService) *ProjectHandler {
+	return &ProjectHandler{service: svc}
 }
 
 func (h *ProjectHandler) CreateProject(ctx context.Context, req *v1.CreateProjectRequest) (*v1.CreateProjectResponse, error) {
-	project, err := h.uc.CreateProject(ctx, req.Name, req.Description, req.OwnerUserId)
+	project, err := h.service.Create(ctx, req.Name, req.Description, auth.UserID(ctx))
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -29,7 +30,7 @@ func (h *ProjectHandler) CreateProject(ctx context.Context, req *v1.CreateProjec
 }
 
 func (h *ProjectHandler) GetProject(ctx context.Context, req *v1.GetProjectRequest) (*v1.GetProjectResponse, error) {
-	project, err := h.uc.GetProject(ctx, req.ProjectId)
+	project, err := h.service.Get(ctx, req.ProjectId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -40,7 +41,7 @@ func (h *ProjectHandler) GetProject(ctx context.Context, req *v1.GetProjectReque
 }
 
 func (h *ProjectHandler) ListProjects(ctx context.Context, req *v1.ListProjectsRequest) (*v1.ListProjectsResponse, error) {
-	projects, err := h.uc.ListProjects(ctx)
+	projects, err := h.service.List(ctx)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -52,11 +53,10 @@ func (h *ProjectHandler) ListProjects(ctx context.Context, req *v1.ListProjectsR
 }
 
 func (h *ProjectHandler) UpdateProject(ctx context.Context, req *v1.UpdateProjectRequest) (*v1.UpdateProjectResponse, error) {
-	project, err := h.uc.UpdateProject(ctx, usecase.UpdateProjectParams{
+	project, err := h.service.Update(ctx, service.UpdateProjectParams{
 		ID:          req.ProjectId,
 		Name:        req.Name,
 		Description: req.Description,
-		OwnerID:     req.OwnerUserId,
 	})
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -65,7 +65,7 @@ func (h *ProjectHandler) UpdateProject(ctx context.Context, req *v1.UpdateProjec
 }
 
 func (h *ProjectHandler) DeleteProject(ctx context.Context, req *v1.DeleteProjectRequest) (*v1.DeleteProjectResponse, error) {
-	if err := h.uc.DeleteProject(ctx, req.ProjectId); err != nil {
+	if err := h.service.Delete(ctx, req.ProjectId); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return &v1.DeleteProjectResponse{}, nil

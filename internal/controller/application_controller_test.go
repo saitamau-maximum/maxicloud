@@ -29,7 +29,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	maxicloudv1alpha1 "github.com/saitamau-maximum/maxicloud/api/v1alpha1"
-	"github.com/saitamau-maximum/maxicloud/internal/config"
 )
 
 func newTestAppReconciler() *ApplicationReconciler {
@@ -73,7 +72,7 @@ var _ = Describe("Application Controller", func() {
 				ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: ns},
 			})
 			_ = k8sClient.Delete(ctx, &corev1.Secret{
-				ObjectMeta: metav1.ObjectMeta{Name: config.AppRegistrySecretName(name), Namespace: ns},
+				ObjectMeta: metav1.ObjectMeta{Name: appRegistrySecretName(name), Namespace: ns},
 			})
 		})
 
@@ -97,7 +96,7 @@ var _ = Describe("Application Controller", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			var secret corev1.Secret
-			Expect(k8sClient.Get(ctx, types.NamespacedName{Name: config.AppRegistrySecretName(name), Namespace: ns}, &secret)).To(Succeed())
+			Expect(k8sClient.Get(ctx, types.NamespacedName{Name: appRegistrySecretName(name), Namespace: ns}, &secret)).To(Succeed())
 			Expect(secret.Data).To(HaveKey(corev1.DockerConfigJsonKey))
 		})
 
@@ -132,7 +131,7 @@ var _ = Describe("Application Controller", func() {
 				ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: ns},
 			})
 			_ = k8sClient.Delete(ctx, &corev1.Secret{
-				ObjectMeta: metav1.ObjectMeta{Name: config.AppRegistrySecretName(name), Namespace: ns},
+				ObjectMeta: metav1.ObjectMeta{Name: appRegistrySecretName(name), Namespace: ns},
 			})
 		})
 

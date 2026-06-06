@@ -1,5 +1,5 @@
 import { timestampDate } from "@bufbuild/protobuf/wkt";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { DEPLOYMENT_STATUS } from "~/constants";
 import {
 	type DeploymentStatus,
@@ -12,7 +12,7 @@ type WatchState = {
 	status: DeploymentStatus | null;
 	elapsedSeconds: number;
 	finishedAt?: Date;
-	logLines: string[];
+	logLines: { id: number; line: string }[];
 };
 
 export const useWatchDeployment = (deploymentId: string) => {
@@ -23,6 +23,7 @@ export const useWatchDeployment = (deploymentId: string) => {
 		logLines: [],
 	});
 	const [nowTick, setNowTick] = useState(0);
+	const nextLogID = useRef(0);
 
 	useEffect(() => {
 		const abortController = new AbortController();
@@ -48,7 +49,10 @@ export const useWatchDeployment = (deploymentId: string) => {
 					} else if (e.case === "deploymentLogChunk") {
 						setState((prev) => ({
 							...prev,
-							logLines: [...prev.logLines, ...e.value.lines],
+							logLines: [
+								...prev.logLines,
+								{ id: nextLogID.current++, line: e.value.line },
+							],
 						}));
 					}
 				}
@@ -63,7 +67,10 @@ export const useWatchDeployment = (deploymentId: string) => {
 						: "failed to watch deployment stream";
 				setState((prev) => ({
 					...prev,
-					logLines: [...prev.logLines, `[stream error] ${message}`],
+					logLines: [
+						...prev.logLines,
+						{ id: nextLogID.current++, line: `[stream error] ${message}` },
+					],
 				}));
 			}
 		})();
