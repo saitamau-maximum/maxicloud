@@ -1,6 +1,11 @@
 package meta
 
-import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+import (
+	"strconv"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+)
 
 func ensureMaps(o *metav1.ObjectMeta) {
 	if o.Labels == nil {
@@ -24,8 +29,17 @@ func ReadOwner(labels, annotations map[string]string) string {
 	return labels[LabelOwnerUserID]
 }
 
-func MarkPreview(o *metav1.ObjectMeta, originalApplicationID string) {
+func MarkPreview(o *metav1.ObjectMeta, originalApplicationID string, prNumber int) {
 	ensureMaps(o)
 	o.Labels[LabelPreview] = "true"
-	o.Annotations[AnnotationOriginalAppID] = originalApplicationID
+	o.Labels[LabelOriginalAppID] = originalApplicationID
+	o.Labels[LabelPRNumber] = strconv.Itoa(prNumber)
+}
+
+func SelectPreview(originalApplicationID string, prNumber int) client.MatchingLabels {
+	return client.MatchingLabels{
+		LabelPreview:       "true",
+		LabelOriginalAppID: originalApplicationID,
+		LabelPRNumber:      strconv.Itoa(prNumber),
+	}
 }

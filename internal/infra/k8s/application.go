@@ -8,7 +8,6 @@ import (
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
 	"github.com/saitamau-maximum/maxicloud/internal/infra/k8s/meta"
 	corev1 "k8s.io/api/core/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -49,22 +48,23 @@ func (r *applicationRepository) CreatePreview(ctx context.Context, params domain
 	if err != nil {
 		return nil, err
 	}
+	// すでにPreviewが存在する場合はそのままそれを返す
+	var list maxicloudv1alpha1.ApplicationList
+	if err := r.client.List(ctx, &list, client.InNamespace(namespace), meta.SelectPreview(params.OriginalApplicationID, params.PRNumber)); err != nil {
+		return nil, fmt.Errorf("list preview applications: %w", err)
+	}
+	if len(list.Items) > 0 {
+		return crToApplication(&list.Items[0]), nil
+	}
+
 	cr := &maxicloudv1alpha1.Application{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      params.Name,
 			Namespace: namespace,
 		},
 	}
-
-	// すでにPreviewが存在する場合はそのままそれを返す
-	if err := r.client.Get(ctx, client.ObjectKeyFromObject(cr), cr); err == nil {
-		return crToApplication(cr), nil
-	} else if !apierrors.IsNotFound(err) {
-		return nil, fmt.Errorf("get preview application: %w", err)
-	}
-
 	applyApplicationMetadata(cr, params.ID, params.Name, params.OwnerID, params.Spec)
-	meta.MarkPreview(&cr.ObjectMeta, params.OriginalApplicationID)
+	meta.MarkPreview(&cr.ObjectMeta, params.OriginalApplicationID, params.PRNumber)
 	applyApplicationSpec(&cr.Spec, params.Spec, r.ingressClassName)
 	if err := r.client.Create(ctx, cr); err != nil {
 		return nil, fmt.Errorf("create preview application: %w", err)

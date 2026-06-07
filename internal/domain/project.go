@@ -27,6 +27,7 @@ type CreatePreviewProjectParams struct {
 	Name                  string
 	OwnerID               string
 	OriginalApplicationID string
+	PRNumber              int
 	CreatedAt             time.Time
 	UpdatedAt             time.Time
 }

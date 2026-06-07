@@ -8,7 +8,6 @@ import (
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
 	"github.com/saitamau-maximum/maxicloud/internal/infra/k8s/meta"
 	corev1 "k8s.io/api/core/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -44,16 +43,18 @@ func (r *projectRepository) Create(ctx context.Context, project domain.Project) 
 }
 
 func (r *projectRepository) CreatePreview(ctx context.Context, params domain.CreatePreviewProjectParams) (*domain.Project, error) {
-	namespace := meta.ProjectNamespace(params.Name, params.OriginalApplicationID)
+	var list corev1.NamespaceList
+	if err := r.client.List(ctx, &list, meta.SelectPreview(params.OriginalApplicationID, params.PRNumber)); err != nil {
+		return nil, fmt.Errorf("list preview namespaces: %w", err)
+	}
+	if len(list.Items) > 0 {
+		return nsToProject(&list.Items[0])
+	}
+
 	ns := &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: namespace,
+			Name: meta.ProjectNamespace(params.Name, params.OriginalApplicationID),
 		},
-	}
-	if err := r.client.Get(ctx, client.ObjectKeyFromObject(ns), ns); err == nil {
-		return nsToProject(ns)
-	} else if !apierrors.IsNotFound(err) {
-		return nil, fmt.Errorf("get preview namespace: %w", err)
 	}
 	meta.ProjectMeta{
 		ID:        params.ID,
@@ -62,7 +63,7 @@ func (r *projectRepository) CreatePreview(ctx context.Context, params domain.Cre
 		CreatedAt: params.CreatedAt,
 		UpdatedAt: params.UpdatedAt,
 	}.Apply(&ns.ObjectMeta)
-	meta.MarkPreview(&ns.ObjectMeta, params.OriginalApplicationID)
+	meta.MarkPreview(&ns.ObjectMeta, params.OriginalApplicationID, params.PRNumber)
 	if err := r.client.Create(ctx, ns); err != nil {
 		return nil, fmt.Errorf("create preview namespace: %w", err)
 	}

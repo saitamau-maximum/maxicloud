@@ -83,6 +83,7 @@ func (s *eventService) deployPreview(ctx context.Context, event domain.Deploymen
 		Name:                  fmt.Sprintf("%s PR #%d", app.Name, prNumber),
 		OwnerID:               app.OwnerID,
 		OriginalApplicationID: app.ID,
+		PRNumber:              prNumber,
 		CreatedAt:             now,
 		UpdatedAt:             now,
 	})
@@ -104,6 +105,7 @@ func (s *eventService) deployPreview(ctx context.Context, event domain.Deploymen
 		Name:                  domain.PreviewName(app.Name, prNumber),
 		OwnerID:               app.OwnerID,
 		OriginalApplicationID: app.ID,
+		PRNumber:              prNumber,
 		Spec:                  previewSpec,
 	})
 	if err != nil {

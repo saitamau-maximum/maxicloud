@@ -195,6 +195,7 @@ type CreatePreviewApplicationParams struct {
 	Name                  string
 	OwnerID               string
 	OriginalApplicationID string
+	PRNumber              int
 	Spec                  ApplicationSpec
 }
 
