@@ -79,7 +79,7 @@ func (s *eventService) deploy(ctx context.Context, event domain.DeploymentEvent,
 func (s *eventService) deployPreview(ctx context.Context, event domain.DeploymentEvent, app domain.Application, prNumber int) error {
 	now := time.Now()
 	previewProject, err := s.projectRepo.CreatePreview(ctx, domain.CreatePreviewProjectParams{
-		ID:                    domain.PreviewProjectID(app.ID, prNumber),
+		ID:                    uuid.New().String(),
 		Name:                  fmt.Sprintf("%s PR #%d", app.Name, prNumber),
 		OwnerID:               app.OwnerID,
 		OriginalApplicationID: app.ID,

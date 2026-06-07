@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
+	"connectrpc.com/validate"
 	"github.com/caarlos0/env/v11"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -136,14 +137,17 @@ func runGateway(cmd *cobra.Command, args []string) error {
 		AllowCredentials: true,
 	}))
 
-	authOpt := connect.WithInterceptors(auth.NewAuthInterceptor(cfg.SessionSecret))
+	connectOpt := connect.WithInterceptors(
+		auth.NewInterceptor(cfg.SessionSecret),
+		validate.NewInterceptor(),
+	)
 	mountAll(r,
-		route(maxicloudv1connect.NewProjectServiceHandler(prjHandler, authOpt)),
-		route(maxicloudv1connect.NewUserServiceHandler(userHandler, authOpt)),
-		route(maxicloudv1connect.NewApplicationServiceHandler(appHandler, authOpt)),
-		route(maxicloudv1connect.NewDeploymentServiceHandler(deployHandler, authOpt)),
-		route(maxicloudv1connect.NewGitHubServiceHandler(ghHandler, authOpt)),
-		route(maxicloudv1connect.NewDomainServiceHandler(domainHandler, authOpt)),
+		route(maxicloudv1connect.NewProjectServiceHandler(prjHandler, connectOpt)),
+		route(maxicloudv1connect.NewUserServiceHandler(userHandler, connectOpt)),
+		route(maxicloudv1connect.NewApplicationServiceHandler(appHandler, connectOpt)),
+		route(maxicloudv1connect.NewDeploymentServiceHandler(deployHandler, connectOpt)),
+		route(maxicloudv1connect.NewGitHubServiceHandler(ghHandler, connectOpt)),
+		route(maxicloudv1connect.NewDomainServiceHandler(domainHandler, connectOpt)),
 	)
 
 	r.Get("/auth/login", authHandler.Login)

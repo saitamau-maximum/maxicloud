@@ -15,32 +15,24 @@ const (
 )
 
 var (
-	nonLabelChar = regexp.MustCompile(`[^A-Za-z0-9._-]+`)
-	edgeNonAlnum = regexp.MustCompile(`^[^A-Za-z0-9]+|[^A-Za-z0-9]+$`)
+	nonLabelChar     = regexp.MustCompile(`[^A-Za-z0-9._-]+`)
+	edgeNonAlnum     = regexp.MustCompile(`^[^A-Za-z0-9]+|[^A-Za-z0-9]+$`)
+	nonNamespaceChar = regexp.MustCompile(`[^a-z0-9-]+`)
+	multiHyphen      = regexp.MustCompile(`-+`)
+	edgeHyphen       = regexp.MustCompile(`^-+|-+$`)
 )
 
-func ProjectNamespace(projectID string) string {
-	return namespacePrefix + projectID
-}
+func ProjectNamespace(projectName string, stableKey string) string {
+	const suffixHexBytes = 4
 
-func ProjectIDFromNamespace(namespace string) string {
-	return strings.TrimPrefix(namespace, namespacePrefix)
-}
+	normalized := normalizeNamespaceBase(projectName, "project")
+	suffix := hashSuffix(stableKey, suffixHexBytes)
+	maxBaseLen := maxLabelLen - len(namespacePrefix) - len(suffix)
+	normalized = truncateNormalizedBase(normalized, maxBaseLen, "project", func(s string) string {
+		return edgeHyphen.ReplaceAllString(s, "")
+	})
 
-func PreviewNamespace(originalAppID string, prNumber int) string {
-	base := fmt.Sprintf("%spreview-%s-pr-%d", namespacePrefix, originalAppID, prNumber)
-	if len(base) <= maxLabelLen {
-		return base
-	}
-
-	sum := sha1.Sum([]byte(originalAppID))
-	suffix := fmt.Sprintf("-%x-pr-%d", sum[:4], prNumber)
-	prefix := namespacePrefix + "preview"
-	maxPrefixLen := maxLabelLen - len(suffix)
-	if maxPrefixLen < len(prefix) {
-		prefix = prefix[:max(maxPrefixLen, 1)]
-	}
-	return prefix + suffix
+	return namespacePrefix + normalized + suffix
 }
 
 func TruncateLabelValue(raw string) string {
@@ -54,24 +46,54 @@ func TruncateLabelValue(raw string) string {
 func NormalizeBranchForLabel(branch string) string {
 	const hashBytes = 4
 
-	raw := strings.TrimSpace(branch)
-	normalized := nonLabelChar.ReplaceAllString(raw, "-")
-	normalized = edgeNonAlnum.ReplaceAllString(normalized, "")
-	if normalized == "" {
-		normalized = "branch"
-	}
-
-	sum := sha1.Sum([]byte(raw))
-	suffix := fmt.Sprintf("-%x", sum[:hashBytes])
+	normalized := normalizeLabelBase(branch, "branch")
+	suffix := hashSuffix(strings.TrimSpace(branch), hashBytes)
 	maxBaseLen := maxLabelLen - len(suffix)
-	maxBaseLen = max(maxBaseLen, 1)
-
-	if len(normalized) > maxBaseLen {
-		normalized = normalized[:maxBaseLen]
-		normalized = edgeNonAlnum.ReplaceAllString(normalized, "")
-	}
+	normalized = truncateNormalizedBase(normalized, maxBaseLen, "branch", func(s string) string {
+		return edgeNonAlnum.ReplaceAllString(s, "")
+	})
 
 	return normalized + suffix
+}
+
+func normalizeNamespaceBase(raw string, fallback string) string {
+	base := strings.ToLower(strings.TrimSpace(raw))
+	base = nonNamespaceChar.ReplaceAllString(base, "-")
+	base = multiHyphen.ReplaceAllString(base, "-")
+	base = edgeHyphen.ReplaceAllString(base, "")
+	if base == "" {
+		return fallback
+	}
+	return base
+}
+
+func normalizeLabelBase(raw string, fallback string) string {
+	base := strings.TrimSpace(raw)
+	base = nonLabelChar.ReplaceAllString(base, "-")
+	base = edgeNonAlnum.ReplaceAllString(base, "")
+	if base == "" {
+		return fallback
+	}
+	return base
+}
+
+func hashSuffix(raw string, bytes int) string {
+	sum := sha1.Sum([]byte(raw))
+	return fmt.Sprintf("-%x", sum[:bytes])
+}
+
+func truncateNormalizedBase(base string, maxBaseLen int, fallback string, trim func(string) string) string {
+	maxBaseLen = max(maxBaseLen, 1)
+	if len(base) <= maxBaseLen {
+		return base
+	}
+
+	base = base[:maxBaseLen]
+	base = trim(base)
+	if base == "" {
+		return fallback
+	}
+	return base
 }
 
 func SetOwner(o *metav1.ObjectMeta, ownerID string) {

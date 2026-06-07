@@ -26,10 +26,14 @@ func NewApplicationRepository(c client.Client, ingressClassName string) domain.A
 }
 
 func (r *applicationRepository) Create(ctx context.Context, app domain.CreateApplicationParams) (*domain.Application, error) {
+	namespace, err := projectNamespaceNameByID(ctx, r.client, app.Spec.ProjectID)
+	if err != nil {
+		return nil, err
+	}
 	cr := &maxicloudv1alpha1.Application{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      app.Name,
-			Namespace: meta.ProjectNamespace(app.Spec.ProjectID),
+			Namespace: namespace,
 		},
 	}
 	applyApplicationMetadata(cr, app.ID, app.Name, app.OwnerID, app.Spec)
@@ -41,13 +45,18 @@ func (r *applicationRepository) Create(ctx context.Context, app domain.CreateApp
 }
 
 func (r *applicationRepository) CreatePreview(ctx context.Context, params domain.CreatePreviewApplicationParams) (*domain.Application, error) {
+	namespace, err := projectNamespaceNameByID(ctx, r.client, params.ProjectID)
+	if err != nil {
+		return nil, err
+	}
 	cr := &maxicloudv1alpha1.Application{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      params.Name,
-			Namespace: meta.ProjectNamespace(params.ProjectID),
+			Namespace: namespace,
 		},
 	}
 
+	// すでにPreviewが存在する場合はそのままそれを返す
 	if err := r.client.Get(ctx, client.ObjectKeyFromObject(cr), cr); err == nil {
 		return crToApplication(cr), nil
 	} else if !apierrors.IsNotFound(err) {
@@ -79,7 +88,11 @@ func (r *applicationRepository) List(ctx context.Context, projectID string) ([]d
 	var list maxicloudv1alpha1.ApplicationList
 	opts := []client.ListOption{}
 	if projectID != "" {
-		opts = append(opts, client.InNamespace(meta.ProjectNamespace(projectID)))
+		namespace, err := projectNamespaceNameByID(ctx, r.client, projectID)
+		if err != nil {
+			return nil, err
+		}
+		opts = append(opts, client.InNamespace(namespace))
 	}
 	if err := r.client.List(ctx, &list, opts...); err != nil {
 		return nil, fmt.Errorf("list applications: %w", err)
@@ -185,10 +198,7 @@ func applicationSpecFromCR(app *maxicloudv1alpha1.Application, m meta.AppMeta) d
 }
 
 func projectIDFromApp(app *maxicloudv1alpha1.Application) string {
-	if id := app.Annotations[meta.AnnotationProjectID]; id != "" {
-		return id
-	}
-	return meta.ProjectIDFromNamespace(app.Namespace)
+	return app.Annotations[meta.AnnotationProjectID]
 }
 
 func getAppStatus(app *maxicloudv1alpha1.Application) domain.ApplicationStatus {
@@ -248,6 +258,7 @@ func applyApplicationMetadata(
 		m.RootDomain = spec.Domain.RootDomain
 	}
 	m.Apply(&cr.ObjectMeta)
+	cr.Annotations[meta.AnnotationProjectID] = spec.ProjectID
 }
 
 func applyApplicationSpec(
