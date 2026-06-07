@@ -10,7 +10,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -27,10 +26,11 @@ func NewProjectRepository(c client.Client) domain.ProjectRepository {
 func (r *projectRepository) Create(ctx context.Context, project domain.Project) (string, error) {
 	ns := &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: meta.ProjectNamespace(project.ID),
+			Name: meta.ProjectNamespace(project.Name, project.ID),
 		},
 	}
 	meta.ProjectMeta{
+		ID:          project.ID,
 		Name:        project.Name,
 		OwnerID:     project.OwnerID,
 		Description: project.Description,
@@ -40,15 +40,42 @@ func (r *projectRepository) Create(ctx context.Context, project domain.Project) 
 	if err := r.client.Create(ctx, ns); err != nil {
 		return "", fmt.Errorf("create namespace: %w", err)
 	}
-	return meta.ProjectIDFromNamespace(ns.Name), nil
+	return project.ID, nil
+}
+
+func (r *projectRepository) CreatePreview(ctx context.Context, params domain.CreatePreviewParams) (*domain.Project, error) {
+	nsName := meta.PreviewProjectNamespace(params.OriginalProjectID)
+	ns := &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{Name: nsName},
+	}
+	meta.ProjectMeta{
+		ID:        params.ID,
+		OwnerID:   params.OwnerID,
+		CreatedAt: params.CreatedAt,
+		UpdatedAt: params.UpdatedAt,
+	}.Apply(&ns.ObjectMeta)
+	meta.MarkPreviewNamespace(&ns.ObjectMeta, params.OriginalProjectID)
+
+	if err := r.client.Create(ctx, ns); err != nil {
+		if !apierrors.IsAlreadyExists(err) {
+			return nil, fmt.Errorf("create preview namespace: %w", err)
+		}
+		if err := r.client.Get(ctx, client.ObjectKey{Name: nsName}, ns); err != nil {
+			return nil, fmt.Errorf("get preview namespace: %w", err)
+		}
+	}
+	return nsToProject(ns)
 }
 
 func (r *projectRepository) Get(ctx context.Context, id string) (*domain.Project, error) {
-	var ns corev1.Namespace
-	if err := r.client.Get(ctx, client.ObjectKey{Name: meta.ProjectNamespace(id)}, &ns); err != nil {
-		return nil, client.IgnoreNotFound(err)
+	ns, err := findProjectNamespaceByID(ctx, r.client, id)
+	if err != nil {
+		return nil, err
 	}
-	return nsToProject(&ns)
+	if ns == nil {
+		return nil, nil
+	}
+	return nsToProject(ns)
 }
 
 func (r *projectRepository) List(ctx context.Context) ([]*domain.Project, error) {
@@ -68,58 +95,46 @@ func (r *projectRepository) List(ctx context.Context) ([]*domain.Project, error)
 }
 
 func (r *projectRepository) Update(ctx context.Context, params domain.UpdateProjectParams) error {
-	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
-		var ns corev1.Namespace
-		if err := r.client.Get(ctx, client.ObjectKey{Name: meta.ProjectNamespace(params.ID)}, &ns); err != nil {
-			return fmt.Errorf("get namespace: %w", err)
-		}
+	ns, err := findProjectNamespaceByID(ctx, r.client, params.ID)
+	if err != nil {
+		return err
+	}
+	if ns == nil {
+		return fmt.Errorf("project not found: %s", params.ID)
+	}
 
-		base := ns.DeepCopy()
+	base := ns.DeepCopy()
 
-		if ns.Labels == nil {
-			ns.Labels = map[string]string{}
-		}
-		if ns.Annotations == nil {
-			ns.Annotations = map[string]string{}
-		}
+	if ns.Labels == nil {
+		ns.Labels = map[string]string{}
+	}
+	if ns.Annotations == nil {
+		ns.Annotations = map[string]string{}
+	}
 
-		if params.Name != nil {
-			ns.Labels[meta.LabelProjectName] = *params.Name
-		}
-		if params.OwnerID != nil {
-			meta.SetOwner(&ns.ObjectMeta, *params.OwnerID)
-		}
-		if params.Description != nil {
-			ns.Annotations[meta.AnnotationProjectDescription] = *params.Description
-		}
-		ns.Annotations[meta.AnnotationUpdatedAt] = params.UpdatedAt.Format(time.RFC3339)
+	if params.Name != nil {
+		ns.Labels[meta.LabelProjectName] = *params.Name
+	}
+	if params.OwnerID != nil {
+		meta.SetOwner(&ns.ObjectMeta, *params.OwnerID)
+	}
+	if params.Description != nil {
+		ns.Annotations[meta.AnnotationProjectDescription] = *params.Description
+	}
+	ns.Annotations[meta.AnnotationUpdatedAt] = params.UpdatedAt.Format(time.RFC3339)
 
-		return r.client.Patch(ctx, &ns, client.MergeFrom(base))
-	})
+	return r.client.Patch(ctx, ns, client.MergeFrom(base))
 }
 
 func (r *projectRepository) Delete(ctx context.Context, id string) error {
-	ns := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: meta.ProjectNamespace(id)}}
+	ns, err := findProjectNamespaceByID(ctx, r.client, id)
+	if err != nil {
+		return err
+	}
+	if ns == nil {
+		return nil
+	}
 	return client.IgnoreNotFound(r.client.Delete(ctx, ns))
-}
-
-func (r *projectRepository) CreatePreview(ctx context.Context, original domain.Application, prNumber int) error {
-	ns := &corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: meta.PreviewNamespace(original.ID, prNumber),
-			Labels: map[string]string{
-				meta.LabelPreview:     "true",
-				meta.LabelOwnerUserID: meta.TruncateLabelValue(original.OwnerID),
-			},
-			Annotations: map[string]string{
-				meta.AnnotationProjectID: original.ProjectID,
-			},
-		},
-	}
-	if err := r.client.Create(ctx, ns); err != nil && !apierrors.IsAlreadyExists(err) {
-		return fmt.Errorf("create preview namespace: %w", err)
-	}
-	return nil
 }
 
 func nsToProject(ns *corev1.Namespace) (*domain.Project, error) {
@@ -128,11 +143,35 @@ func nsToProject(ns *corev1.Namespace) (*domain.Project, error) {
 		return nil, err
 	}
 	return &domain.Project{
-		ID:          meta.ProjectIDFromNamespace(ns.Name),
+		ID:          m.ID,
 		Name:        m.Name,
 		OwnerID:     m.OwnerID,
 		Description: m.Description,
 		CreatedAt:   m.CreatedAt,
 		UpdatedAt:   m.UpdatedAt,
 	}, nil
+}
+
+func findProjectNamespaceByID(ctx context.Context, c client.Client, id string) (*corev1.Namespace, error) {
+	var nsList corev1.NamespaceList
+	if err := c.List(ctx, &nsList, client.MatchingLabels{
+		meta.LabelProjectID: id,
+	}); err != nil {
+		return nil, fmt.Errorf("list namespaces by project id: %w", err)
+	}
+	if len(nsList.Items) == 0 {
+		return nil, nil
+	}
+	return &nsList.Items[0], nil
+}
+
+func projectNamespaceNameByID(ctx context.Context, c client.Client, id string) (string, error) {
+	ns, err := findProjectNamespaceByID(ctx, c, id)
+	if err != nil {
+		return "", err
+	}
+	if ns == nil {
+		return "", fmt.Errorf("project namespace not found: %s", id)
+	}
+	return ns.Name, nil
 }

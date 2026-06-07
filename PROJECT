@@ -42,7 +42,7 @@ resources:
   controller: true
   domain: maximum.vc
   group: maxicloud
-  kind: DeploymentPipeline
+  kind: DeployRun
   path: github.com/saitamau-maximum/maxicloud/api/v1alpha1
   version: v1alpha1
 version: "3"

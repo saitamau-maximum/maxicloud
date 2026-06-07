@@ -12,12 +12,13 @@ const (
 	MaxPort = 65535
 )
 
+// Applicationのリソースの状態を表す構造体
 type Application struct {
-	ID        string
-	ProjectID string
-	Name      string
-	Source    ApplicationSource
-	OwnerID   string
+	ID      string
+	Name    string
+	OwnerID string
+	Spec    ApplicationSpec
+
 	Condition ApplicationCondition
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -127,6 +128,7 @@ func (k KeyValue) Validate() error {
 	return nil
 }
 
+// Applicationの設定を表す構造体
 type ApplicationSpec struct {
 	ProjectID   string
 	Source      ApplicationSource
@@ -187,6 +189,16 @@ type UpdateApplicationParams struct {
 	Spec    ApplicationSpec
 }
 
+type CreatePreviewApplicationParams struct {
+	ID                    string
+	ProjectID             string
+	Name                  string
+	OwnerID               string
+	OriginalApplicationID string
+	PRNumber              int
+	Spec                  ApplicationSpec
+}
+
 type ApplicationRepository interface {
 	Create(ctx context.Context, params CreateApplicationParams) (*Application, error)
 	Get(ctx context.Context, id string) (*Application, error)
@@ -195,5 +207,5 @@ type ApplicationRepository interface {
 	Delete(ctx context.Context, id string) error
 	ListByRepo(ctx context.Context, owner, name, branch string) ([]Application, error)
 	ExistsByDomain(ctx context.Context, domain string) (bool, error)
-	CreatePreview(ctx context.Context, originalApplicationID string, prNumber int, id string) (*Application, error)
+	CreatePreview(ctx context.Context, params CreatePreviewApplicationParams) (*Application, error)
 }

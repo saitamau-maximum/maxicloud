@@ -73,7 +73,7 @@ type DeploymentHistoryRepository interface {
 	ListByApplication(ctx context.Context, applicationID string) ([]Deployment, error)
 }
 
-type DeploymentWorkflowRepository interface {
+type DeployRunRepository interface {
 	Create(ctx context.Context, deployment Deployment) (string, error)
 	Get(ctx context.Context, id string) (*Deployment, error)
 	Delete(ctx context.Context, applicationID string, maxHistory int, isPreview bool) error

@@ -7,37 +7,37 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type WorkflowMeta struct {
-	WorkflowID  string
+type DeployRunMeta struct {
+	DeployRunID string
 	AppID       string
 	OwnerUserID string
 	IsPreview   bool
 }
 
-func (m WorkflowMeta) Apply(o *metav1.ObjectMeta) {
+func (m DeployRunMeta) Apply(o *metav1.ObjectMeta) {
 	ensureMaps(o)
-	o.Labels[LabelWorkflowID] = m.WorkflowID
+	o.Labels[LabelDeployRunID] = m.DeployRunID
 	o.Labels[LabelAppID] = m.AppID
 	o.Labels[LabelPreview] = strconv.FormatBool(m.IsPreview)
 	SetOwner(o, m.OwnerUserID)
 }
 
-func WorkflowMetaFrom(o metav1.Object) WorkflowMeta {
+func DeployRunMetaFrom(o metav1.Object) DeployRunMeta {
 	l, a := o.GetLabels(), o.GetAnnotations()
 	isPreview, _ := strconv.ParseBool(l[LabelPreview])
-	return WorkflowMeta{
-		WorkflowID:  l[LabelWorkflowID],
+	return DeployRunMeta{
+		DeployRunID: l[LabelDeployRunID],
 		AppID:       l[LabelAppID],
-		OwnerUserID: readOwner(l, a),
+		OwnerUserID: ReadOwner(l, a),
 		IsPreview:   isPreview,
 	}
 }
 
-func SelectByWorkflowID(id string) client.MatchingLabels {
-	return client.MatchingLabels{LabelWorkflowID: id}
+func SelectByDeployRunID(id string) client.MatchingLabels {
+	return client.MatchingLabels{LabelDeployRunID: id}
 }
 
-func SelectWorkflowsByApp(appID string, isPreview bool) client.MatchingLabels {
+func SelectDeployRunsByApp(appID string, isPreview bool) client.MatchingLabels {
 	return client.MatchingLabels{
 		LabelAppID:   appID,
 		LabelPreview: strconv.FormatBool(isPreview),

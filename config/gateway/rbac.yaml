@@ -16,7 +16,7 @@ rules:
       - maxicloud.maximum.vc
     resources:
       - applications
-      - deploymentpipelines
+      - deployruns
     verbs:
       - get
       - list

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/url"
 	"os"
 	"os/signal"
 	"strings"
@@ -12,6 +11,7 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
+	"connectrpc.com/validate"
 	"github.com/caarlos0/env/v11"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -63,8 +63,7 @@ func runGateway(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	dsn := fmt.Sprintf(
-		"postgresql://%s:%s@%s:%d/%s",
+	dsn := postgresDSN(
 		cfg.PostgreSQLUser,
 		cfg.PostgreSQLPassword,
 		cfg.PostgreSQLHost,
@@ -82,7 +81,7 @@ func runGateway(cmd *cobra.Command, args []string) error {
 	historyRepo := postgres.NewDeploymentHistoryRepository(pool)
 	userRepo := postgres.NewUserRepository(pool)
 	logStreamer := k8s.NewLogStreamer(clientset)
-	deployRepo := k8s.NewDeployRepository(k8sClient, logStreamer)
+	deployRepo := k8s.NewDeployRunRepository(k8sClient, logStreamer)
 	srcRepo := github.NewClient(cfg.GitHubAppID, privateKey, cfg.InstallationID)
 	oidcClient := oidc.NewClient(oidc.Config{
 		Issuer:       cfg.OIDCIssuer,
@@ -138,14 +137,17 @@ func runGateway(cmd *cobra.Command, args []string) error {
 		AllowCredentials: true,
 	}))
 
-	authOpt := connect.WithInterceptors(auth.NewAuthInterceptor(cfg.SessionSecret))
+	connectOpt := connect.WithInterceptors(
+		auth.NewInterceptor(cfg.SessionSecret),
+		validate.NewInterceptor(),
+	)
 	mountAll(r,
-		route(maxicloudv1connect.NewProjectServiceHandler(prjHandler, authOpt)),
-		route(maxicloudv1connect.NewUserServiceHandler(userHandler, authOpt)),
-		route(maxicloudv1connect.NewApplicationServiceHandler(appHandler, authOpt)),
-		route(maxicloudv1connect.NewDeploymentServiceHandler(deployHandler, authOpt)),
-		route(maxicloudv1connect.NewGitHubServiceHandler(ghHandler, authOpt)),
-		route(maxicloudv1connect.NewDomainServiceHandler(domainHandler, authOpt)),
+		route(maxicloudv1connect.NewProjectServiceHandler(prjHandler, connectOpt)),
+		route(maxicloudv1connect.NewUserServiceHandler(userHandler, connectOpt)),
+		route(maxicloudv1connect.NewApplicationServiceHandler(appHandler, connectOpt)),
+		route(maxicloudv1connect.NewDeploymentServiceHandler(deployHandler, connectOpt)),
+		route(maxicloudv1connect.NewGitHubServiceHandler(ghHandler, connectOpt)),
+		route(maxicloudv1connect.NewDomainServiceHandler(domainHandler, connectOpt)),
 	)
 
 	r.Get("/auth/login", authHandler.Login)
@@ -176,53 +178,4 @@ func runGateway(cmd *cobra.Command, args []string) error {
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	return srv.Shutdown(shutdownCtx)
-}
-
-type connectRoute struct {
-	path    string
-	handler http.Handler
-}
-
-func route(path string, h http.Handler) connectRoute {
-	return connectRoute{path: path, handler: h}
-}
-
-func mountAll(r chi.Router, routes ...connectRoute) {
-	for _, route := range routes {
-		r.Mount(route.path, route.handler)
-	}
-}
-
-func splitCSV(value string) []string {
-	if value == "" {
-		return nil
-	}
-	parts := strings.Split(value, ",")
-	items := make([]string, 0, len(parts))
-	for _, part := range parts {
-		part = strings.TrimSpace(part)
-		if part == "" {
-			continue
-		}
-		items = append(items, part)
-	}
-	return items
-}
-
-func allowedOrigins(redirects []string) []string {
-	origins := make([]string, 0, len(redirects))
-	seen := map[string]struct{}{}
-	for _, redirect := range redirects {
-		u, err := url.Parse(redirect)
-		if err != nil || u.Scheme == "" || u.Host == "" {
-			continue
-		}
-		origin := u.Scheme + "://" + u.Host
-		if _, ok := seen[origin]; ok {
-			continue
-		}
-		seen[origin] = struct{}{}
-		origins = append(origins, origin)
-	}
-	return origins
 }

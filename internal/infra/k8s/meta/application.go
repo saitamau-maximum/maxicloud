@@ -21,7 +21,7 @@ func (m AppMeta) Apply(o *metav1.ObjectMeta) {
 	o.Labels[LabelAppName] = m.Name
 	o.Labels[LabelSourceRepoOwner] = m.Repo.Owner
 	o.Labels[LabelSourceRepoName] = m.Repo.Name
-	o.Labels[LabelSourceBranch] = NormalizeBranchForLabel(m.Branch)
+	o.Labels[LabelSourceBranch] = branchLabelValue(m.Branch)
 	SetOwner(o, m.OwnerID)
 
 	o.Annotations[AnnotationSourceBranch] = m.Branch
@@ -37,7 +37,7 @@ func AppMetaFrom(o metav1.Object) AppMeta {
 	return AppMeta{
 		ID:      l[LabelAppID],
 		Name:    l[LabelAppName],
-		OwnerID: readOwner(l, a),
+		OwnerID: ReadOwner(l, a),
 		Repo: domain.Repository{
 			Owner: l[LabelSourceRepoOwner],
 			Name:  l[LabelSourceRepoName],
@@ -57,7 +57,7 @@ func SelectAppsBySource(owner, name, branch string) client.MatchingLabels {
 		LabelSourceRepoName:  name,
 	}
 	if branch != "" {
-		sel[LabelSourceBranch] = NormalizeBranchForLabel(branch)
+		sel[LabelSourceBranch] = branchLabelValue(branch)
 	}
 	return sel
 }

@@ -14,21 +14,21 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type workflowRepository struct {
+type deployRunRepository struct {
 	client   client.Client
 	streamer *logStreamer
 }
 
-var _ domain.DeploymentWorkflowRepository = (*workflowRepository)(nil)
+var _ domain.DeployRunRepository = (*deployRunRepository)(nil)
 
-func NewDeployRepository(c client.Client, streamer *logStreamer) domain.DeploymentWorkflowRepository {
-	return &workflowRepository{
+func NewDeployRunRepository(c client.Client, streamer *logStreamer) domain.DeployRunRepository {
+	return &deployRunRepository{
 		client:   c,
 		streamer: streamer,
 	}
 }
 
-func (r *workflowRepository) Create(ctx context.Context, deployment domain.Deployment) (string, error) {
+func (r *deployRunRepository) Create(ctx context.Context, deployment domain.Deployment) (string, error) {
 	spec := deployment.Spec
 	var appList maxicloudv1alpha1.ApplicationList
 	if err := r.client.List(ctx, &appList, meta.SelectByAppID(spec.ApplicationID)); err != nil {
@@ -39,12 +39,12 @@ func (r *workflowRepository) Create(ctx context.Context, deployment domain.Deplo
 	}
 	namespace := appList.Items[0].Namespace
 
-	cr := &maxicloudv1alpha1.DeploymentPipeline{
+	cr := &maxicloudv1alpha1.DeployRun{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      deployment.ID,
 			Namespace: namespace,
 		},
-		Spec: maxicloudv1alpha1.DeploymentPipelineSpec{
+		Spec: maxicloudv1alpha1.DeployRunSpec{
 			ApplicationName: appList.Items[0].Name,
 			Owner:           spec.Repo.Owner,
 			Repo:            spec.Repo.Name,
@@ -52,22 +52,22 @@ func (r *workflowRepository) Create(ctx context.Context, deployment domain.Deplo
 			PRNumber:        spec.PRNumber,
 		},
 	}
-	meta.WorkflowMeta{
-		WorkflowID:  deployment.ID,
+	meta.DeployRunMeta{
+		DeployRunID: deployment.ID,
 		AppID:       spec.ApplicationID,
 		OwnerUserID: spec.OwnerUserID,
 		IsPreview:   spec.IsPreview(),
 	}.Apply(&cr.ObjectMeta)
 	if err := r.client.Create(ctx, cr); err != nil {
-		return "", fmt.Errorf("create deployment workflow: %w", err)
+		return "", fmt.Errorf("create deploy run: %w", err)
 	}
 	return deployment.ID, nil
 }
 
-func (r *workflowRepository) Get(ctx context.Context, id string) (*domain.Deployment, error) {
-	var list maxicloudv1alpha1.DeploymentPipelineList
-	if err := r.client.List(ctx, &list, meta.SelectByWorkflowID(id)); err != nil {
-		return nil, fmt.Errorf("list deployment workflows: %w", err)
+func (r *deployRunRepository) Get(ctx context.Context, id string) (*domain.Deployment, error) {
+	var list maxicloudv1alpha1.DeployRunList
+	if err := r.client.List(ctx, &list, meta.SelectByDeployRunID(id)); err != nil {
+		return nil, fmt.Errorf("list deploy runs: %w", err)
 	}
 	if len(list.Items) == 0 {
 		return nil, nil
@@ -75,10 +75,10 @@ func (r *workflowRepository) Get(ctx context.Context, id string) (*domain.Deploy
 	return crToDeployment(&list.Items[0]), nil
 }
 
-func (r *workflowRepository) Delete(ctx context.Context, applicationID string, maxHistory int, isPreview bool) error {
-	var list maxicloudv1alpha1.DeploymentPipelineList
-	if err := r.client.List(ctx, &list, meta.SelectWorkflowsByApp(applicationID, isPreview)); err != nil {
-		return fmt.Errorf("list deployment workflows: %w", err)
+func (r *deployRunRepository) Delete(ctx context.Context, applicationID string, maxHistory int, isPreview bool) error {
+	var list maxicloudv1alpha1.DeployRunList
+	if err := r.client.List(ctx, &list, meta.SelectDeployRunsByApp(applicationID, isPreview)); err != nil {
+		return fmt.Errorf("list deploy runs: %w", err)
 	}
 	if len(list.Items) <= maxHistory {
 		return nil
@@ -88,14 +88,14 @@ func (r *workflowRepository) Delete(ctx context.Context, applicationID string, m
 	})
 	for i := 0; i < len(list.Items)-maxHistory; i++ {
 		if err := r.client.Delete(ctx, &list.Items[i]); err != nil {
-			return fmt.Errorf("delete old deployment workflow: %w", err)
+			return fmt.Errorf("delete old deploy run: %w", err)
 		}
 	}
 	return nil
 }
 
-func (r *workflowRepository) Watch(ctx context.Context, deploymentID string) (<-chan string, <-chan error, error) {
-	namespace, err := r.resolveWorkflowNamespace(ctx, deploymentID)
+func (r *deployRunRepository) Watch(ctx context.Context, deploymentID string) (<-chan string, <-chan error, error) {
+	namespace, err := r.resolveDeployRunNamespace(ctx, deploymentID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -122,18 +122,18 @@ func (r *workflowRepository) Watch(ctx context.Context, deploymentID string) (<-
 	return lines, errs, nil
 }
 
-func (r *workflowRepository) resolveWorkflowNamespace(ctx context.Context, deploymentID string) (string, error) {
-	var list maxicloudv1alpha1.DeploymentPipelineList
-	if err := r.client.List(ctx, &list, meta.SelectByWorkflowID(deploymentID)); err != nil {
-		return "", fmt.Errorf("list deployment workflows: %w", err)
+func (r *deployRunRepository) resolveDeployRunNamespace(ctx context.Context, deploymentID string) (string, error) {
+	var list maxicloudv1alpha1.DeployRunList
+	if err := r.client.List(ctx, &list, meta.SelectByDeployRunID(deploymentID)); err != nil {
+		return "", fmt.Errorf("list deploy runs: %w", err)
 	}
 	if len(list.Items) == 0 {
-		return "", fmt.Errorf("deployment workflow not found: %s", deploymentID)
+		return "", fmt.Errorf("deploy run not found: %s", deploymentID)
 	}
 	return list.Items[0].Namespace, nil
 }
 
-func crToDeployment(cr *maxicloudv1alpha1.DeploymentPipeline) *domain.Deployment {
+func crToDeployment(cr *maxicloudv1alpha1.DeployRun) *domain.Deployment {
 	var startedAt time.Time
 	if cr.Status.StartedAt != nil {
 		startedAt = cr.Status.StartedAt.Time
@@ -143,9 +143,9 @@ func crToDeployment(cr *maxicloudv1alpha1.DeploymentPipeline) *domain.Deployment
 		t := cr.Status.FinishedAt.Time
 		finishedAt = &t
 	}
-	m := meta.WorkflowMetaFrom(cr)
+	m := meta.DeployRunMetaFrom(cr)
 	return &domain.Deployment{
-		ID: m.WorkflowID,
+		ID: m.DeployRunID,
 		Spec: domain.DeploymentSpec{
 			ApplicationID: m.AppID,
 			OwnerUserID:   m.OwnerUserID,
@@ -164,13 +164,13 @@ func crToDeployment(cr *maxicloudv1alpha1.DeploymentPipeline) *domain.Deployment
 	}
 }
 
-func phaseToStatus(phase maxicloudv1alpha1.DeploymentPipelinePhase) domain.DeploymentStatus {
+func phaseToStatus(phase maxicloudv1alpha1.DeployRunPhase) domain.DeploymentStatus {
 	switch phase {
-	case maxicloudv1alpha1.DeploymentPipelinePhaseBuilding, maxicloudv1alpha1.DeploymentPipelinePhaseDeploying:
+	case maxicloudv1alpha1.DeployRunPhaseBuilding, maxicloudv1alpha1.DeployRunPhaseDeploying:
 		return domain.DeploymentStatusInProgress
-	case maxicloudv1alpha1.DeploymentPipelinePhaseSucceeded:
+	case maxicloudv1alpha1.DeployRunPhaseSucceeded:
 		return domain.DeploymentStatusSucceeded
-	case maxicloudv1alpha1.DeploymentPipelinePhaseFailed:
+	case maxicloudv1alpha1.DeployRunPhaseFailed:
 		return domain.DeploymentStatusFailed
 	default:
 		return domain.DeploymentStatusQueued

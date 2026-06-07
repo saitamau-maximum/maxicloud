@@ -4,14 +4,14 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.20.1
-  name: deploymentpipelines.maxicloud.maximum.vc
+  name: deployruns.maxicloud.maximum.vc
 spec:
   group: maxicloud.maximum.vc
   names:
-    kind: DeploymentPipeline
-    listKind: DeploymentPipelineList
-    plural: deploymentpipelines
-    singular: deploymentpipeline
+    kind: DeployRun
+    listKind: DeployRunList
+    plural: deployruns
+    singular: deployrun
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -27,8 +27,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: DeploymentPipeline is the Schema for the deploymentpipelines
-          API
+        description: DeployRun is the Schema for the deployruns API
         properties:
           apiVersion:
             description: |-
@@ -48,7 +47,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: DeploymentPipelineSpec defines the desired state of DeploymentPipeline
+            description: DeployRunSpec defines the desired state of DeployRun
             properties:
               applicationName:
                 description: ApplicationName is the name of the Application CR to
@@ -74,7 +73,7 @@ spec:
             - sha
             type: object
           status:
-            description: DeploymentPipelineStatus defines the observed state of DeploymentPipeline.
+            description: DeployRunStatus defines the observed state of DeployRun.
             properties:
               buildRunRef:
                 description: BuildRunRef is the name of the BuildRun CR created for
@@ -86,7 +85,7 @@ spec:
                 format: int64
                 type: integer
               conditions:
-                description: Conditions contains the conditions for the DeploymentPipeline.
+                description: Conditions contains the conditions for the DeployRun.
                 items:
                   description: Condition contains details for one aspect of the current
                     state of this API Resource.

@@ -3,6 +3,7 @@ package deployment
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
@@ -51,7 +52,7 @@ func (s *eventService) deployMatchingApplications(ctx context.Context, event dom
 
 	for _, app := range apps {
 		if prNumber == nil {
-			if err := s.deployProduction(ctx, event, app); err != nil {
+			if err := s.deploy(ctx, event, app); err != nil {
 				return err
 			}
 			continue
@@ -63,7 +64,7 @@ func (s *eventService) deployMatchingApplications(ctx context.Context, event dom
 	return nil
 }
 
-func (s *eventService) deployProduction(ctx context.Context, event domain.DeploymentEvent, app domain.Application) error {
+func (s *eventService) deploy(ctx context.Context, event domain.DeploymentEvent, app domain.Application) error {
 	if _, err := s.deploySvc.Deploy(ctx, domain.DeploymentSpec{
 		ApplicationID: app.ID,
 		OwnerUserID:   app.OwnerID,
@@ -76,10 +77,35 @@ func (s *eventService) deployProduction(ctx context.Context, event domain.Deploy
 }
 
 func (s *eventService) deployPreview(ctx context.Context, event domain.DeploymentEvent, app domain.Application, prNumber int) error {
-	if err := s.projectRepo.CreatePreview(ctx, app, prNumber); err != nil {
+	now := time.Now()
+	previewProject, err := s.projectRepo.CreatePreview(ctx, domain.CreatePreviewParams{
+		ID:                uuid.New().String(),
+		OriginalProjectID: app.Spec.ProjectID,
+		OwnerID:           app.OwnerID,
+		CreatedAt:         now,
+		UpdatedAt:         now,
+	})
+	if err != nil {
 		return fmt.Errorf("create preview project for %s: %w", app.ID, err)
 	}
-	preview, err := s.appRepo.CreatePreview(ctx, app.ID, prNumber, uuid.New().String())
+
+	previewSpec := app.Spec
+	previewSpec.ProjectID = previewProject.ID
+	previewSpec.Source.Branch = domain.PreviewBranch(prNumber)
+	if previewSpec.Domain != nil {
+		previewDomain := previewSpec.Domain.Preview(prNumber)
+		previewSpec.Domain = &previewDomain
+	}
+
+	preview, err := s.appRepo.CreatePreview(ctx, domain.CreatePreviewApplicationParams{
+		ID:                    uuid.New().String(),
+		ProjectID:             previewProject.ID,
+		Name:                  domain.PreviewName(app.Name, prNumber),
+		OwnerID:               app.OwnerID,
+		OriginalApplicationID: app.ID,
+		PRNumber:              prNumber,
+		Spec:                  previewSpec,
+	})
 	if err != nil {
 		return fmt.Errorf("create preview application for %s: %w", app.ID, err)
 	}
