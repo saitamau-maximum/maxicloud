@@ -9,6 +9,7 @@ import (
 )
 
 type ProjectMeta struct {
+	ID          string
 	Name        string
 	OwnerID     string
 	Description string
@@ -19,6 +20,7 @@ type ProjectMeta struct {
 func (m ProjectMeta) Apply(o *metav1.ObjectMeta) {
 	ensureMaps(o)
 	o.Labels[LabelProject] = "true"
+	o.Labels[LabelProjectID] = m.ID
 	o.Labels[LabelProjectName] = m.Name
 	SetOwner(o, m.OwnerID)
 
@@ -38,6 +40,7 @@ func ProjectMetaFrom(o metav1.Object) (ProjectMeta, error) {
 		return ProjectMeta{}, fmt.Errorf("parse updatedAt: %w", err)
 	}
 	return ProjectMeta{
+		ID:          l[LabelProjectID],
 		Name:        l[LabelProjectName],
 		OwnerID:     readOwner(l, a),
 		Description: a[AnnotationProjectDescription],

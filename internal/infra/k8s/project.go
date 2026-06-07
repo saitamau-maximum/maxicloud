@@ -43,6 +43,30 @@ func (r *projectRepository) Create(ctx context.Context, project domain.Project) 
 	return meta.ProjectIDFromNamespace(ns.Name), nil
 }
 
+func (r *projectRepository) CreatePreview(ctx context.Context, params domain.CreatePreviewProjectParams) (*domain.Project, error) {
+	ns := &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: meta.ProjectNamespace(params.ID),
+		},
+	}
+	meta.ProjectMeta{
+		Name:      params.Name,
+		OwnerID:   params.OwnerID,
+		CreatedAt: params.CreatedAt,
+		UpdatedAt: params.UpdatedAt,
+	}.Apply(&ns.ObjectMeta)
+	meta.MarkPreview(&ns.ObjectMeta, params.OriginalApplicationID)
+	if err := r.client.Create(ctx, ns); err != nil {
+		if !apierrors.IsAlreadyExists(err) {
+			return nil, fmt.Errorf("create preview namespace: %w", err)
+		}
+		if err := r.client.Get(ctx, client.ObjectKeyFromObject(ns), ns); err != nil {
+			return nil, fmt.Errorf("get preview namespace: %w", err)
+		}
+	}
+	return nsToProject(ns)
+}
+
 func (r *projectRepository) Get(ctx context.Context, id string) (*domain.Project, error) {
 	var ns corev1.Namespace
 	if err := r.client.Get(ctx, client.ObjectKey{Name: meta.ProjectNamespace(id)}, &ns); err != nil {
@@ -101,25 +125,6 @@ func (r *projectRepository) Update(ctx context.Context, params domain.UpdateProj
 func (r *projectRepository) Delete(ctx context.Context, id string) error {
 	ns := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: meta.ProjectNamespace(id)}}
 	return client.IgnoreNotFound(r.client.Delete(ctx, ns))
-}
-
-func (r *projectRepository) CreatePreview(ctx context.Context, original domain.Application, prNumber int) error {
-	ns := &corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: meta.PreviewNamespace(original.ID, prNumber),
-			Labels: map[string]string{
-				meta.LabelPreview:     "true",
-				meta.LabelOwnerUserID: meta.TruncateLabelValue(original.OwnerID),
-			},
-			Annotations: map[string]string{
-				meta.AnnotationProjectID: original.ProjectID,
-			},
-		},
-	}
-	if err := r.client.Create(ctx, ns); err != nil && !apierrors.IsAlreadyExists(err) {
-		return fmt.Errorf("create preview namespace: %w", err)
-	}
-	return nil
 }
 
 func nsToProject(ns *corev1.Namespace) (*domain.Project, error) {

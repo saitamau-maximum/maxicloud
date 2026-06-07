@@ -100,15 +100,15 @@ func toProtoApplication(a *domain.Application) *v1.Application {
 	}
 	return &v1.Application{
 		Id:          a.ID,
-		ProjectId:   a.ProjectID,
+		ProjectId:   a.Spec.ProjectID,
 		Name:        a.Name,
 		OwnerUserId: a.OwnerID,
 		Source: &v1.ApplicationSource{
 			Repository: &v1.Repository{
-				Name:  a.Source.Repo.Name,
-				Owner: a.Source.Repo.Owner,
+				Name:  a.Spec.Source.Repo.Name,
+				Owner: a.Spec.Source.Repo.Owner,
 			},
-			Branch: a.Source.Branch,
+			Branch: a.Spec.Source.Branch,
 		},
 		Condition: &v1.ApplicationCondition{
 			Status: toProtoAppStatus(a.Condition.Status),

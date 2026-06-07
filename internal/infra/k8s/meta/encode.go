@@ -80,6 +80,12 @@ func SetOwner(o *metav1.ObjectMeta, ownerID string) {
 	o.Annotations[AnnotationOwnerUserID] = ownerID
 }
 
+func MarkPreview(o *metav1.ObjectMeta, originalApplicationID string) {
+	ensureMaps(o)
+	o.Labels[LabelPreview] = "true"
+	o.Annotations[AnnotationOriginalAppID] = originalApplicationID
+}
+
 func readOwner(labels, annotations map[string]string) string {
 	if v := annotations[AnnotationOwnerUserID]; v != "" {
 		return v

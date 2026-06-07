@@ -15,6 +15,7 @@ const (
 	LabelDeployRunID     = labelPrefix + "deploy-run-id"
 	LabelPreview         = labelPrefix + "preview"
 	LabelProject         = labelPrefix + "project"
+	LabelProjectID       = labelPrefix + "project-id"
 	LabelProjectName     = labelPrefix + "project-name"
 )
 
@@ -22,6 +23,7 @@ const (
 	AnnotationSourceBranch       = annotationPrefix + "source-branch"
 	AnnotationRootDomain         = annotationPrefix + "root-domain"
 	AnnotationProjectID          = annotationPrefix + "project-id"
+	AnnotationOriginalAppID      = annotationPrefix + "original-application-id"
 	AnnotationOwnerUserID        = annotationPrefix + "owner-user-id"
 	AnnotationProjectDescription = annotationPrefix + "project-description"
 	AnnotationCreatedAt          = annotationPrefix + "created-at"

@@ -73,7 +73,7 @@ func (u *applicationService) Create(ctx context.Context, params CreateApplicatio
 		Application: app,
 	}
 
-	headCommit, err := u.sourceSvc.GetHeadCommit(ctx, app.Source.Repo, app.Source.Branch)
+	headCommit, err := u.sourceSvc.GetHeadCommit(ctx, app.Spec.Source.Repo, app.Spec.Source.Branch)
 	if err != nil {
 		result.InitialDeploymentError = fmt.Sprintf("failed to resolve HEAD commit: %v", err)
 		return result, nil
@@ -82,7 +82,7 @@ func (u *applicationService) Create(ctx context.Context, params CreateApplicatio
 	deployID, err := u.deploySvc.Deploy(ctx, domain.DeploymentSpec{
 		ApplicationID: app.ID,
 		OwnerUserID:   app.OwnerID,
-		Repo:          app.Source.Repo,
+		Repo:          app.Spec.Source.Repo,
 		Commit:        headCommit,
 	})
 	if err != nil {
@@ -114,18 +114,10 @@ func (u *applicationService) Update(ctx context.Context, params UpdateApplicatio
 	if err := params.Spec.Validate(); err != nil {
 		return nil, err
 	}
-	existing, err := u.appRepo.Get(ctx, params.ID)
-	if err != nil {
-		return nil, err
-	}
-	existing.ProjectID = params.Spec.ProjectID
-	existing.Name = params.Name
-	existing.OwnerID = params.OwnerID
-	existing.Source = params.Spec.Source
 	if err := u.appRepo.Update(ctx, domain.UpdateApplicationParams{
-		ID:      existing.ID,
-		Name:    existing.Name,
-		OwnerID: existing.OwnerID,
+		ID:      params.ID,
+		Name:    params.Name,
+		OwnerID: params.OwnerID,
 		Spec:    params.Spec,
 	}); err != nil {
 		return nil, err
