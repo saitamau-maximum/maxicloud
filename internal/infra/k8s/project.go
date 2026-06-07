@@ -8,6 +8,7 @@ import (
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
 	"github.com/saitamau-maximum/maxicloud/internal/infra/k8s/meta"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -42,30 +43,26 @@ func (r *projectRepository) Create(ctx context.Context, project domain.Project) 
 	return project.ID, nil
 }
 
-func (r *projectRepository) CreatePreview(ctx context.Context, params domain.CreatePreviewProjectParams) (*domain.Project, error) {
-	var list corev1.NamespaceList
-	if err := r.client.List(ctx, &list, meta.SelectPreview(params.OriginalApplicationID, params.PRNumber)); err != nil {
-		return nil, fmt.Errorf("list preview namespaces: %w", err)
-	}
-	if len(list.Items) > 0 {
-		return nsToProject(&list.Items[0])
-	}
-
+func (r *projectRepository) CreatePreview(ctx context.Context, params domain.CreatePreviewParams) (*domain.Project, error) {
+	nsName := meta.PreviewProjectNamespace(params.OriginalProjectID)
 	ns := &corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: meta.ProjectNamespace(params.Name, params.OriginalApplicationID),
-		},
+		ObjectMeta: metav1.ObjectMeta{Name: nsName},
 	}
 	meta.ProjectMeta{
 		ID:        params.ID,
-		Name:      params.Name,
 		OwnerID:   params.OwnerID,
 		CreatedAt: params.CreatedAt,
 		UpdatedAt: params.UpdatedAt,
 	}.Apply(&ns.ObjectMeta)
-	meta.MarkPreview(&ns.ObjectMeta, params.OriginalApplicationID, params.PRNumber)
+	meta.MarkPreviewNamespace(&ns.ObjectMeta, params.OriginalProjectID)
+
 	if err := r.client.Create(ctx, ns); err != nil {
-		return nil, fmt.Errorf("create preview namespace: %w", err)
+		if !apierrors.IsAlreadyExists(err) {
+			return nil, fmt.Errorf("create preview namespace: %w", err)
+		}
+		if err := r.client.Get(ctx, client.ObjectKey{Name: nsName}, ns); err != nil {
+			return nil, fmt.Errorf("get preview namespace: %w", err)
+		}
 	}
 	return nsToProject(ns)
 }
@@ -158,7 +155,6 @@ func nsToProject(ns *corev1.Namespace) (*domain.Project, error) {
 func findProjectNamespaceByID(ctx context.Context, c client.Client, id string) (*corev1.Namespace, error) {
 	var nsList corev1.NamespaceList
 	if err := c.List(ctx, &nsList, client.MatchingLabels{
-		meta.LabelProject:   "true",
 		meta.LabelProjectID: id,
 	}); err != nil {
 		return nil, fmt.Errorf("list namespaces by project id: %w", err)

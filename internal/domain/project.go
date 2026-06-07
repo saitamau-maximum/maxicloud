@@ -22,14 +22,12 @@ type UpdateProjectParams struct {
 	UpdatedAt   time.Time
 }
 
-type CreatePreviewProjectParams struct {
-	ID                    string
-	Name                  string
-	OwnerID               string
-	OriginalApplicationID string
-	PRNumber              int
-	CreatedAt             time.Time
-	UpdatedAt             time.Time
+type CreatePreviewParams struct {
+	ID                string
+	OriginalProjectID string
+	OwnerID           string
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
 }
 
 type ProjectRepository interface {
@@ -38,5 +36,5 @@ type ProjectRepository interface {
 	List(ctx context.Context) ([]*Project, error)
 	Update(ctx context.Context, params UpdateProjectParams) error
 	Delete(ctx context.Context, id string) error
-	CreatePreview(ctx context.Context, params CreatePreviewProjectParams) (*Project, error)
+	CreatePreview(ctx context.Context, params CreatePreviewParams) (*Project, error)
 }

@@ -4,7 +4,6 @@ import (
 	"strconv"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func ensureMaps(o *metav1.ObjectMeta) {
@@ -29,17 +28,15 @@ func ReadOwner(labels, annotations map[string]string) string {
 	return labels[LabelOwnerUserID]
 }
 
+func MarkPreviewNamespace(o *metav1.ObjectMeta, originalProjectID string) {
+	ensureMaps(o)
+	o.Labels[LabelPreview] = "true"
+	o.Labels[LabelOriginalProjectID] = originalProjectID
+}
+
 func MarkPreview(o *metav1.ObjectMeta, originalApplicationID string, prNumber int) {
 	ensureMaps(o)
 	o.Labels[LabelPreview] = "true"
 	o.Labels[LabelOriginalAppID] = originalApplicationID
 	o.Labels[LabelPRNumber] = strconv.Itoa(prNumber)
-}
-
-func SelectPreview(originalApplicationID string, prNumber int) client.MatchingLabels {
-	return client.MatchingLabels{
-		LabelPreview:       "true",
-		LabelOriginalAppID: originalApplicationID,
-		LabelPRNumber:      strconv.Itoa(prNumber),
-	}
 }

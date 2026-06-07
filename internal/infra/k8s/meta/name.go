@@ -85,6 +85,12 @@ func ProjectNamespace(name, stableKey string) string {
 	return dnsLabel.encode(name, stableKey, namespacePrefix)
 }
 
+// PreviewProjectNamespace はプロジェクト ID から決定的な preview Namespace 名を作る。
+func PreviewProjectNamespace(originalProjectID string) string {
+	// TODO: 今後もし Namespace 名で どのプロジェクトの Preview かを識別したくなったら name 引数も受け取るようにする
+	return dnsLabel.encode("preview", originalProjectID, namespacePrefix)
+}
+
 // branchLabelValue はブランチ名を Kubernetes ラベル値へ変換する。
 func branchLabelValue(branch string) string {
 	return labelValue.encode(branch, branch, "")
