@@ -30,13 +30,13 @@ func ReadOwner(labels, annotations map[string]string) string {
 
 func MarkPreviewNamespace(o *metav1.ObjectMeta, originalProjectID string) {
 	ensureMaps(o)
-	o.Labels[LabelPreview] = "true"
+	o.Labels[LabelPreview] = labelValueTrue
 	o.Labels[LabelOriginalProjectID] = originalProjectID
 }
 
 func MarkPreview(o *metav1.ObjectMeta, originalApplicationID string, prNumber int) {
 	ensureMaps(o)
-	o.Labels[LabelPreview] = "true"
+	o.Labels[LabelPreview] = labelValueTrue
 	o.Labels[LabelOriginalAppID] = originalApplicationID
 	o.Labels[LabelPRNumber] = strconv.Itoa(prNumber)
 }
