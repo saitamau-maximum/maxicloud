@@ -2,7 +2,6 @@ package meta
 
 import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-// ensureMaps は Labels / Annotations が nil の場合に初期化する。
 func ensureMaps(o *metav1.ObjectMeta) {
 	if o.Labels == nil {
 		o.Labels = map[string]string{}
@@ -30,4 +29,3 @@ func MarkPreview(o *metav1.ObjectMeta, originalApplicationID string) {
 	o.Labels[LabelPreview] = "true"
 	o.Annotations[AnnotationOriginalAppID] = originalApplicationID
 }
-
