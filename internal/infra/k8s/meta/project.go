@@ -42,7 +42,7 @@ func ProjectMetaFrom(o metav1.Object) (ProjectMeta, error) {
 	return ProjectMeta{
 		ID:          l[LabelProjectID],
 		Name:        l[LabelProjectName],
-		OwnerID:     readOwner(l, a),
+		OwnerID:     ReadOwner(l, a),
 		Description: a[AnnotationProjectDescription],
 		CreatedAt:   createdAt,
 		UpdatedAt:   updatedAt,

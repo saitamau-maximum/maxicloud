@@ -154,6 +154,61 @@ func (r *applicationRepository) ExistsByDomain(ctx context.Context, fqdn string)
 	return false, nil
 }
 
+func buildApplicationEnvVar(spec domain.ApplicationSpec) []corev1.EnvVar {
+	env := make([]corev1.EnvVar, 0, len(spec.Env)+len(spec.Secrets))
+	for _, kv := range spec.Env {
+		env = append(env, corev1.EnvVar{
+			Name:  kv.Key,
+			Value: kv.Value,
+		})
+	}
+	for _, kv := range spec.Secrets {
+		env = append(env, corev1.EnvVar{
+			Name:  kv.Key,
+			Value: kv.Value,
+		})
+	}
+	return env
+}
+
+func applyApplicationMetadata(
+	cr *maxicloudv1alpha1.Application,
+	id string,
+	name string,
+	ownerID string,
+	spec domain.ApplicationSpec,
+) {
+	m := meta.AppMeta{
+		ID:      id,
+		Name:    name,
+		OwnerID: ownerID,
+		Repo:    spec.Source.Repo,
+		Branch:  spec.Source.Branch,
+	}
+	if spec.Domain != nil {
+		m.RootDomain = spec.Domain.RootDomain
+	}
+	m.Apply(&cr.ObjectMeta)
+	cr.Annotations[meta.AnnotationProjectID] = spec.ProjectID
+}
+
+func applyApplicationSpec(
+	spec *maxicloudv1alpha1.ApplicationSpec,
+	params domain.ApplicationSpec,
+	ingressClassName string,
+) {
+	spec.Env = buildApplicationEnvVar(params)
+	if params.Domain == nil {
+		spec.Expose = nil
+		return
+	}
+	spec.Expose = &maxicloudv1alpha1.ExposeConfig{
+		Domain:           params.Domain.FQDN(),
+		Port:             params.Port,
+		IngressClassName: ingressClassName,
+	}
+}
+
 func crToApplication(app *maxicloudv1alpha1.Application) *domain.Application {
 	m := meta.AppMetaFrom(app)
 	spec := applicationSpecFromCR(app, m)
@@ -221,59 +276,4 @@ func getAppDomain(app *maxicloudv1alpha1.Application) *domain.Domain {
 		return nil
 	}
 	return &d
-}
-
-func buildApplicationEnvVar(spec domain.ApplicationSpec) []corev1.EnvVar {
-	env := make([]corev1.EnvVar, 0, len(spec.Env)+len(spec.Secrets))
-	for _, kv := range spec.Env {
-		env = append(env, corev1.EnvVar{
-			Name:  kv.Key,
-			Value: kv.Value,
-		})
-	}
-	for _, kv := range spec.Secrets {
-		env = append(env, corev1.EnvVar{
-			Name:  kv.Key,
-			Value: kv.Value,
-		})
-	}
-	return env
-}
-
-func applyApplicationMetadata(
-	cr *maxicloudv1alpha1.Application,
-	id string,
-	name string,
-	ownerID string,
-	spec domain.ApplicationSpec,
-) {
-	m := meta.AppMeta{
-		ID:      id,
-		Name:    name,
-		OwnerID: ownerID,
-		Repo:    spec.Source.Repo,
-		Branch:  spec.Source.Branch,
-	}
-	if spec.Domain != nil {
-		m.RootDomain = spec.Domain.RootDomain
-	}
-	m.Apply(&cr.ObjectMeta)
-	cr.Annotations[meta.AnnotationProjectID] = spec.ProjectID
-}
-
-func applyApplicationSpec(
-	spec *maxicloudv1alpha1.ApplicationSpec,
-	params domain.ApplicationSpec,
-	ingressClassName string,
-) {
-	spec.Env = buildApplicationEnvVar(params)
-	if params.Domain == nil {
-		spec.Expose = nil
-		return
-	}
-	spec.Expose = &maxicloudv1alpha1.ExposeConfig{
-		Domain:           params.Domain.FQDN(),
-		Port:             params.Port,
-		IngressClassName: ingressClassName,
-	}
 }

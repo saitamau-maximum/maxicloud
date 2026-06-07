@@ -27,7 +27,7 @@ func TestAppMeta_RoundTrip(t *testing.T) {
 	if got != want {
 		t.Fatalf("AppMetaFrom(Apply(m)) = %+v, want %+v", got, want)
 	}
-	if om.Labels[LabelOwnerUserID] != TruncateLabelValue(want.OwnerID) {
+	if om.Labels[LabelOwnerUserID] != clampLabelValue(want.OwnerID) {
 		t.Fatalf("owner label = %q, want truncated", om.Labels[LabelOwnerUserID])
 	}
 }

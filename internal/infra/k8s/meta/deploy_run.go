@@ -28,7 +28,7 @@ func DeployRunMetaFrom(o metav1.Object) DeployRunMeta {
 	return DeployRunMeta{
 		DeployRunID: l[LabelDeployRunID],
 		AppID:       l[LabelAppID],
-		OwnerUserID: readOwner(l, a),
+		OwnerUserID: ReadOwner(l, a),
 		IsPreview:   isPreview,
 	}
 }

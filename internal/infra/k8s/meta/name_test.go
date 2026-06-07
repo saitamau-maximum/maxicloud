@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestNormalizeBranchForLabel(t *testing.T) {
+func TestBranchLabelValue(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -62,25 +62,25 @@ func TestNormalizeBranchForLabel(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got := NormalizeBranchForLabel(tt.in)
+			got := branchLabelValue(tt.in)
 			if !strings.HasPrefix(got, tt.expectPrefix) {
-				t.Fatalf("NormalizeBranchForLabel(%q) = %q, want prefix %q", tt.in, got, tt.expectPrefix)
+				t.Fatalf("branchLabelValue(%q) = %q, want prefix %q", tt.in, got, tt.expectPrefix)
 			}
 			if !hexSuffixPattern.MatchString(got) {
-				t.Fatalf("NormalizeBranchForLabel(%q) = %q, want suffix matching %q", tt.in, got, hexSuffixPattern.String())
+				t.Fatalf("branchLabelValue(%q) = %q, want suffix matching %q", tt.in, got, hexSuffixPattern.String())
 			}
-			if len(got) > 63 {
-				t.Fatalf("NormalizeBranchForLabel(%q) len = %d, want <= 63", tt.in, len(got))
+			if len(got) > maxNameLen {
+				t.Fatalf("branchLabelValue(%q) len = %d, want <= %d", tt.in, len(got), maxNameLen)
 			}
 		})
 	}
 }
 
-func TestNormalizeBranchForLabel_DifferentInputsDifferentOutputs(t *testing.T) {
+func TestBranchLabelValue_DifferentInputsDifferentOutputs(t *testing.T) {
 	t.Parallel()
 
-	a := NormalizeBranchForLabel("feat/hogehoge-fugafuga")
-	b := NormalizeBranchForLabel("feat-hogehoge-fugafuga")
+	a := branchLabelValue("feat/hogehoge-fugafuga")
+	b := branchLabelValue("feat-hogehoge-fugafuga")
 	if a == b {
 		t.Fatalf("expected different outputs for potentially colliding branches, got %q", a)
 	}
