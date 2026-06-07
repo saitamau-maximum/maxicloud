@@ -3,8 +3,8 @@ package meta
 const (
 	labelPrefix      = "maxicloud.maximum.vc/"
 	annotationPrefix = "maxicloud.maximum.vc/"
-	
-	labelValueTrue   = "true"
+
+	labelValueTrue = "true"
 )
 
 const (
