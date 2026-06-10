@@ -108,7 +108,7 @@ func (s *authService) Callback(ctx context.Context, code, redirectTo, nonce stri
 		return nil, fmt.Errorf("failed to upsert user: %w", err)
 	}
 
-	sessionToken, err := auth.IssueSessionToken(user.ID, s.cfg.SessionSecret, time.Now())
+	sessionToken, err := auth.IssueSessionToken(user.ID, user.Roles, s.cfg.SessionSecret, time.Now())
 	if err != nil {
 		return nil, fmt.Errorf("failed to issue session token: %w", err)
 	}

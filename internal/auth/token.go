@@ -10,7 +10,8 @@ import (
 
 type sessionClaims struct {
 	jwt.RegisteredClaims
-	UserID string `json:"user_id"`
+	UserID string   `json:"user_id"`
+	Roles  []string `json:"roles"`
 }
 
 func GenerateState() (string, error) { return generateRandomToken() }
@@ -25,7 +26,7 @@ func generateRandomToken() (string, error) {
 	return base64.RawURLEncoding.EncodeToString(b), nil
 }
 
-func IssueSessionToken(userID, sessionSecret string, now time.Time) (string, error) {
+func IssueSessionToken(userID string, roles []string, sessionSecret string, now time.Time) (string, error) {
 	claims := sessionClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    "maxicloud",
@@ -34,13 +35,14 @@ func IssueSessionToken(userID, sessionSecret string, now time.Time) (string, err
 			ExpiresAt: jwt.NewNumericDate(now.Add(24 * time.Hour)),
 		},
 		UserID: userID,
+		Roles:  roles,
 	}
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(sessionSecret))
 }
 
-func ParseSessionToken(token, sessionSecret string) (string, bool) {
+func ParseSessionToken(token, sessionSecret string) (userID string, roles []string, ok bool) {
 	if token == "" {
-		return "", false
+		return "", nil, false
 	}
 
 	claims := &sessionClaims{}
@@ -53,7 +55,7 @@ func ParseSessionToken(token, sessionSecret string) (string, bool) {
 		jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}),
 	)
 	if err != nil || !claims.VerifyAudience("session", true) || claims.UserID == "" {
-		return "", false
+		return "", nil, false
 	}
-	return claims.UserID, true
+	return claims.UserID, claims.Roles, true
 }
