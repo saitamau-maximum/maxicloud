@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
+	"github.com/saitamau-maximum/maxicloud/internal/service/authz"
 )
 
 type ProjectService interface {
@@ -17,11 +18,12 @@ type ProjectService interface {
 }
 
 type projectService struct {
-	repo domain.ProjectRepository
+	repo  domain.ProjectRepository
+	authz authz.Authorizer
 }
 
-func NewProjectService(repo domain.ProjectRepository) ProjectService {
-	return &projectService{repo: repo}
+func NewProjectService(repo domain.ProjectRepository, authorizer authz.Authorizer) ProjectService {
+	return &projectService{repo: repo, authz: authorizer}
 }
 
 func (u *projectService) Create(ctx context.Context, name, description, ownerID string) (*domain.Project, error) {
@@ -54,6 +56,16 @@ type UpdateProjectParams struct {
 }
 
 func (u *projectService) Update(ctx context.Context, params UpdateProjectParams) (*domain.Project, error) {
+	project, err := u.repo.Get(ctx, params.ID)
+	if err != nil {
+		return nil, err
+	}
+	if project == nil {
+		return nil, domain.ValidationError{Message: "project not found"}
+	}
+	if err := u.authz.Authorize(ctx, project, domain.PermissionWriteProject); err != nil {
+		return nil, err
+	}
 	if err := u.repo.Update(ctx, domain.UpdateProjectParams{
 		ID:          params.ID,
 		Name:        params.Name,
@@ -66,5 +78,15 @@ func (u *projectService) Update(ctx context.Context, params UpdateProjectParams)
 }
 
 func (u *projectService) Delete(ctx context.Context, id string) error {
+	project, err := u.repo.Get(ctx, id)
+	if err != nil {
+		return err
+	}
+	if project == nil {
+		return nil
+	}
+	if err := u.authz.Authorize(ctx, project, domain.PermissionDeleteProject); err != nil {
+		return err
+	}
 	return u.repo.Delete(ctx, id)
 }

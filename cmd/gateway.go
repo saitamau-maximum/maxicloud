@@ -30,6 +30,7 @@ import (
 	"github.com/saitamau-maximum/maxicloud/internal/infra/oidc"
 	"github.com/saitamau-maximum/maxicloud/internal/infra/postgres"
 	"github.com/saitamau-maximum/maxicloud/internal/service"
+	"github.com/saitamau-maximum/maxicloud/internal/service/authz"
 	"github.com/saitamau-maximum/maxicloud/internal/service/deployment"
 )
 
@@ -80,6 +81,8 @@ func runGateway(cmd *cobra.Command, args []string) error {
 	prjRepo := k8s.NewProjectRepository(k8sClient)
 	historyRepo := postgres.NewDeploymentHistoryRepository(pool)
 	userRepo := postgres.NewUserRepository(pool)
+	memberRepo := postgres.NewProjectMemberRepository(pool)
+	groupRoleRepo := postgres.NewProjectGroupRoleRepository(pool)
 	logStreamer := k8s.NewLogStreamer(clientset)
 	deployRepo := k8s.NewDeployRunRepository(k8sClient, logStreamer)
 	srcRepo := github.NewClient(cfg.GitHubAppID, privateKey, cfg.InstallationID)
@@ -103,11 +106,12 @@ func runGateway(cmd *cobra.Command, args []string) error {
 	deployEventSvc := deployment.NewDeploymentEventService(appRepo, prjRepo, deploySvc)
 	deployHistory := deployment.NewHistory(historyRepo)
 	deployWatcher := deployment.NewWatcher(deployHistory, deployRepo)
+	authzSvc := authz.New(memberRepo, groupRoleRepo)
 	userSvc := service.NewUserService(userRepo)
-	prjSvc := service.NewProjectService(prjRepo)
+	prjSvc := service.NewProjectService(prjRepo, authzSvc)
 	domainSvc := service.NewDomainService(appRepo, strings.Split(cfg.AvailableDomains, ","))
 	srcSvc := service.NewSourceService(srcRepo)
-	appSvc := service.NewApplicationService(appRepo, deploySvc, srcSvc)
+	appSvc := service.NewApplicationService(appRepo, prjRepo, deploySvc, srcSvc, authzSvc)
 
 	authHandler := handler.NewAuthHandler(authSvc)
 	ghHandler := handler.NewGitHubHandler(deployEventSvc, srcSvc, handler.GitHubHandlerConfig{

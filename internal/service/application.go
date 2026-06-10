@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
+	"github.com/saitamau-maximum/maxicloud/internal/service/authz"
 	"github.com/saitamau-maximum/maxicloud/internal/service/deployment"
 )
 
@@ -18,20 +19,26 @@ type ApplicationService interface {
 }
 
 type applicationService struct {
-	appRepo   domain.ApplicationRepository
-	deploySvc deployment.DeploymentService
-	sourceSvc SourceService
+	appRepo     domain.ApplicationRepository
+	projectRepo domain.ProjectRepository
+	deploySvc   deployment.DeploymentService
+	sourceSvc   SourceService
+	authz       authz.Authorizer
 }
 
 func NewApplicationService(
 	appRepo domain.ApplicationRepository,
+	projectRepo domain.ProjectRepository,
 	deploySvc deployment.DeploymentService,
 	sourceSvc SourceService,
+	authorizer authz.Authorizer,
 ) ApplicationService {
 	return &applicationService{
-		appRepo:   appRepo,
-		deploySvc: deploySvc,
-		sourceSvc: sourceSvc,
+		appRepo:     appRepo,
+		projectRepo: projectRepo,
+		deploySvc:   deploySvc,
+		sourceSvc:   sourceSvc,
+		authz:       authorizer,
 	}
 }
 
@@ -50,6 +57,16 @@ type CreateApplicationResult struct {
 
 func (u *applicationService) Create(ctx context.Context, params CreateApplicationParams) (*CreateApplicationResult, error) {
 	if err := params.Spec.Validate(); err != nil {
+		return nil, err
+	}
+	project, err := u.projectRepo.Get(ctx, params.Spec.ProjectID)
+	if err != nil {
+		return nil, err
+	}
+	if project == nil {
+		return nil, domain.ValidationError{Message: "project not found"}
+	}
+	if err := u.authz.Authorize(ctx, project, domain.PermissionWriteApplication); err != nil {
 		return nil, err
 	}
 	createdApp, err := u.appRepo.Create(ctx, domain.CreateApplicationParams{
@@ -114,6 +131,16 @@ func (u *applicationService) Update(ctx context.Context, params UpdateApplicatio
 	if err := params.Spec.Validate(); err != nil {
 		return nil, err
 	}
+	project, err := u.projectRepo.Get(ctx, params.Spec.ProjectID)
+	if err != nil {
+		return nil, err
+	}
+	if project == nil {
+		return nil, domain.ValidationError{Message: "project not found"}
+	}
+	if err := u.authz.Authorize(ctx, project, domain.PermissionWriteApplication); err != nil {
+		return nil, err
+	}
 	if err := u.appRepo.Update(ctx, domain.UpdateApplicationParams{
 		ID:      params.ID,
 		Name:    params.Name,
@@ -126,5 +153,22 @@ func (u *applicationService) Update(ctx context.Context, params UpdateApplicatio
 }
 
 func (u *applicationService) Delete(ctx context.Context, id string) error {
+	app, err := u.appRepo.Get(ctx, id)
+	if err != nil {
+		return err
+	}
+	if app == nil {
+		return nil
+	}
+	project, err := u.projectRepo.Get(ctx, app.Spec.ProjectID)
+	if err != nil {
+		return err
+	}
+	if project == nil {
+		return domain.ValidationError{Message: "project not found"}
+	}
+	if err := u.authz.Authorize(ctx, project, domain.PermissionDeleteApplication); err != nil {
+		return err
+	}
 	return u.appRepo.Delete(ctx, id)
 }
