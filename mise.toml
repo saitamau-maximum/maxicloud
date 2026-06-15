@@ -12,59 +12,59 @@ controller_gen = "./bin/controller-gen"
 namespace = "maxicloud-system"
 
 [tasks.manifests]
-description = "Generate CRD and RBAC manifests"
+description = "CRD・RBACマニフェストを生成する"
 run = '{{vars.controller_gen}} rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases'
 
 [tasks.generate]
-description = "Generate DeepCopy method implementations"
+description = "DeepCopyメソッドを生成する"
 run = '{{vars.controller_gen}} object:headerFile="hack/boilerplate.go.txt" paths="./..."'
 
 [tasks."go:fmt"]
-description = "Run go fmt"
+description = "go fmt を実行する"
 run = "go fmt ./..."
 
 [tasks."ts:fmt"]
-description = "Run frontend formatter"
+description = "フロントエンドのフォーマッターを実行する"
 run = "pnpm -C dashboard run fix"
 
 [tasks.fmt]
-description = "Run all formatters"
+description = "全フォーマッターを実行する"
 run = [
   { task = "go:fmt" },
   { task = "ts:fmt" },
 ]
 
 [tasks.vet]
-description = "Run go vet"
+description = "go vet を実行する"
 run = "go vet ./..."
 
 [tasks."go:lint"]
-description = "Run golangci-lint"
+description = "golangci-lint を実行する"
 run = "./bin/golangci-lint run"
 
 [tasks."ts:lint"]
-description = "Run frontend checks"
+description = "フロントエンドの静的解析を実行する"
 run = "pnpm -C dashboard run check"
 
 [tasks.lint]
-description = "Run all linters"
+description = "全リンターを実行する"
 run = [
   { task = "go:lint" },
   { task = "ts:lint" },
 ]
 
 [tasks.test]
-description = "Run tests"
+description = "テストを実行する"
 depends = ["manifests", "generate", "fmt", "vet"]
 run = "go test $(go list ./... | grep -v /e2e) -coverprofile cover.out"
 
 [tasks.build]
-description = "Build binary"
+description = "バイナリをビルドする"
 depends = ["manifests", "generate", "fmt", "vet"]
 run = "go build -o bin/manager ./cmd"
 
 [tasks."buf:generate"]
-description = "Generate proto files"
+description = "protoファイルからコードを生成する"
 run = """
 buf generate
 go fmt ./gen/...
@@ -72,31 +72,31 @@ pnpm -C dashboard exec biome check --write app/gen
 """
 
 [tasks."docker:build"]
-description = "Build docker image"
+description = "Dockerイメージをビルドする"
 run = "docker build -t {{vars.img}} ."
 
 [tasks."docker:push"]
-description = "Push docker image to local registry"
+description = "Dockerイメージをローカルレジストリにプッシュする"
 run = """
 docker tag {{vars.img}} {{vars.local_img}}
 docker push {{vars.local_img}}
 """
 
 [tasks.deploy]
-description = "Apply kustomize manifests to cluster"
+description = "kustomizeマニフェストをクラスターに適用する"
 depends = ["manifests"]
 run = "{{vars.kustomize}} build config/overlays/dev | {{vars.kubectl}} apply -f -"
 
 [tasks.undeploy]
-description = "Remove kustomize manifests from cluster"
+description = "kustomizeマニフェストをクラスターから削除する"
 run = "{{vars.kustomize}} build config/overlays/dev | {{vars.kubectl}} delete --ignore-not-found=true -f -"
 
 [tasks.rollout]
-description = "Restart deployment"
+description = "デプロイメントを再起動する"
 run = "{{vars.kubectl}} rollout restart deployment maxicloud-controller-manager maxicloud-gateway -n {{vars.namespace}}"
 
 [tasks.release]
-description = "Full build and deploy"
+description = "ビルドからデプロイまで一括実行する"
 run = [
   { task = "manifests" },
   { task = "generate" },
@@ -108,25 +108,25 @@ run = [
 ]
 
 [tasks."log:controller"]
-description = "Tail controller logs"
+description = "controllerのログをtailする"
 run = "{{vars.kubectl}} logs -n {{vars.namespace}} deployment/maxicloud-controller-manager -f"
 
 [tasks."log:gateway"]
-description = "Tail gateway logs"
+description = "gatewayのログをtailする"
 run = "{{vars.kubectl}} logs -n {{vars.namespace}} deployment/maxicloud-gateway -f"
 
 [tasks."db:migrate"]
-description = "Apply database migrations"
+description = "マイグレーションを適用する"
 run = 'DATABASE_URL="postgres://$POSTGRESQL_USER:$POSTGRESQL_PASSWORD@$POSTGRESQL_HOST:$POSTGRESQL_PORT/$POSTGRESQL_DB?sslmode=disable" dbmate -d db/migrations up'
 
 [tasks."db:rollback"]
-description = "Rollback last migration"
+description = "直前のマイグレーションを戻す"
 run = 'DATABASE_URL="postgres://$POSTGRESQL_USER:$POSTGRESQL_PASSWORD@$POSTGRESQL_HOST:$POSTGRESQL_PORT/$POSTGRESQL_DB?sslmode=disable" dbmate -d db/migrations down'
 
 [tasks."db:status"]
-description = "Show migration status"
+description = "マイグレーションの適用状況を確認する"
 run = 'DATABASE_URL="postgres://$POSTGRESQL_USER:$POSTGRESQL_PASSWORD@$POSTGRESQL_HOST:$POSTGRESQL_PORT/$POSTGRESQL_DB?sslmode=disable" dbmate -d db/migrations status'
 
 [tasks."db:connect"]
-description = "Open psql session (local)"
+description = "psqlセッションを開く"
 run = 'psql "postgres://$POSTGRESQL_USER:$POSTGRESQL_PASSWORD@localhost:$POSTGRESQL_PORT/$POSTGRESQL_DB?sslmode=disable"'
