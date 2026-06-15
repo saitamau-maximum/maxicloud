@@ -10,6 +10,8 @@ kubectl = "kubectl"
 kustomize = "./bin/kustomize"
 controller_gen = "./bin/controller-gen"
 namespace = "maxicloud-system"
+db_url = "postgres://$POSTGRESQL_USER:$POSTGRESQL_PASSWORD@localhost:$POSTGRESQL_PORT/$POSTGRESQL_DB?sslmode=disable"
+db_forward = "kubectl port-forward -n {{vars.namespace}} svc/maxicloud-postgresql $POSTGRESQL_PORT:$POSTGRESQL_PORT &>/dev/null & PF_PID=$!; trap 'kill $PF_PID' EXIT; sleep 1"
 
 [tasks.manifests]
 description = "CRD・RBACマニフェストを生成する"
@@ -117,16 +119,20 @@ run = "{{vars.kubectl}} logs -n {{vars.namespace}} deployment/maxicloud-gateway 
 
 [tasks."db:migrate"]
 description = "マイグレーションを適用する"
-run = 'DATABASE_URL="postgres://$POSTGRESQL_USER:$POSTGRESQL_PASSWORD@$POSTGRESQL_HOST:$POSTGRESQL_PORT/$POSTGRESQL_DB?sslmode=disable" dbmate -d db/migrations up'
+run = '{{vars.db_forward}}; DATABASE_URL="{{vars.db_url}}" dbmate -d db/migrations up && DATABASE_URL="{{vars.db_url}}" dbmate -d db/migrations dump'
 
 [tasks."db:rollback"]
 description = "直前のマイグレーションを戻す"
-run = 'DATABASE_URL="postgres://$POSTGRESQL_USER:$POSTGRESQL_PASSWORD@$POSTGRESQL_HOST:$POSTGRESQL_PORT/$POSTGRESQL_DB?sslmode=disable" dbmate -d db/migrations down'
+run = '{{vars.db_forward}}; DATABASE_URL="{{vars.db_url}}" dbmate -d db/migrations down'
 
 [tasks."db:status"]
 description = "マイグレーションの適用状況を確認する"
-run = 'DATABASE_URL="postgres://$POSTGRESQL_USER:$POSTGRESQL_PASSWORD@$POSTGRESQL_HOST:$POSTGRESQL_PORT/$POSTGRESQL_DB?sslmode=disable" dbmate -d db/migrations status'
+run = '{{vars.db_forward}}; DATABASE_URL="{{vars.db_url}}" dbmate -d db/migrations status'
 
 [tasks."db:connect"]
 description = "psqlセッションを開く"
-run = 'psql "postgres://$POSTGRESQL_USER:$POSTGRESQL_PASSWORD@localhost:$POSTGRESQL_PORT/$POSTGRESQL_DB?sslmode=disable"'
+run = '{{vars.db_forward}}; psql "{{vars.db_url}}"'
+
+[tasks."db:dump"]
+description = "スキーマをダンプする"
+run = '{{vars.db_forward}}; DATABASE_URL="{{vars.db_url}}" dbmate -d db/migrations dump'
