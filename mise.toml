@@ -1,5 +1,8 @@
 [tools]
 
+[env]
+_.file = ["config/overlays/dev/config.env", "config/overlays/dev/secret.env"]
+
 [vars]
 img = "maxicloud:latest"
 local_img = "localhost:5001/maxicloud:latest"
@@ -111,3 +114,15 @@ run = "{{vars.kubectl}} logs -n {{vars.namespace}} deployment/maxicloud-controll
 [tasks."log:gateway"]
 description = "Tail gateway logs"
 run = "{{vars.kubectl}} logs -n {{vars.namespace}} deployment/maxicloud-gateway -f"
+
+[tasks."db:migrate"]
+description = "Apply database migrations"
+run = 'DATABASE_URL="postgres://$POSTGRESQL_USER:$POSTGRESQL_PASSWORD@$POSTGRESQL_HOST:$POSTGRESQL_PORT/$POSTGRESQL_DB?sslmode=disable" dbmate -d db/migrations up'
+
+[tasks."db:rollback"]
+description = "Rollback last migration"
+run = 'DATABASE_URL="postgres://$POSTGRESQL_USER:$POSTGRESQL_PASSWORD@$POSTGRESQL_HOST:$POSTGRESQL_PORT/$POSTGRESQL_DB?sslmode=disable" dbmate -d db/migrations down'
+
+[tasks."db:status"]
+description = "Show migration status"
+run = 'DATABASE_URL="postgres://$POSTGRESQL_USER:$POSTGRESQL_PASSWORD@$POSTGRESQL_HOST:$POSTGRESQL_PORT/$POSTGRESQL_DB?sslmode=disable" dbmate -d db/migrations status'
