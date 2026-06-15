@@ -126,3 +126,7 @@ run = 'DATABASE_URL="postgres://$POSTGRESQL_USER:$POSTGRESQL_PASSWORD@$POSTGRESQ
 [tasks."db:status"]
 description = "Show migration status"
 run = 'DATABASE_URL="postgres://$POSTGRESQL_USER:$POSTGRESQL_PASSWORD@$POSTGRESQL_HOST:$POSTGRESQL_PORT/$POSTGRESQL_DB?sslmode=disable" dbmate -d db/migrations status'
+
+[tasks."db:connect"]
+description = "Open psql session (local)"
+run = 'psql "postgres://$POSTGRESQL_USER:$POSTGRESQL_PASSWORD@localhost:$POSTGRESQL_PORT/$POSTGRESQL_DB?sslmode=disable"'
