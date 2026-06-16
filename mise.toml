@@ -87,7 +87,7 @@ run = [
 [tasks.test]
 description = "テストを実行する"
 depends = ["manifests", "generate", "fmt", "vet"]
-run = 'KUBEBUILDER_ASSETS="$(./bin/setup-envtest use {{vars.envtest_k8s_version}} --bin-dir bin/k8s -p path)" go test $(go list ./... | grep -v /e2e) -coverprofile cover.out'
+run = 'KUBEBUILDER_ASSETS="$(./bin/setup-envtest use {{vars.envtest_k8s_version}} --bin-dir "$(pwd)/bin/k8s" -p path)" go test $(go list ./... | grep -v /e2e) -coverprofile cover.out'
 
 [tasks.build]
 description = "バイナリをビルドする"
