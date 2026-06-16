@@ -3,6 +3,7 @@ module github.com/saitamau-maximum/maxicloud
 go 1.25.3
 
 require (
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.9-20250912141014-52f32327d4b0.1
 	connectrpc.com/connect v1.19.2
 	connectrpc.com/validate v0.6.0
 	github.com/bradleyfalzon/ghinstallation/v2 v2.18.0
@@ -26,7 +27,6 @@ require (
 )
 
 require (
-	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.9-20250912141014-52f32327d4b0.1 // indirect
 	buf.build/go/protovalidate v1.0.0 // indirect
 	cel.dev/expr v0.24.0 // indirect
 	github.com/Masterminds/semver/v3 v3.4.0 // indirect

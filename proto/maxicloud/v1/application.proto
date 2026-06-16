@@ -95,8 +95,7 @@ message CreateApplicationRequest {
     (buf.validate.field).string.pattern = "^[A-Za-z0-9][-A-Za-z0-9_.]*[A-Za-z0-9]$"
   ];
   string owner_id = 2 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).string.uuid = true
+    (buf.validate.field).required = true
   ];
   ApplicationSpec spec = 3 [(buf.validate.field).required = true];
 }
