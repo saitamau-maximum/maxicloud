@@ -115,7 +115,11 @@ run = "{{vars.kustomize}} build config/overlays/dev | {{vars.kubectl}} delete --
 
 [tasks.rollout]
 description = "デプロイメントを再起動する"
-run = "{{vars.kubectl}} rollout restart deployment maxicloud-controller-manager maxicloud-gateway -n {{vars.namespace}}"
+run = [
+  "{{vars.kubectl}} rollout restart deployment maxicloud-controller-manager maxicloud-gateway -n {{vars.namespace}}",
+  "{{vars.kubectl}} rollout status deployment maxicloud-controller-manager -n {{vars.namespace}}",
+  "{{vars.kubectl}} rollout status deployment maxicloud-gateway -n {{vars.namespace}}",
+]
 
 [tasks.release]
 description = "ビルドからデプロイまで一括実行する"
