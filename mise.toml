@@ -1,3 +1,6 @@
+[settings]
+env_shell_expand = false
+
 [tools]
 go = "1.25"
 node = "24"
@@ -19,6 +22,16 @@ controller_gen = "./bin/controller-gen"
 namespace = "maxicloud-system"
 db_url = "postgres://$POSTGRESQL_USER:$POSTGRESQL_PASSWORD@localhost:$POSTGRESQL_PORT/$POSTGRESQL_DB?sslmode=disable"
 db_forward = "kubectl port-forward -n {{vars.namespace}} svc/maxicloud-postgresql $POSTGRESQL_PORT:$POSTGRESQL_PORT &>/dev/null & PF_PID=$!; trap 'kill $PF_PID' EXIT; sleep 1"
+
+[tasks.setup]
+description = "開発環境をセットアップする"
+run = [
+  "mise install",
+  "GOBIN=\"$(pwd)/bin\" go install sigs.k8s.io/kustomize/kustomize/v5@v5.8.1",
+  "GOBIN=\"$(pwd)/bin\" go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.20.1",
+  "hack/setup.sh",
+  "kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.15.1/deploy/static/provider/kind/deploy.yaml",
+]
 
 [tasks.manifests]
 description = "CRD・RBACマニフェストを生成する"
