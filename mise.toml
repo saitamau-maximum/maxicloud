@@ -20,6 +20,7 @@ kubectl = "kubectl"
 kustomize = "./bin/kustomize"
 controller_gen = "./bin/controller-gen"
 namespace = "maxicloud-system"
+envtest_k8s_version = "1.35"
 db_url = "postgres://$POSTGRESQL_USER:$POSTGRESQL_PASSWORD@localhost:$POSTGRESQL_PORT/$POSTGRESQL_DB?sslmode=disable"
 db_forward = "kubectl port-forward -n {{vars.namespace}} svc/maxicloud-postgresql $POSTGRESQL_PORT:$POSTGRESQL_PORT &>/dev/null & PF_PID=$!; trap 'kill $PF_PID' EXIT; sleep 1"
 
@@ -29,6 +30,7 @@ run = [
   "mise install",
   "GOBIN=\"$(pwd)/bin\" go install sigs.k8s.io/kustomize/kustomize/v5@v5.8.1",
   "GOBIN=\"$(pwd)/bin\" go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.20.1",
+  "GOBIN=\"$(pwd)/bin\" go install sigs.k8s.io/controller-runtime/tools/setup-envtest@release-0.23",
   "hack/setup.sh",
   "kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.15.1/deploy/static/provider/kind/deploy.yaml",
 ]
@@ -85,7 +87,7 @@ run = [
 [tasks.test]
 description = "テストを実行する"
 depends = ["manifests", "generate", "fmt", "vet"]
-run = "go test $(go list ./... | grep -v /e2e) -coverprofile cover.out"
+run = 'KUBEBUILDER_ASSETS="$(./bin/setup-envtest use {{vars.envtest_k8s_version}} --bin-dir bin/k8s -p path)" go test $(go list ./... | grep -v /e2e) -coverprofile cover.out'
 
 [tasks.build]
 description = "バイナリをビルドする"
