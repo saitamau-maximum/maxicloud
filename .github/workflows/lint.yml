@@ -9,43 +9,28 @@ jobs:
     name: Backend lint
     runs-on: ubuntu-latest
     steps:
-      - name: Clone the code
+      - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
+      - name: Setup mise
+        uses: jdx/mise-action@v4
 
-      - name: Check linter configuration
-        run: make lint-config
       - name: Run linter
-        run: make lint
+        run: mise run go:lint
 
   frontend-lint:
     name: Frontend lint
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: dashboard
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 11.0.9
-
-      - name: Setup Node 24
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: pnpm
-          cache-dependency-path: dashboard/pnpm-lock.yaml
+      - name: Setup mise
+        uses: jdx/mise-action@v4
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --prefer-offline
+        working-directory: dashboard
 
       - name: Run frontend check
-        run: pnpm run check
+        run: mise run ts:lint

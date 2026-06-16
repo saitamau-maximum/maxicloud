@@ -62,7 +62,7 @@ run = "go vet ./..."
 
 [tasks."go:lint"]
 description = "golangci-lint を実行する"
-run = "./bin/golangci-lint run"
+run = "golangci-lint run"
 
 [tasks."ts:lint"]
 description = "フロントエンドの静的解析を実行する"

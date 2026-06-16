@@ -9,15 +9,18 @@ jobs:
     name: Run on Ubuntu
     runs-on: ubuntu-latest
     steps:
-      - name: Clone the code
-        uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v6
 
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
+      - name: Setup mise
+        uses: jdx/mise-action@v4
 
-      - name: Running Tests
-        run: |
-          go mod tidy
-          make test
+      - name: Install tools
+        run: GOBIN="$(pwd)/bin" go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.20.1
+
+      - name: Install dashboard dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
+        working-directory: dashboard
+
+      - name: Run tests
+        run: mise run test
