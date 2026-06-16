@@ -1,4 +1,8 @@
-\restrict dbmate
+--
+-- PostgreSQL database dump
+--
+
+\restrict ToRBlKtkmDPraVQlRSsOLWCY9xTGaoQoRxMXHf1ADIkfHDXaoObYSps7Hdbc99B
 
 -- Dumped from database version 15.18 (Debian 15.18-1.pgdg13+1)
 -- Dumped by pg_dump version 18.4
@@ -114,10 +118,5 @@ CREATE INDEX deployment_histories_repo_owner_repo_name_commit_sha_idx ON public.
 -- PostgreSQL database dump complete
 --
 
-\unrestrict dbmate
-
-
---
--- Dbmate schema migrations
---
+\unrestrict ToRBlKtkmDPraVQlRSsOLWCY9xTGaoQoRxMXHf1ADIkfHDXaoObYSps7Hdbc99B
 

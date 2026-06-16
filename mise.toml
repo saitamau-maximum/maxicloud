@@ -143,7 +143,7 @@ run = "{{vars.kubectl}} logs -n {{vars.namespace}} deployment/maxicloud-gateway 
 
 [tasks."db:migrate"]
 description = "マイグレーションを適用する"
-run = '{{vars.db_forward}}; DATABASE_URL="{{vars.db_url}}" dbmate -d db/migrations up && DATABASE_URL="{{vars.db_url}}" dbmate -d db/migrations dump'
+run = '{{vars.db_forward}}; DATABASE_URL="{{vars.db_url}}" dbmate -d db/migrations up && pg_dump "{{vars.db_url}}" --schema-only --no-owner --no-acl --no-comments -f db/schema.sql'
 
 [tasks."db:rollback"]
 description = "直前のマイグレーションを戻す"
@@ -159,4 +159,4 @@ run = '{{vars.db_forward}}; psql "{{vars.db_url}}"'
 
 [tasks."db:dump"]
 description = "スキーマをダンプする"
-run = '{{vars.db_forward}}; DATABASE_URL="{{vars.db_url}}" dbmate -d db/migrations dump'
+run = '{{vars.db_forward}}; pg_dump "{{vars.db_url}}" --schema-only --no-owner --no-acl --no-comments -f db/schema.sql'
