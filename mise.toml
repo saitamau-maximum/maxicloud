@@ -60,9 +60,16 @@ run = [
 description = "go vet を実行する"
 run = "go vet ./..."
 
+[tasks."go:lint-setup"]
+description = "カスタムgolangci-lintをビルドする"
+run = """
+golangci-lint custom --destination bin --name golangci-lint-custom
+mv bin/golangci-lint-custom bin/golangci-lint
+"""
+
 [tasks."go:lint"]
 description = "golangci-lint を実行する"
-run = "golangci-lint run"
+run = "./bin/golangci-lint run"
 
 [tasks."ts:lint"]
 description = "フロントエンドの静的解析を実行する"
