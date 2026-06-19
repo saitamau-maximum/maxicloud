@@ -41,6 +41,36 @@ spec:
           spec:
             description: ApplicationSpec defines the desired state of Application
             properties:
+              build:
+                description: Build is the user-selected image build configuration.
+                properties:
+                  dockerfile:
+                    description: Dockerfile contains settings for a Dockerfile build.
+                    properties:
+                      inline:
+                        description: Inline is the Dockerfile content supplied by
+                          the user.
+                        type: string
+                      path:
+                        description: Path is the path to the Dockerfile in the repository.
+                        type: string
+                      source:
+                        description: Source selects whether Path or Inline is used.
+                        enum:
+                        - Path
+                        - Inline
+                        type: string
+                    required:
+                    - source
+                    type: object
+                  strategy:
+                    description: Strategy selects the image build implementation.
+                    enum:
+                    - Dockerfile
+                    type: string
+                required:
+                - strategy
+                type: object
               env:
                 description: Env is a list of environment variables for the runtime
                   container.

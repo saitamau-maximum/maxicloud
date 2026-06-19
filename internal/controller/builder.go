@@ -163,6 +163,35 @@ type BuildJobParams struct {
 
 // TODO: 非特権コンテナでビルドできるようにする
 func newBuildJob(params BuildJobParams) *batchv1.Job {
+	dockerfilePath, dockerfileInline := dockerfileConfig(params.buildRun)
+	command := []string{
+		"buildctl-daemonless.sh",
+		"build",
+		"--frontend=dockerfile.v0",
+		"--opt", fmt.Sprintf("context=https://x-access-token:$(GITHUB_TOKEN)@github.com/%s/%s.git#%s", params.owner, params.repo, params.sha),
+		"--opt", fmt.Sprintf("filename=%s", dockerfilePath),
+		"--output", params.buildOutput,
+	}
+	containerEnv := []corev1.EnvVar{
+		{
+			Name: "GITHUB_TOKEN",
+			ValueFrom: &corev1.EnvVarSource{
+				SecretKeyRef: &corev1.SecretKeySelector{
+					LocalObjectReference: corev1.LocalObjectReference{Name: params.repoSecretName},
+					Key:                  installationAccessTokenKey,
+				},
+			},
+		},
+		{Name: "XDG_RUNTIME_DIR", Value: "/tmp"},
+		{Name: "DOCKER_CONFIG", Value: "/root/.docker"},
+	}
+	if dockerfileInline != "" {
+		containerEnv = append(containerEnv, corev1.EnvVar{Name: "DOCKERFILE_INLINE", Value: dockerfileInline})
+		command = []string{
+			"sh", "-c",
+			`mkdir -p /tmp/dockerfile && printf '%s' "$DOCKERFILE_INLINE" > /tmp/dockerfile/Dockerfile && exec buildctl-daemonless.sh build --frontend=dockerfile.v0 --opt "context=https://x-access-token:${GITHUB_TOKEN}@github.com/` + params.owner + `/` + params.repo + `.git#` + params.sha + `" --local dockerfile=/tmp/dockerfile --opt filename=Dockerfile --output "` + params.buildOutput + `"`,
+		}
+	}
 	return &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      params.jobName,
@@ -178,35 +207,10 @@ func newBuildJob(params BuildJobParams) *batchv1.Job {
 					RestartPolicy: corev1.RestartPolicyNever,
 					Containers: []corev1.Container{
 						{
-							Name:  "buildkit",
-							Image: "moby/buildkit:latest",
-							Env: []corev1.EnvVar{
-								{
-									Name: "GITHUB_TOKEN",
-									ValueFrom: &corev1.EnvVarSource{
-										SecretKeyRef: &corev1.SecretKeySelector{
-											LocalObjectReference: corev1.LocalObjectReference{Name: params.repoSecretName},
-											Key:                  installationAccessTokenKey,
-										},
-									},
-								},
-								{
-									Name:  "XDG_RUNTIME_DIR",
-									Value: "/tmp",
-								},
-								{
-									Name:  "DOCKER_CONFIG",
-									Value: "/root/.docker",
-								},
-							},
-							Command: []string{
-								"buildctl-daemonless.sh",
-								"build",
-								"--frontend=dockerfile.v0",
-								"--opt", fmt.Sprintf("context=https://x-access-token:$(GITHUB_TOKEN)@github.com/%s/%s.git#%s", params.owner, params.repo, params.sha),
-								"--opt", fmt.Sprintf("filename=%s", params.buildRun.Spec.Source.DockerfilePath),
-								"--output", params.buildOutput,
-							},
+							Name:    "buildkit",
+							Image:   "moby/buildkit:latest",
+							Env:     containerEnv,
+							Command: command,
 							SecurityContext: &corev1.SecurityContext{
 								Privileged: boolPtr(true),
 								SeccompProfile: &corev1.SeccompProfile{
@@ -241,6 +245,26 @@ func newBuildJob(params BuildJobParams) *batchv1.Job {
 			},
 		},
 	}
+}
+
+func dockerfileConfig(buildRun *maxicloudv1alpha1.BuildRun) (path, inline string) {
+	path = buildRun.Spec.Source.DockerfilePath
+	if path == "" {
+		path = "./Dockerfile"
+	}
+	if buildRun.Spec.Build == nil || buildRun.Spec.Build.Dockerfile == nil {
+		return path, ""
+	}
+	dockerfile := buildRun.Spec.Build.Dockerfile
+	switch dockerfile.Source {
+	case maxicloudv1alpha1.DockerfileSourcePath:
+		if dockerfile.Path != "" {
+			path = dockerfile.Path
+		}
+	case maxicloudv1alpha1.DockerfileSourceInline:
+		inline = dockerfile.Inline
+	}
+	return path, inline
 }
 
 func boolPtr(b bool) *bool { return &b }

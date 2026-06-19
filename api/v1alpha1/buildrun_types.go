@@ -21,6 +21,47 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type BuildStrategy string
+
+const (
+	BuildStrategyDockerfile BuildStrategy = "Dockerfile"
+)
+
+type DockerfileSource string
+
+const (
+	DockerfileSourcePath   DockerfileSource = "Path"
+	DockerfileSourceInline DockerfileSource = "Inline"
+)
+
+// DockerfileBuildConfig defines how the Dockerfile is supplied.
+type DockerfileBuildConfig struct {
+	// Source selects whether Path or Inline is used.
+	// +kubebuilder:validation:Enum=Path;Inline
+	// +required
+	Source DockerfileSource `json:"source"`
+
+	// Path is the path to the Dockerfile in the repository.
+	// +optional
+	Path string `json:"path,omitempty"`
+
+	// Inline is the Dockerfile content supplied by the user.
+	// +optional
+	Inline string `json:"inline,omitempty"`
+}
+
+// BuildConfig is a snapshot of the user-selected build configuration.
+type BuildConfig struct {
+	// Strategy selects the image build implementation.
+	// +kubebuilder:validation:Enum=Dockerfile
+	// +required
+	Strategy BuildStrategy `json:"strategy"`
+
+	// Dockerfile contains settings for a Dockerfile build.
+	// +optional
+	Dockerfile *DockerfileBuildConfig `json:"dockerfile,omitempty"`
+}
+
 // BuildSource defines Git source information used for a build.
 type BuildSource struct {
 	// Repo is the URL of the Git repository.
@@ -43,6 +84,10 @@ type BuildRunSpec struct {
 	// Source is the build source snapshot.
 	// +required
 	Source BuildSource `json:"source"`
+
+	// Build is the build configuration snapshot.
+	// +optional
+	Build *BuildConfig `json:"build,omitempty"`
 
 	// Env is a list of build-time environment variables.
 	// +optional

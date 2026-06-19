@@ -314,6 +314,7 @@ func newBuildRunForDeployRun(run *maxicloudv1alpha1.DeployRun) *maxicloudv1alpha
 			Namespace: run.Namespace,
 		},
 		Spec: maxicloudv1alpha1.BuildRunSpec{
+			Build: run.Spec.Build.DeepCopy(),
 			Source: maxicloudv1alpha1.BuildSource{
 				RepoURL: fmt.Sprintf("https://github.com/%s/%s", run.Spec.Owner, run.Spec.Repo),
 				SHA:     run.Spec.SHA,
