@@ -23,7 +23,8 @@ cp config.example.env config.env
 cp secret.example.env secret.env
 ```
 
-`secret.env` の `PACK_VOLUME_KEY` には、Buildpacks の volume cache を安定して利用するための秘密値を設定してください。
+`secret.env` の `PACK_VOLUME_KEY` には、Buildpacks の volume cache を安定して利用するための秘密値を任意で設定できます。
+未設定でも Buildpacks のビルドは実行できますが、キャッシュを安定して再利用できないためビルドが遅くなることがあります。
 例えば以下のコマンドで生成できます。
 ```bash
 PACK_VOLUME_KEY=$(openssl rand -hex 32)

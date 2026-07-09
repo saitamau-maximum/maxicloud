@@ -290,8 +290,10 @@ func newBuildpacksBuildJob(params BuildJobParams) *batchv1.Job {
 	packEnv = append(packEnv,
 		corev1.EnvVar{Name: "DOCKER_HOST", Value: "unix:///var/run/docker/docker.sock"},
 		corev1.EnvVar{Name: "DOCKER_CONFIG", Value: "/root/.docker"},
-		corev1.EnvVar{Name: "PACK_VOLUME_KEY", Value: params.packVolumeKey},
 	)
+	if strings.TrimSpace(params.packVolumeKey) != "" {
+		packEnv = append(packEnv, corev1.EnvVar{Name: "PACK_VOLUME_KEY", Value: params.packVolumeKey})
+	}
 	for _, env := range params.buildRun.Spec.Env {
 		packEnv = append(packEnv, env)
 		packArgs = append(packArgs, "--env", env.Name)
