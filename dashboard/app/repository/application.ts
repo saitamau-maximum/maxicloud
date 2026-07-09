@@ -2,6 +2,7 @@ import { Code, ConnectError } from "@connectrpc/connect";
 import {
 	APPLICATION_STATUS,
 	CREATE_APPLICATION_ACCESS_MODE,
+	CREATE_APPLICATION_BUILD_STRATEGY,
 	CREATE_APPLICATION_DOCKERFILE_SOURCE,
 	type ValueOf,
 } from "~/constants";
@@ -36,6 +37,7 @@ export type CreateApplicationInput = {
 	repositoryOwner: string;
 	repositoryName: string;
 	branch: string;
+	buildStrategy: ValueOf<typeof CREATE_APPLICATION_BUILD_STRATEGY>;
 	dockerfileSource: ValueOf<typeof CREATE_APPLICATION_DOCKERFILE_SOURCE>;
 	dockerfilePath: string;
 	dockerfileInline: string;
@@ -180,16 +182,26 @@ export class ApplicationRepository implements IApplicationRepository {
 					branch: input.branch,
 				},
 				build: {
-					strategy: BuildStrategy.DOCKERFILE,
-					dockerfile: {
-						source:
-							input.dockerfileSource ===
-							CREATE_APPLICATION_DOCKERFILE_SOURCE.INLINE
-								? DockerfileSource.INLINE
-								: DockerfileSource.PATH,
-						dockerfilePath: input.dockerfilePath,
-						dockerfileInline: input.dockerfileInline,
-					},
+					strategy:
+						input.buildStrategy === CREATE_APPLICATION_BUILD_STRATEGY.BUILDPACKS
+							? BuildStrategy.BUILDPACKS
+							: BuildStrategy.DOCKERFILE,
+					dockerfile:
+						input.buildStrategy === CREATE_APPLICATION_BUILD_STRATEGY.DOCKERFILE
+							? {
+									source:
+										input.dockerfileSource ===
+										CREATE_APPLICATION_DOCKERFILE_SOURCE.INLINE
+											? DockerfileSource.INLINE
+											: DockerfileSource.PATH,
+									dockerfilePath: input.dockerfilePath,
+									dockerfileInline: input.dockerfileInline,
+								}
+							: undefined,
+					buildpacks:
+						input.buildStrategy === CREATE_APPLICATION_BUILD_STRATEGY.BUILDPACKS
+							? { builder: "" }
+							: undefined,
 				},
 				access: {
 					mode: toAccessMode(input.accessMode),
