@@ -21,7 +21,9 @@ type BuildConfigDockerfile struct {
 	Source DockerfileSource
 }
 
-type BuildConfigNixpacks struct{}
+type BuildConfigBuildpacks struct {
+	Builder string
+}
 
 func (b BuildConfigDockerfile) buildConfig() {}
-func (b BuildConfigNixpacks) buildConfig()   {}
+func (b BuildConfigBuildpacks) buildConfig() {}

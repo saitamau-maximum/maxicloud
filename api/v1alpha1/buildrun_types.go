@@ -25,6 +25,7 @@ type BuildStrategy string
 
 const (
 	BuildStrategyDockerfile BuildStrategy = "Dockerfile"
+	BuildStrategyBuildpacks BuildStrategy = "Buildpacks"
 )
 
 type DockerfileSource string
@@ -50,16 +51,27 @@ type DockerfileBuildConfig struct {
 	Inline string `json:"inline,omitempty"`
 }
 
+// BuildpacksBuildConfig defines Cloud Native Buildpacks settings.
+type BuildpacksBuildConfig struct {
+	// Builder is the builder image. The platform default is used when empty.
+	// +optional
+	Builder string `json:"builder,omitempty"`
+}
+
 // BuildConfig is a snapshot of the user-selected build configuration.
 type BuildConfig struct {
 	// Strategy selects the image build implementation.
-	// +kubebuilder:validation:Enum=Dockerfile
+	// +kubebuilder:validation:Enum=Dockerfile;Buildpacks
 	// +required
 	Strategy BuildStrategy `json:"strategy"`
 
 	// Dockerfile contains settings for a Dockerfile build.
 	// +optional
 	Dockerfile *DockerfileBuildConfig `json:"dockerfile,omitempty"`
+
+	// Buildpacks contains settings for a Cloud Native Buildpacks build.
+	// +optional
+	Buildpacks *BuildpacksBuildConfig `json:"buildpacks,omitempty"`
 }
 
 // BuildSource defines Git source information used for a build.

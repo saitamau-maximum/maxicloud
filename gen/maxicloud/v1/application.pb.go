@@ -132,6 +132,7 @@ type BuildStrategy int32
 const (
 	BuildStrategy_BUILD_STRATEGY_UNSPECIFIED BuildStrategy = 0
 	BuildStrategy_BUILD_STRATEGY_DOCKERFILE  BuildStrategy = 1
+	BuildStrategy_BUILD_STRATEGY_BUILDPACKS  BuildStrategy = 2
 )
 
 // Enum value maps for BuildStrategy.
@@ -139,10 +140,12 @@ var (
 	BuildStrategy_name = map[int32]string{
 		0: "BUILD_STRATEGY_UNSPECIFIED",
 		1: "BUILD_STRATEGY_DOCKERFILE",
+		2: "BUILD_STRATEGY_BUILDPACKS",
 	}
 	BuildStrategy_value = map[string]int32{
 		"BUILD_STRATEGY_UNSPECIFIED": 0,
 		"BUILD_STRATEGY_DOCKERFILE":  1,
+		"BUILD_STRATEGY_BUILDPACKS":  2,
 	}
 )
 
@@ -502,17 +505,62 @@ func (x *DockerfileBuildConfig) GetDockerfileInline() string {
 	return ""
 }
 
+type BuildpacksBuildConfig struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Builder       string                 `protobuf:"bytes,1,opt,name=builder,proto3" json:"builder,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BuildpacksBuildConfig) Reset() {
+	*x = BuildpacksBuildConfig{}
+	mi := &file_maxicloud_v1_application_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BuildpacksBuildConfig) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BuildpacksBuildConfig) ProtoMessage() {}
+
+func (x *BuildpacksBuildConfig) ProtoReflect() protoreflect.Message {
+	mi := &file_maxicloud_v1_application_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BuildpacksBuildConfig.ProtoReflect.Descriptor instead.
+func (*BuildpacksBuildConfig) Descriptor() ([]byte, []int) {
+	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *BuildpacksBuildConfig) GetBuilder() string {
+	if x != nil {
+		return x.Builder
+	}
+	return ""
+}
+
 type BuildConfig struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Strategy      BuildStrategy          `protobuf:"varint,1,opt,name=strategy,proto3,enum=maxicloud.v1.BuildStrategy" json:"strategy,omitempty"`
 	Dockerfile    *DockerfileBuildConfig `protobuf:"bytes,2,opt,name=dockerfile,proto3" json:"dockerfile,omitempty"`
+	Buildpacks    *BuildpacksBuildConfig `protobuf:"bytes,3,opt,name=buildpacks,proto3" json:"buildpacks,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *BuildConfig) Reset() {
 	*x = BuildConfig{}
-	mi := &file_maxicloud_v1_application_proto_msgTypes[4]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -524,7 +572,7 @@ func (x *BuildConfig) String() string {
 func (*BuildConfig) ProtoMessage() {}
 
 func (x *BuildConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_maxicloud_v1_application_proto_msgTypes[4]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -537,7 +585,7 @@ func (x *BuildConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BuildConfig.ProtoReflect.Descriptor instead.
 func (*BuildConfig) Descriptor() ([]byte, []int) {
-	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{4}
+	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *BuildConfig) GetStrategy() BuildStrategy {
@@ -554,6 +602,13 @@ func (x *BuildConfig) GetDockerfile() *DockerfileBuildConfig {
 	return nil
 }
 
+func (x *BuildConfig) GetBuildpacks() *BuildpacksBuildConfig {
+	if x != nil {
+		return x.Buildpacks
+	}
+	return nil
+}
+
 type Access struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Mode          AccessMode             `protobuf:"varint,1,opt,name=mode,proto3,enum=maxicloud.v1.AccessMode" json:"mode,omitempty"`
@@ -565,7 +620,7 @@ type Access struct {
 
 func (x *Access) Reset() {
 	*x = Access{}
-	mi := &file_maxicloud_v1_application_proto_msgTypes[5]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -577,7 +632,7 @@ func (x *Access) String() string {
 func (*Access) ProtoMessage() {}
 
 func (x *Access) ProtoReflect() protoreflect.Message {
-	mi := &file_maxicloud_v1_application_proto_msgTypes[5]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -590,7 +645,7 @@ func (x *Access) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Access.ProtoReflect.Descriptor instead.
 func (*Access) Descriptor() ([]byte, []int) {
-	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{5}
+	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *Access) GetMode() AccessMode {
@@ -628,7 +683,7 @@ type ApplicationSpec struct {
 
 func (x *ApplicationSpec) Reset() {
 	*x = ApplicationSpec{}
-	mi := &file_maxicloud_v1_application_proto_msgTypes[6]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -640,7 +695,7 @@ func (x *ApplicationSpec) String() string {
 func (*ApplicationSpec) ProtoMessage() {}
 
 func (x *ApplicationSpec) ProtoReflect() protoreflect.Message {
-	mi := &file_maxicloud_v1_application_proto_msgTypes[6]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -653,7 +708,7 @@ func (x *ApplicationSpec) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApplicationSpec.ProtoReflect.Descriptor instead.
 func (*ApplicationSpec) Descriptor() ([]byte, []int) {
-	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{6}
+	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ApplicationSpec) GetProjectId() string {
@@ -709,7 +764,7 @@ type CreateApplicationRequest struct {
 
 func (x *CreateApplicationRequest) Reset() {
 	*x = CreateApplicationRequest{}
-	mi := &file_maxicloud_v1_application_proto_msgTypes[7]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -721,7 +776,7 @@ func (x *CreateApplicationRequest) String() string {
 func (*CreateApplicationRequest) ProtoMessage() {}
 
 func (x *CreateApplicationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_maxicloud_v1_application_proto_msgTypes[7]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -734,7 +789,7 @@ func (x *CreateApplicationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateApplicationRequest.ProtoReflect.Descriptor instead.
 func (*CreateApplicationRequest) Descriptor() ([]byte, []int) {
-	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{7}
+	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *CreateApplicationRequest) GetName() string {
@@ -770,7 +825,7 @@ type CreateApplicationResponse struct {
 
 func (x *CreateApplicationResponse) Reset() {
 	*x = CreateApplicationResponse{}
-	mi := &file_maxicloud_v1_application_proto_msgTypes[8]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -782,7 +837,7 @@ func (x *CreateApplicationResponse) String() string {
 func (*CreateApplicationResponse) ProtoMessage() {}
 
 func (x *CreateApplicationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_maxicloud_v1_application_proto_msgTypes[8]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -795,7 +850,7 @@ func (x *CreateApplicationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateApplicationResponse.ProtoReflect.Descriptor instead.
 func (*CreateApplicationResponse) Descriptor() ([]byte, []int) {
-	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{8}
+	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *CreateApplicationResponse) GetApplication() *Application {
@@ -835,7 +890,7 @@ type GetApplicationRequest struct {
 
 func (x *GetApplicationRequest) Reset() {
 	*x = GetApplicationRequest{}
-	mi := &file_maxicloud_v1_application_proto_msgTypes[9]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -847,7 +902,7 @@ func (x *GetApplicationRequest) String() string {
 func (*GetApplicationRequest) ProtoMessage() {}
 
 func (x *GetApplicationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_maxicloud_v1_application_proto_msgTypes[9]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -860,7 +915,7 @@ func (x *GetApplicationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetApplicationRequest.ProtoReflect.Descriptor instead.
 func (*GetApplicationRequest) Descriptor() ([]byte, []int) {
-	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{9}
+	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *GetApplicationRequest) GetApplicationId() string {
@@ -879,7 +934,7 @@ type GetApplicationResponse struct {
 
 func (x *GetApplicationResponse) Reset() {
 	*x = GetApplicationResponse{}
-	mi := &file_maxicloud_v1_application_proto_msgTypes[10]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -891,7 +946,7 @@ func (x *GetApplicationResponse) String() string {
 func (*GetApplicationResponse) ProtoMessage() {}
 
 func (x *GetApplicationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_maxicloud_v1_application_proto_msgTypes[10]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -904,7 +959,7 @@ func (x *GetApplicationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetApplicationResponse.ProtoReflect.Descriptor instead.
 func (*GetApplicationResponse) Descriptor() ([]byte, []int) {
-	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{10}
+	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *GetApplicationResponse) GetApplication() *Application {
@@ -923,7 +978,7 @@ type ListApplicationsRequest struct {
 
 func (x *ListApplicationsRequest) Reset() {
 	*x = ListApplicationsRequest{}
-	mi := &file_maxicloud_v1_application_proto_msgTypes[11]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -935,7 +990,7 @@ func (x *ListApplicationsRequest) String() string {
 func (*ListApplicationsRequest) ProtoMessage() {}
 
 func (x *ListApplicationsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_maxicloud_v1_application_proto_msgTypes[11]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -948,7 +1003,7 @@ func (x *ListApplicationsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListApplicationsRequest.ProtoReflect.Descriptor instead.
 func (*ListApplicationsRequest) Descriptor() ([]byte, []int) {
-	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{11}
+	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ListApplicationsRequest) GetProjectId() string {
@@ -967,7 +1022,7 @@ type ListApplicationsResponse struct {
 
 func (x *ListApplicationsResponse) Reset() {
 	*x = ListApplicationsResponse{}
-	mi := &file_maxicloud_v1_application_proto_msgTypes[12]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -979,7 +1034,7 @@ func (x *ListApplicationsResponse) String() string {
 func (*ListApplicationsResponse) ProtoMessage() {}
 
 func (x *ListApplicationsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_maxicloud_v1_application_proto_msgTypes[12]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -992,7 +1047,7 @@ func (x *ListApplicationsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListApplicationsResponse.ProtoReflect.Descriptor instead.
 func (*ListApplicationsResponse) Descriptor() ([]byte, []int) {
-	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{12}
+	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ListApplicationsResponse) GetApplications() []*Application {
@@ -1014,7 +1069,7 @@ type UpdateApplicationRequest struct {
 
 func (x *UpdateApplicationRequest) Reset() {
 	*x = UpdateApplicationRequest{}
-	mi := &file_maxicloud_v1_application_proto_msgTypes[13]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1026,7 +1081,7 @@ func (x *UpdateApplicationRequest) String() string {
 func (*UpdateApplicationRequest) ProtoMessage() {}
 
 func (x *UpdateApplicationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_maxicloud_v1_application_proto_msgTypes[13]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1039,7 +1094,7 @@ func (x *UpdateApplicationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateApplicationRequest.ProtoReflect.Descriptor instead.
 func (*UpdateApplicationRequest) Descriptor() ([]byte, []int) {
-	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{13}
+	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *UpdateApplicationRequest) GetApplicationId() string {
@@ -1079,7 +1134,7 @@ type UpdateApplicationResponse struct {
 
 func (x *UpdateApplicationResponse) Reset() {
 	*x = UpdateApplicationResponse{}
-	mi := &file_maxicloud_v1_application_proto_msgTypes[14]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1091,7 +1146,7 @@ func (x *UpdateApplicationResponse) String() string {
 func (*UpdateApplicationResponse) ProtoMessage() {}
 
 func (x *UpdateApplicationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_maxicloud_v1_application_proto_msgTypes[14]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1104,7 +1159,7 @@ func (x *UpdateApplicationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateApplicationResponse.ProtoReflect.Descriptor instead.
 func (*UpdateApplicationResponse) Descriptor() ([]byte, []int) {
-	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{14}
+	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *UpdateApplicationResponse) GetApplication() *Application {
@@ -1123,7 +1178,7 @@ type DeleteApplicationRequest struct {
 
 func (x *DeleteApplicationRequest) Reset() {
 	*x = DeleteApplicationRequest{}
-	mi := &file_maxicloud_v1_application_proto_msgTypes[15]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1135,7 +1190,7 @@ func (x *DeleteApplicationRequest) String() string {
 func (*DeleteApplicationRequest) ProtoMessage() {}
 
 func (x *DeleteApplicationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_maxicloud_v1_application_proto_msgTypes[15]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1148,7 +1203,7 @@ func (x *DeleteApplicationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteApplicationRequest.ProtoReflect.Descriptor instead.
 func (*DeleteApplicationRequest) Descriptor() ([]byte, []int) {
-	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{15}
+	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *DeleteApplicationRequest) GetApplicationId() string {
@@ -1166,7 +1221,7 @@ type DeleteApplicationResponse struct {
 
 func (x *DeleteApplicationResponse) Reset() {
 	*x = DeleteApplicationResponse{}
-	mi := &file_maxicloud_v1_application_proto_msgTypes[16]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1178,7 +1233,7 @@ func (x *DeleteApplicationResponse) String() string {
 func (*DeleteApplicationResponse) ProtoMessage() {}
 
 func (x *DeleteApplicationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_maxicloud_v1_application_proto_msgTypes[16]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1191,7 +1246,7 @@ func (x *DeleteApplicationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteApplicationResponse.ProtoReflect.Descriptor instead.
 func (*DeleteApplicationResponse) Descriptor() ([]byte, []int) {
-	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{16}
+	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{17}
 }
 
 type GitRepository struct {
@@ -1207,7 +1262,7 @@ type GitRepository struct {
 
 func (x *GitRepository) Reset() {
 	*x = GitRepository{}
-	mi := &file_maxicloud_v1_application_proto_msgTypes[17]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1219,7 +1274,7 @@ func (x *GitRepository) String() string {
 func (*GitRepository) ProtoMessage() {}
 
 func (x *GitRepository) ProtoReflect() protoreflect.Message {
-	mi := &file_maxicloud_v1_application_proto_msgTypes[17]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1232,7 +1287,7 @@ func (x *GitRepository) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GitRepository.ProtoReflect.Descriptor instead.
 func (*GitRepository) Descriptor() ([]byte, []int) {
-	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{17}
+	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *GitRepository) GetId() string {
@@ -1278,7 +1333,7 @@ type ListGitRepositoriesRequest struct {
 
 func (x *ListGitRepositoriesRequest) Reset() {
 	*x = ListGitRepositoriesRequest{}
-	mi := &file_maxicloud_v1_application_proto_msgTypes[18]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1290,7 +1345,7 @@ func (x *ListGitRepositoriesRequest) String() string {
 func (*ListGitRepositoriesRequest) ProtoMessage() {}
 
 func (x *ListGitRepositoriesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_maxicloud_v1_application_proto_msgTypes[18]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1303,7 +1358,7 @@ func (x *ListGitRepositoriesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListGitRepositoriesRequest.ProtoReflect.Descriptor instead.
 func (*ListGitRepositoriesRequest) Descriptor() ([]byte, []int) {
-	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{18}
+	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{19}
 }
 
 type ListGitRepositoriesResponse struct {
@@ -1315,7 +1370,7 @@ type ListGitRepositoriesResponse struct {
 
 func (x *ListGitRepositoriesResponse) Reset() {
 	*x = ListGitRepositoriesResponse{}
-	mi := &file_maxicloud_v1_application_proto_msgTypes[19]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1327,7 +1382,7 @@ func (x *ListGitRepositoriesResponse) String() string {
 func (*ListGitRepositoriesResponse) ProtoMessage() {}
 
 func (x *ListGitRepositoriesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_maxicloud_v1_application_proto_msgTypes[19]
+	mi := &file_maxicloud_v1_application_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1340,7 +1395,7 @@ func (x *ListGitRepositoriesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListGitRepositoriesResponse.ProtoReflect.Descriptor instead.
 func (*ListGitRepositoriesResponse) Descriptor() ([]byte, []int) {
-	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{19}
+	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *ListGitRepositoriesResponse) GetRepositories() []*GitRepository {
@@ -1381,12 +1436,17 @@ const file_maxicloud_v1_application_proto_rawDesc = "" +
 	"\x15DockerfileBuildConfig\x12>\n" +
 	"\x06source\x18\x01 \x01(\x0e2\x1e.maxicloud.v1.DockerfileSourceB\x06\xbaH\x03\xc8\x01\x01R\x06source\x12'\n" +
 	"\x0fdockerfile_path\x18\x02 \x01(\tR\x0edockerfilePath\x12+\n" +
-	"\x11dockerfile_inline\x18\x03 \x01(\tR\x10dockerfileInline\"\x9b\x01\n" +
+	"\x11dockerfile_inline\x18\x03 \x01(\tR\x10dockerfileInline\";\n" +
+	"\x15BuildpacksBuildConfig\x12\"\n" +
+	"\abuilder\x18\x01 \x01(\tB\b\xbaH\x05r\x03\x18\xff\x01R\abuilder\"\xd8\x01\n" +
 	"\vBuildConfig\x12?\n" +
-	"\bstrategy\x18\x01 \x01(\x0e2\x1b.maxicloud.v1.BuildStrategyB\x06\xbaH\x03\xc8\x01\x01R\bstrategy\x12K\n" +
+	"\bstrategy\x18\x01 \x01(\x0e2\x1b.maxicloud.v1.BuildStrategyB\x06\xbaH\x03\xc8\x01\x01R\bstrategy\x12C\n" +
 	"\n" +
-	"dockerfile\x18\x02 \x01(\v2#.maxicloud.v1.DockerfileBuildConfigB\x06\xbaH\x03\xc8\x01\x01R\n" +
-	"dockerfile\"\x8d\x01\n" +
+	"dockerfile\x18\x02 \x01(\v2#.maxicloud.v1.DockerfileBuildConfigR\n" +
+	"dockerfile\x12C\n" +
+	"\n" +
+	"buildpacks\x18\x03 \x01(\v2#.maxicloud.v1.BuildpacksBuildConfigR\n" +
+	"buildpacks\"\x8d\x01\n" +
 	"\x06Access\x124\n" +
 	"\x04mode\x18\x01 \x01(\x0e2\x18.maxicloud.v1.AccessModeB\x06\xbaH\x03\xc8\x01\x01R\x04mode\x12,\n" +
 	"\x06domain\x18\x02 \x01(\v2\x14.maxicloud.v1.DomainR\x06domain\x12\x1f\n" +
@@ -1454,10 +1514,11 @@ const file_maxicloud_v1_application_proto_rawDesc = "" +
 	"\x17ACCESS_MODE_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12ACCESS_MODE_PUBLIC\x10\x01\x12\x17\n" +
 	"\x13ACCESS_MODE_PRIVATE\x10\x02\x12\x1c\n" +
-	"\x18ACCESS_MODE_MEMBERS_ONLY\x10\x03*N\n" +
+	"\x18ACCESS_MODE_MEMBERS_ONLY\x10\x03*m\n" +
 	"\rBuildStrategy\x12\x1e\n" +
 	"\x1aBUILD_STRATEGY_UNSPECIFIED\x10\x00\x12\x1d\n" +
-	"\x19BUILD_STRATEGY_DOCKERFILE\x10\x01*o\n" +
+	"\x19BUILD_STRATEGY_DOCKERFILE\x10\x01\x12\x1d\n" +
+	"\x19BUILD_STRATEGY_BUILDPACKS\x10\x02*o\n" +
 	"\x10DockerfileSource\x12!\n" +
 	"\x1dDOCKERFILE_SOURCE_UNSPECIFIED\x10\x00\x12\x1a\n" +
 	"\x16DOCKERFILE_SOURCE_PATH\x10\x01\x12\x1c\n" +
@@ -1484,7 +1545,7 @@ func file_maxicloud_v1_application_proto_rawDescGZIP() []byte {
 }
 
 var file_maxicloud_v1_application_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
-var file_maxicloud_v1_application_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
+var file_maxicloud_v1_application_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
 var file_maxicloud_v1_application_proto_goTypes = []any{
 	(ApplicationStatus)(0),              // 0: maxicloud.v1.ApplicationStatus
 	(AccessMode)(0),                     // 1: maxicloud.v1.AccessMode
@@ -1494,70 +1555,72 @@ var file_maxicloud_v1_application_proto_goTypes = []any{
 	(*ApplicationSource)(nil),           // 5: maxicloud.v1.ApplicationSource
 	(*ApplicationCondition)(nil),        // 6: maxicloud.v1.ApplicationCondition
 	(*DockerfileBuildConfig)(nil),       // 7: maxicloud.v1.DockerfileBuildConfig
-	(*BuildConfig)(nil),                 // 8: maxicloud.v1.BuildConfig
-	(*Access)(nil),                      // 9: maxicloud.v1.Access
-	(*ApplicationSpec)(nil),             // 10: maxicloud.v1.ApplicationSpec
-	(*CreateApplicationRequest)(nil),    // 11: maxicloud.v1.CreateApplicationRequest
-	(*CreateApplicationResponse)(nil),   // 12: maxicloud.v1.CreateApplicationResponse
-	(*GetApplicationRequest)(nil),       // 13: maxicloud.v1.GetApplicationRequest
-	(*GetApplicationResponse)(nil),      // 14: maxicloud.v1.GetApplicationResponse
-	(*ListApplicationsRequest)(nil),     // 15: maxicloud.v1.ListApplicationsRequest
-	(*ListApplicationsResponse)(nil),    // 16: maxicloud.v1.ListApplicationsResponse
-	(*UpdateApplicationRequest)(nil),    // 17: maxicloud.v1.UpdateApplicationRequest
-	(*UpdateApplicationResponse)(nil),   // 18: maxicloud.v1.UpdateApplicationResponse
-	(*DeleteApplicationRequest)(nil),    // 19: maxicloud.v1.DeleteApplicationRequest
-	(*DeleteApplicationResponse)(nil),   // 20: maxicloud.v1.DeleteApplicationResponse
-	(*GitRepository)(nil),               // 21: maxicloud.v1.GitRepository
-	(*ListGitRepositoriesRequest)(nil),  // 22: maxicloud.v1.ListGitRepositoriesRequest
-	(*ListGitRepositoriesResponse)(nil), // 23: maxicloud.v1.ListGitRepositoriesResponse
-	nil,                                 // 24: maxicloud.v1.ApplicationSpec.EnvironmentVariablesEntry
-	nil,                                 // 25: maxicloud.v1.ApplicationSpec.SecretsEntry
-	(*timestamppb.Timestamp)(nil),       // 26: google.protobuf.Timestamp
-	(*Repository)(nil),                  // 27: maxicloud.v1.Repository
-	(*Domain)(nil),                      // 28: maxicloud.v1.Domain
+	(*BuildpacksBuildConfig)(nil),       // 8: maxicloud.v1.BuildpacksBuildConfig
+	(*BuildConfig)(nil),                 // 9: maxicloud.v1.BuildConfig
+	(*Access)(nil),                      // 10: maxicloud.v1.Access
+	(*ApplicationSpec)(nil),             // 11: maxicloud.v1.ApplicationSpec
+	(*CreateApplicationRequest)(nil),    // 12: maxicloud.v1.CreateApplicationRequest
+	(*CreateApplicationResponse)(nil),   // 13: maxicloud.v1.CreateApplicationResponse
+	(*GetApplicationRequest)(nil),       // 14: maxicloud.v1.GetApplicationRequest
+	(*GetApplicationResponse)(nil),      // 15: maxicloud.v1.GetApplicationResponse
+	(*ListApplicationsRequest)(nil),     // 16: maxicloud.v1.ListApplicationsRequest
+	(*ListApplicationsResponse)(nil),    // 17: maxicloud.v1.ListApplicationsResponse
+	(*UpdateApplicationRequest)(nil),    // 18: maxicloud.v1.UpdateApplicationRequest
+	(*UpdateApplicationResponse)(nil),   // 19: maxicloud.v1.UpdateApplicationResponse
+	(*DeleteApplicationRequest)(nil),    // 20: maxicloud.v1.DeleteApplicationRequest
+	(*DeleteApplicationResponse)(nil),   // 21: maxicloud.v1.DeleteApplicationResponse
+	(*GitRepository)(nil),               // 22: maxicloud.v1.GitRepository
+	(*ListGitRepositoriesRequest)(nil),  // 23: maxicloud.v1.ListGitRepositoriesRequest
+	(*ListGitRepositoriesResponse)(nil), // 24: maxicloud.v1.ListGitRepositoriesResponse
+	nil,                                 // 25: maxicloud.v1.ApplicationSpec.EnvironmentVariablesEntry
+	nil,                                 // 26: maxicloud.v1.ApplicationSpec.SecretsEntry
+	(*timestamppb.Timestamp)(nil),       // 27: google.protobuf.Timestamp
+	(*Repository)(nil),                  // 28: maxicloud.v1.Repository
+	(*Domain)(nil),                      // 29: maxicloud.v1.Domain
 }
 var file_maxicloud_v1_application_proto_depIdxs = []int32{
 	5,  // 0: maxicloud.v1.Application.source:type_name -> maxicloud.v1.ApplicationSource
 	6,  // 1: maxicloud.v1.Application.condition:type_name -> maxicloud.v1.ApplicationCondition
-	26, // 2: maxicloud.v1.Application.created_at:type_name -> google.protobuf.Timestamp
-	26, // 3: maxicloud.v1.Application.updated_at:type_name -> google.protobuf.Timestamp
-	27, // 4: maxicloud.v1.ApplicationSource.repository:type_name -> maxicloud.v1.Repository
+	27, // 2: maxicloud.v1.Application.created_at:type_name -> google.protobuf.Timestamp
+	27, // 3: maxicloud.v1.Application.updated_at:type_name -> google.protobuf.Timestamp
+	28, // 4: maxicloud.v1.ApplicationSource.repository:type_name -> maxicloud.v1.Repository
 	0,  // 5: maxicloud.v1.ApplicationCondition.status:type_name -> maxicloud.v1.ApplicationStatus
-	28, // 6: maxicloud.v1.ApplicationCondition.domain:type_name -> maxicloud.v1.Domain
+	29, // 6: maxicloud.v1.ApplicationCondition.domain:type_name -> maxicloud.v1.Domain
 	3,  // 7: maxicloud.v1.DockerfileBuildConfig.source:type_name -> maxicloud.v1.DockerfileSource
 	2,  // 8: maxicloud.v1.BuildConfig.strategy:type_name -> maxicloud.v1.BuildStrategy
 	7,  // 9: maxicloud.v1.BuildConfig.dockerfile:type_name -> maxicloud.v1.DockerfileBuildConfig
-	1,  // 10: maxicloud.v1.Access.mode:type_name -> maxicloud.v1.AccessMode
-	28, // 11: maxicloud.v1.Access.domain:type_name -> maxicloud.v1.Domain
-	5,  // 12: maxicloud.v1.ApplicationSpec.source:type_name -> maxicloud.v1.ApplicationSource
-	8,  // 13: maxicloud.v1.ApplicationSpec.build:type_name -> maxicloud.v1.BuildConfig
-	9,  // 14: maxicloud.v1.ApplicationSpec.access:type_name -> maxicloud.v1.Access
-	24, // 15: maxicloud.v1.ApplicationSpec.environment_variables:type_name -> maxicloud.v1.ApplicationSpec.EnvironmentVariablesEntry
-	25, // 16: maxicloud.v1.ApplicationSpec.secrets:type_name -> maxicloud.v1.ApplicationSpec.SecretsEntry
-	10, // 17: maxicloud.v1.CreateApplicationRequest.spec:type_name -> maxicloud.v1.ApplicationSpec
-	4,  // 18: maxicloud.v1.CreateApplicationResponse.application:type_name -> maxicloud.v1.Application
-	4,  // 19: maxicloud.v1.GetApplicationResponse.application:type_name -> maxicloud.v1.Application
-	4,  // 20: maxicloud.v1.ListApplicationsResponse.applications:type_name -> maxicloud.v1.Application
-	10, // 21: maxicloud.v1.UpdateApplicationRequest.spec:type_name -> maxicloud.v1.ApplicationSpec
-	4,  // 22: maxicloud.v1.UpdateApplicationResponse.application:type_name -> maxicloud.v1.Application
-	21, // 23: maxicloud.v1.ListGitRepositoriesResponse.repositories:type_name -> maxicloud.v1.GitRepository
-	11, // 24: maxicloud.v1.ApplicationService.CreateApplication:input_type -> maxicloud.v1.CreateApplicationRequest
-	13, // 25: maxicloud.v1.ApplicationService.GetApplication:input_type -> maxicloud.v1.GetApplicationRequest
-	15, // 26: maxicloud.v1.ApplicationService.ListApplications:input_type -> maxicloud.v1.ListApplicationsRequest
-	17, // 27: maxicloud.v1.ApplicationService.UpdateApplication:input_type -> maxicloud.v1.UpdateApplicationRequest
-	19, // 28: maxicloud.v1.ApplicationService.DeleteApplication:input_type -> maxicloud.v1.DeleteApplicationRequest
-	22, // 29: maxicloud.v1.ApplicationService.ListGitRepositories:input_type -> maxicloud.v1.ListGitRepositoriesRequest
-	12, // 30: maxicloud.v1.ApplicationService.CreateApplication:output_type -> maxicloud.v1.CreateApplicationResponse
-	14, // 31: maxicloud.v1.ApplicationService.GetApplication:output_type -> maxicloud.v1.GetApplicationResponse
-	16, // 32: maxicloud.v1.ApplicationService.ListApplications:output_type -> maxicloud.v1.ListApplicationsResponse
-	18, // 33: maxicloud.v1.ApplicationService.UpdateApplication:output_type -> maxicloud.v1.UpdateApplicationResponse
-	20, // 34: maxicloud.v1.ApplicationService.DeleteApplication:output_type -> maxicloud.v1.DeleteApplicationResponse
-	23, // 35: maxicloud.v1.ApplicationService.ListGitRepositories:output_type -> maxicloud.v1.ListGitRepositoriesResponse
-	30, // [30:36] is the sub-list for method output_type
-	24, // [24:30] is the sub-list for method input_type
-	24, // [24:24] is the sub-list for extension type_name
-	24, // [24:24] is the sub-list for extension extendee
-	0,  // [0:24] is the sub-list for field type_name
+	8,  // 10: maxicloud.v1.BuildConfig.buildpacks:type_name -> maxicloud.v1.BuildpacksBuildConfig
+	1,  // 11: maxicloud.v1.Access.mode:type_name -> maxicloud.v1.AccessMode
+	29, // 12: maxicloud.v1.Access.domain:type_name -> maxicloud.v1.Domain
+	5,  // 13: maxicloud.v1.ApplicationSpec.source:type_name -> maxicloud.v1.ApplicationSource
+	9,  // 14: maxicloud.v1.ApplicationSpec.build:type_name -> maxicloud.v1.BuildConfig
+	10, // 15: maxicloud.v1.ApplicationSpec.access:type_name -> maxicloud.v1.Access
+	25, // 16: maxicloud.v1.ApplicationSpec.environment_variables:type_name -> maxicloud.v1.ApplicationSpec.EnvironmentVariablesEntry
+	26, // 17: maxicloud.v1.ApplicationSpec.secrets:type_name -> maxicloud.v1.ApplicationSpec.SecretsEntry
+	11, // 18: maxicloud.v1.CreateApplicationRequest.spec:type_name -> maxicloud.v1.ApplicationSpec
+	4,  // 19: maxicloud.v1.CreateApplicationResponse.application:type_name -> maxicloud.v1.Application
+	4,  // 20: maxicloud.v1.GetApplicationResponse.application:type_name -> maxicloud.v1.Application
+	4,  // 21: maxicloud.v1.ListApplicationsResponse.applications:type_name -> maxicloud.v1.Application
+	11, // 22: maxicloud.v1.UpdateApplicationRequest.spec:type_name -> maxicloud.v1.ApplicationSpec
+	4,  // 23: maxicloud.v1.UpdateApplicationResponse.application:type_name -> maxicloud.v1.Application
+	22, // 24: maxicloud.v1.ListGitRepositoriesResponse.repositories:type_name -> maxicloud.v1.GitRepository
+	12, // 25: maxicloud.v1.ApplicationService.CreateApplication:input_type -> maxicloud.v1.CreateApplicationRequest
+	14, // 26: maxicloud.v1.ApplicationService.GetApplication:input_type -> maxicloud.v1.GetApplicationRequest
+	16, // 27: maxicloud.v1.ApplicationService.ListApplications:input_type -> maxicloud.v1.ListApplicationsRequest
+	18, // 28: maxicloud.v1.ApplicationService.UpdateApplication:input_type -> maxicloud.v1.UpdateApplicationRequest
+	20, // 29: maxicloud.v1.ApplicationService.DeleteApplication:input_type -> maxicloud.v1.DeleteApplicationRequest
+	23, // 30: maxicloud.v1.ApplicationService.ListGitRepositories:input_type -> maxicloud.v1.ListGitRepositoriesRequest
+	13, // 31: maxicloud.v1.ApplicationService.CreateApplication:output_type -> maxicloud.v1.CreateApplicationResponse
+	15, // 32: maxicloud.v1.ApplicationService.GetApplication:output_type -> maxicloud.v1.GetApplicationResponse
+	17, // 33: maxicloud.v1.ApplicationService.ListApplications:output_type -> maxicloud.v1.ListApplicationsResponse
+	19, // 34: maxicloud.v1.ApplicationService.UpdateApplication:output_type -> maxicloud.v1.UpdateApplicationResponse
+	21, // 35: maxicloud.v1.ApplicationService.DeleteApplication:output_type -> maxicloud.v1.DeleteApplicationResponse
+	24, // 36: maxicloud.v1.ApplicationService.ListGitRepositories:output_type -> maxicloud.v1.ListGitRepositoriesResponse
+	31, // [31:37] is the sub-list for method output_type
+	25, // [25:31] is the sub-list for method input_type
+	25, // [25:25] is the sub-list for extension type_name
+	25, // [25:25] is the sub-list for extension extendee
+	0,  // [0:25] is the sub-list for field type_name
 }
 
 func init() { file_maxicloud_v1_application_proto_init() }
@@ -1566,14 +1629,14 @@ func file_maxicloud_v1_application_proto_init() {
 		return
 	}
 	file_maxicloud_v1_common_proto_init()
-	file_maxicloud_v1_application_proto_msgTypes[8].OneofWrappers = []any{}
+	file_maxicloud_v1_application_proto_msgTypes[9].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_maxicloud_v1_application_proto_rawDesc), len(file_maxicloud_v1_application_proto_rawDesc)),
 			NumEnums:      4,
-			NumMessages:   22,
+			NumMessages:   23,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
