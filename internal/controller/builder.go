@@ -276,7 +276,8 @@ func newBuildpacksBuildJob(params BuildJobParams) *batchv1.Job {
 	}
 
 	registryHost := strings.SplitN(params.destination, "/", 2)[0]
-	packArgs := []string{
+	packArgs := make([]string, 0, 10+len(params.buildRun.Spec.Env)*2)
+	packArgs = append(packArgs,
 		"build", params.destination,
 		"--path", "/workspace",
 		"--builder", builderImage,
@@ -284,12 +285,13 @@ func newBuildpacksBuildJob(params BuildJobParams) *batchv1.Job {
 		"--trust-builder",
 		"--network", "host",
 		"--insecure-registry", registryHost,
-	}
-	packEnv := []corev1.EnvVar{
-		{Name: "DOCKER_HOST", Value: "unix:///var/run/docker/docker.sock"},
-		{Name: "DOCKER_CONFIG", Value: "/root/.docker"},
-		{Name: "PACK_VOLUME_KEY", Value: params.packVolumeKey},
-	}
+	)
+	packEnv := make([]corev1.EnvVar, 0, 3+len(params.buildRun.Spec.Env))
+	packEnv = append(packEnv,
+		corev1.EnvVar{Name: "DOCKER_HOST", Value: "unix:///var/run/docker/docker.sock"},
+		corev1.EnvVar{Name: "DOCKER_CONFIG", Value: "/root/.docker"},
+		corev1.EnvVar{Name: "PACK_VOLUME_KEY", Value: params.packVolumeKey},
+	)
 	for _, env := range params.buildRun.Spec.Env {
 		packEnv = append(packEnv, env)
 		packArgs = append(packArgs, "--env", env.Name)
