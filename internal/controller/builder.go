@@ -165,6 +165,7 @@ type BuildJobParams struct {
 	repoSecretName string
 	owner          string
 	repo           string
+	packVolumeKey  string
 }
 
 func newBuildJob(params BuildJobParams) (*batchv1.Job, error) {
@@ -281,10 +282,13 @@ func newBuildpacksBuildJob(params BuildJobParams) *batchv1.Job {
 		"--builder", builderImage,
 		"--publish",
 		"--trust-builder",
+		"--network", "host",
+		"--insecure-registry", registryHost,
 	}
 	packEnv := []corev1.EnvVar{
 		{Name: "DOCKER_HOST", Value: "unix:///var/run/docker/docker.sock"},
 		{Name: "DOCKER_CONFIG", Value: "/root/.docker"},
+		{Name: "PACK_VOLUME_KEY", Value: params.packVolumeKey},
 	}
 	for _, env := range params.buildRun.Spec.Env {
 		packEnv = append(packEnv, env)

@@ -8,6 +8,7 @@ type ControllerConfig struct {
 
 	RegistryHost     string `env:"REGISTRY_HOST" envDefault:"kind-registry:5000"`
 	RegistryPassword string `env:"REGISTRY_PASSWORD,required"`
+	PackVolumeKey    string `env:"PACK_VOLUME_KEY,required"`
 
 	IngressClass string `env:"INGRESS_CLASS" envDefault:"nginx"`
 	BaseDomain   string `env:"BASE_DOMAIN" envDefault:"maxicloud.maximum.vc"`

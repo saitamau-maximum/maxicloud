@@ -44,9 +44,10 @@ type gitHubClient interface {
 
 type BuildRunReconciler struct {
 	client.Client
-	Scheme       *runtime.Scheme
-	Registry     registry.Registry
-	GitHubClient gitHubClient
+	Scheme        *runtime.Scheme
+	Registry      registry.Registry
+	GitHubClient  gitHubClient
+	PackVolumeKey string
 }
 
 // +kubebuilder:rbac:groups=maxicloud.maximum.vc,resources=buildruns,verbs=get;list;watch;create;update;patch;delete
@@ -145,6 +146,7 @@ func (r *BuildRunReconciler) reconcileJob(ctx context.Context, buildRun *maxiclo
 				repo:           repo,
 				destination:    destination,
 				buildOutput:    r.Registry.BuildOutput(destination),
+				packVolumeKey:  r.PackVolumeKey,
 			})
 			if err != nil {
 				return err
