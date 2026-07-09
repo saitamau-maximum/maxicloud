@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"strings"
 
 	maxicloudv1alpha1 "github.com/saitamau-maximum/maxicloud/api/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -15,6 +16,11 @@ import (
 const (
 	ApplicationCRKind = "Application"
 	BuildRunCRKind    = "BuildRun"
+
+	defaultBuildpacksBuilderImage = "paketobuildpacks/builder-jammy-base:latest"
+	buildpacksPackImage           = "buildpacksio/pack:0.40.6"
+	buildpacksGitImage            = "alpine/git:2.47.2"
+	buildpacksDockerImage         = "docker:28-dind"
 )
 
 func newAppRegistrySecret(app *maxicloudv1alpha1.Application, dockerConfig string) *corev1.Secret {
@@ -161,8 +167,23 @@ type BuildJobParams struct {
 	repo           string
 }
 
+func newBuildJob(params BuildJobParams) (*batchv1.Job, error) {
+	strategy := maxicloudv1alpha1.BuildStrategyDockerfile
+	if params.buildRun.Spec.Build != nil && params.buildRun.Spec.Build.Strategy != "" {
+		strategy = params.buildRun.Spec.Build.Strategy
+	}
+	switch strategy {
+	case maxicloudv1alpha1.BuildStrategyDockerfile:
+		return newDockerfileBuildJob(params), nil
+	case maxicloudv1alpha1.BuildStrategyBuildpacks:
+		return newBuildpacksBuildJob(params), nil
+	default:
+		return nil, fmt.Errorf("unsupported build strategy: %s", strategy)
+	}
+}
+
 // TODO: 非特権コンテナでビルドできるようにする
-func newBuildJob(params BuildJobParams) *batchv1.Job {
+func newDockerfileBuildJob(params BuildJobParams) *batchv1.Job {
 	dockerfilePath, dockerfileInline := dockerfileConfig(params.buildRun)
 	command := []string{
 		"buildctl-daemonless.sh",
@@ -239,6 +260,144 @@ func newBuildJob(params BuildJobParams) *batchv1.Job {
 									},
 								},
 							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func newBuildpacksBuildJob(params BuildJobParams) *batchv1.Job {
+	builderImage := defaultBuildpacksBuilderImage
+	if config := params.buildRun.Spec.Build.Buildpacks; config != nil && strings.TrimSpace(config.Builder) != "" {
+		builderImage = config.Builder
+	}
+
+	registryHost := strings.SplitN(params.destination, "/", 2)[0]
+	packArgs := []string{
+		"build", params.destination,
+		"--path", "/workspace",
+		"--builder", builderImage,
+		"--publish",
+		"--trust-builder",
+	}
+	packEnv := []corev1.EnvVar{
+		{Name: "DOCKER_HOST", Value: "unix:///var/run/docker/docker.sock"},
+		{Name: "DOCKER_CONFIG", Value: "/root/.docker"},
+	}
+	for _, env := range params.buildRun.Spec.Env {
+		packEnv = append(packEnv, env)
+		packArgs = append(packArgs, "--env", env.Name)
+	}
+
+	sidecarRestartPolicy := corev1.ContainerRestartPolicyAlways
+	return &batchv1.Job{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      params.jobName,
+			Namespace: params.buildRun.Namespace,
+			OwnerReferences: []metav1.OwnerReference{
+				*metav1.NewControllerRef(params.buildRun, maxicloudv1alpha1.GroupVersion.WithKind(BuildRunCRKind)),
+			},
+			Labels: params.buildRun.Labels,
+		},
+		Spec: batchv1.JobSpec{
+			Template: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					RestartPolicy: corev1.RestartPolicyNever,
+					InitContainers: []corev1.Container{
+						{
+							Name:  "git-clone",
+							Image: buildpacksGitImage,
+							Env: []corev1.EnvVar{
+								{
+									Name: "GITHUB_TOKEN",
+									ValueFrom: &corev1.EnvVarSource{
+										SecretKeyRef: &corev1.SecretKeySelector{
+											LocalObjectReference: corev1.LocalObjectReference{Name: params.repoSecretName},
+											Key:                  installationAccessTokenKey,
+										},
+									},
+								},
+								{Name: "GITHUB_OWNER", Value: params.owner},
+								{Name: "GITHUB_REPO", Value: params.repo},
+								{Name: "GIT_SHA", Value: params.sha},
+							},
+							Command: []string{"sh", "-c"},
+							Args: []string{
+								`git clone --no-checkout "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_OWNER}/${GITHUB_REPO}.git" /workspace && git -C /workspace checkout --detach "${GIT_SHA}"`,
+							},
+							VolumeMounts: []corev1.VolumeMount{{Name: "source", MountPath: "/workspace"}},
+						},
+						{
+							Name:          "docker",
+							Image:         buildpacksDockerImage,
+							RestartPolicy: &sidecarRestartPolicy,
+							Args: []string{
+								"--host=unix:///var/run/docker/docker.sock",
+								"--tls=false",
+								"--insecure-registry=" + registryHost,
+							},
+							SecurityContext: &corev1.SecurityContext{
+								Privileged: boolPtr(true),
+							},
+							ReadinessProbe: &corev1.Probe{
+								ProbeHandler: corev1.ProbeHandler{
+									Exec: &corev1.ExecAction{Command: []string{"docker", "info"}},
+								},
+								PeriodSeconds:    1,
+								FailureThreshold: 60,
+							},
+							VolumeMounts: []corev1.VolumeMount{
+								{Name: "docker-socket", MountPath: "/var/run/docker"},
+								{Name: "docker-data", MountPath: "/var/lib/docker"},
+							},
+						},
+						{
+							Name:  "wait-for-docker",
+							Image: buildpacksDockerImage,
+							Env: []corev1.EnvVar{
+								{Name: "DOCKER_HOST", Value: "unix:///var/run/docker/docker.sock"},
+							},
+							Command: []string{"sh", "-ec"},
+							Args: []string{
+								`for i in $(seq 1 60); do
+									if docker info >/dev/null 2>&1; then
+										exit 0
+									fi
+									sleep 1
+								done
+								echo "docker daemon did not become ready in time" >&2
+								exit 1`,
+							},
+							VolumeMounts: []corev1.VolumeMount{
+								{Name: "docker-socket", MountPath: "/var/run/docker"},
+							},
+						},
+					},
+					Containers: []corev1.Container{
+						{
+							Name:  "buildpacks",
+							Image: buildpacksPackImage,
+							Args:  packArgs,
+							Env:   packEnv,
+							VolumeMounts: []corev1.VolumeMount{
+								{Name: "source", MountPath: "/workspace", ReadOnly: true},
+								{Name: "docker-socket", MountPath: "/var/run/docker"},
+								{Name: "registry-auth", MountPath: "/root/.docker", ReadOnly: true},
+							},
+						},
+					},
+					Volumes: []corev1.Volume{
+						{Name: "source", VolumeSource: corev1.VolumeSource{EmptyDir: &corev1.EmptyDirVolumeSource{}}},
+						{Name: "docker-socket", VolumeSource: corev1.VolumeSource{EmptyDir: &corev1.EmptyDirVolumeSource{}}},
+						{Name: "docker-data", VolumeSource: corev1.VolumeSource{EmptyDir: &corev1.EmptyDirVolumeSource{}}},
+						{
+							Name: "registry-auth",
+							VolumeSource: corev1.VolumeSource{Secret: &corev1.SecretVolumeSource{
+								SecretName: params.repoSecretName,
+								Items:      []corev1.KeyToPath{{Key: corev1.DockerConfigJsonKey, Path: "config.json"}},
+							}},
 						},
 					},
 				},

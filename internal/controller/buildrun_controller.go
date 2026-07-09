@@ -136,7 +136,7 @@ func (r *BuildRunReconciler) reconcileJob(ctx context.Context, buildRun *maxiclo
 	var job batchv1.Job
 	if err := r.Get(ctx, types.NamespacedName{Name: buildRun.Name, Namespace: buildRun.Namespace}, &job); err != nil {
 		if errors.IsNotFound(err) {
-			if err := r.Create(ctx, newBuildJob(BuildJobParams{
+			job, err := newBuildJob(BuildJobParams{
 				buildRun:       buildRun,
 				jobName:        buildRun.Name,
 				sha:            buildRun.Spec.Source.SHA,
@@ -145,7 +145,11 @@ func (r *BuildRunReconciler) reconcileJob(ctx context.Context, buildRun *maxiclo
 				repo:           repo,
 				destination:    destination,
 				buildOutput:    r.Registry.BuildOutput(destination),
-			})); err != nil {
+			})
+			if err != nil {
+				return err
+			}
+			if err := r.Create(ctx, job); err != nil {
 				return ignoreAlreadyExists(err)
 			}
 			return nil

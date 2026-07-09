@@ -269,23 +269,43 @@ func buildConfigToCR(config domain.BuildConfig) *maxicloudv1alpha1.BuildConfig {
 			Strategy:   maxicloudv1alpha1.BuildStrategyDockerfile,
 			Dockerfile: dockerfile,
 		}
+	case domain.BuildConfigBuildpacks:
+		return &maxicloudv1alpha1.BuildConfig{
+			Strategy: maxicloudv1alpha1.BuildStrategyBuildpacks,
+			Buildpacks: &maxicloudv1alpha1.BuildpacksBuildConfig{
+				Builder: config.Builder,
+			},
+		}
 	default:
 		return nil
 	}
 }
 
 func buildConfigFromCR(config *maxicloudv1alpha1.BuildConfig) domain.BuildConfig {
-	if config == nil || config.Strategy != maxicloudv1alpha1.BuildStrategyDockerfile || config.Dockerfile == nil {
+	if config == nil {
 		return nil
 	}
-	switch config.Dockerfile.Source {
-	case maxicloudv1alpha1.DockerfileSourcePath:
-		return domain.BuildConfigDockerfile{Source: domain.DockerfileSourcePath{Path: config.Dockerfile.Path}}
-	case maxicloudv1alpha1.DockerfileSourceInline:
-		return domain.BuildConfigDockerfile{Source: domain.DockerfileSourceInline{Content: config.Dockerfile.Inline}}
+	switch config.Strategy {
+	case maxicloudv1alpha1.BuildStrategyDockerfile:
+		if config.Dockerfile == nil {
+			return nil
+		}
+		switch config.Dockerfile.Source {
+		case maxicloudv1alpha1.DockerfileSourcePath:
+			return domain.BuildConfigDockerfile{Source: domain.DockerfileSourcePath{Path: config.Dockerfile.Path}}
+		case maxicloudv1alpha1.DockerfileSourceInline:
+			return domain.BuildConfigDockerfile{Source: domain.DockerfileSourceInline{Content: config.Dockerfile.Inline}}
+		}
+	case maxicloudv1alpha1.BuildStrategyBuildpacks:
+		builder := ""
+		if config.Buildpacks != nil {
+			builder = config.Buildpacks.Builder
+		}
+		return domain.BuildConfigBuildpacks{Builder: builder}
 	default:
 		return nil
 	}
+	return nil
 }
 
 func projectIDFromApp(app *maxicloudv1alpha1.Application) string {
