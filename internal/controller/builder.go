@@ -148,12 +148,20 @@ func newBuildRunSecret(buildRun *maxicloudv1alpha1.BuildRun, dockerConfig, insta
 				*metav1.NewControllerRef(buildRun, maxicloudv1alpha1.GroupVersion.WithKind(BuildRunCRKind)),
 			},
 		},
-		Data: map[string][]byte{
-			corev1.DockerConfigJsonKey: []byte(dockerConfig),
-			installationAccessTokenKey: []byte(installationAccessToken),
-		},
+		Data: buildRunSecretData(buildRun, dockerConfig, installationAccessToken),
 		Type: corev1.SecretTypeOpaque,
 	}
+}
+
+func buildRunSecretData(buildRun *maxicloudv1alpha1.BuildRun, dockerConfig, installationAccessToken string) map[string][]byte {
+	data := map[string][]byte{
+		corev1.DockerConfigJsonKey: []byte(dockerConfig),
+		installationAccessTokenKey: []byte(installationAccessToken),
+	}
+	if _, dockerfileInline := dockerfileConfig(buildRun); dockerfileInline != "" {
+		data[dockerfileInlineKey] = []byte(dockerfileInline)
+	}
+	return data
 }
 
 type BuildJobParams struct {
@@ -208,12 +216,57 @@ func newDockerfileBuildJob(params BuildJobParams) *batchv1.Job {
 		{Name: "XDG_RUNTIME_DIR", Value: "/tmp"},
 		{Name: "DOCKER_CONFIG", Value: "/root/.docker"},
 	}
+	volumeMounts := []corev1.VolumeMount{
+		{
+			Name:      "registry-auth",
+			MountPath: "/root/.docker",
+		},
+	}
+	volumes := []corev1.Volume{
+		{
+			Name: "registry-auth",
+			VolumeSource: corev1.VolumeSource{
+				Secret: &corev1.SecretVolumeSource{
+					SecretName: params.repoSecretName,
+					Items: []corev1.KeyToPath{
+						{
+							Key:  corev1.DockerConfigJsonKey,
+							Path: "config.json",
+						},
+					},
+				},
+			},
+		},
+	}
 	if dockerfileInline != "" {
-		containerEnv = append(containerEnv, corev1.EnvVar{Name: "DOCKERFILE_INLINE", Value: dockerfileInline})
 		command = []string{
-			"sh", "-c",
-			`mkdir -p /tmp/dockerfile && printf '%s' "$DOCKERFILE_INLINE" > /tmp/dockerfile/Dockerfile && exec buildctl-daemonless.sh build --frontend=dockerfile.v0 --opt "context=https://x-access-token:${GITHUB_TOKEN}@github.com/` + params.owner + `/` + params.repo + `.git#` + params.sha + `" --local dockerfile=/tmp/dockerfile --opt filename=Dockerfile --output "` + params.buildOutput + `"`,
+			"buildctl-daemonless.sh",
+			"build",
+			"--frontend=dockerfile.v0",
+			"--opt", fmt.Sprintf("context=https://x-access-token:$(GITHUB_TOKEN)@github.com/%s/%s.git#%s", params.owner, params.repo, params.sha),
+			"--local", "dockerfile=/tmp/dockerfile",
+			"--opt", "filename=Dockerfile",
+			"--output", params.buildOutput,
 		}
+		volumeMounts = append(volumeMounts, corev1.VolumeMount{
+			Name:      "dockerfile-inline",
+			MountPath: "/tmp/dockerfile",
+			ReadOnly:  true,
+		})
+		volumes = append(volumes, corev1.Volume{
+			Name: "dockerfile-inline",
+			VolumeSource: corev1.VolumeSource{
+				Secret: &corev1.SecretVolumeSource{
+					SecretName: params.repoSecretName,
+					Items: []corev1.KeyToPath{
+						{
+							Key:  dockerfileInlineKey,
+							Path: "Dockerfile",
+						},
+					},
+				},
+			},
+		})
 	}
 	return &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
@@ -240,30 +293,10 @@ func newDockerfileBuildJob(params BuildJobParams) *batchv1.Job {
 									Type: corev1.SeccompProfileTypeUnconfined,
 								},
 							},
-							VolumeMounts: []corev1.VolumeMount{
-								{
-									Name:      "registry-auth",
-									MountPath: "/root/.docker",
-								},
-							},
+							VolumeMounts: volumeMounts,
 						},
 					},
-					Volumes: []corev1.Volume{
-						{
-							Name: "registry-auth",
-							VolumeSource: corev1.VolumeSource{
-								Secret: &corev1.SecretVolumeSource{
-									SecretName: params.repoSecretName,
-									Items: []corev1.KeyToPath{
-										{
-											Key:  corev1.DockerConfigJsonKey,
-											Path: "config.json",
-										},
-									},
-								},
-							},
-						},
-					},
+					Volumes: volumes,
 				},
 			},
 		},
@@ -330,14 +363,24 @@ func newBuildpacksBuildJob(params BuildJobParams) *batchv1.Job {
 										},
 									},
 								},
-								{Name: "GITHUB_OWNER", Value: params.owner},
-								{Name: "GITHUB_REPO", Value: params.repo},
-								{Name: "GIT_SHA", Value: params.sha},
+								{Name: "GIT_CONFIG_COUNT", Value: "1"},
+								{Name: "GIT_CONFIG_KEY_0", Value: "http.https://github.com/.extraHeader"},
+								{Name: "GIT_CONFIG_VALUE_0", Value: "Authorization: Bearer $(GITHUB_TOKEN)"},
 							},
-							Command: []string{"sh", "-c"},
+							Command: []string{"git"},
 							Args: []string{
-								`git -c "http.https://github.com/.extraHeader=Authorization: Bearer ${GITHUB_TOKEN}" clone --no-checkout "https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}.git" /workspace && git -C /workspace checkout --detach "${GIT_SHA}"`,
+								"clone",
+								"--no-checkout",
+								fmt.Sprintf("https://github.com/%s/%s.git", params.owner, params.repo),
+								"/workspace",
 							},
+							VolumeMounts: []corev1.VolumeMount{{Name: "source", MountPath: "/workspace"}},
+						},
+						{
+							Name:         "git-checkout",
+							Image:        buildpacksGitImage,
+							Command:      []string{"git"},
+							Args:         []string{"-C", "/workspace", "checkout", "--detach", params.sha},
 							VolumeMounts: []corev1.VolumeMount{{Name: "source", MountPath: "/workspace"}},
 						},
 						{
@@ -348,7 +391,7 @@ func newBuildpacksBuildJob(params BuildJobParams) *batchv1.Job {
 							SecurityContext: &corev1.SecurityContext{
 								Privileged: boolPtr(true),
 							},
-							ReadinessProbe: &corev1.Probe{
+							StartupProbe: &corev1.Probe{
 								ProbeHandler: corev1.ProbeHandler{
 									Exec: &corev1.ExecAction{Command: []string{"docker", "info"}},
 								},
@@ -358,27 +401,6 @@ func newBuildpacksBuildJob(params BuildJobParams) *batchv1.Job {
 							VolumeMounts: []corev1.VolumeMount{
 								{Name: "docker-socket", MountPath: "/var/run/docker"},
 								{Name: "docker-data", MountPath: "/var/lib/docker"},
-							},
-						},
-						{
-							Name:  "wait-for-docker",
-							Image: buildpacksDockerImage,
-							Env: []corev1.EnvVar{
-								{Name: "DOCKER_HOST", Value: "unix:///var/run/docker/docker.sock"},
-							},
-							Command: []string{"sh", "-ec"},
-							Args: []string{
-								`for i in $(seq 1 60); do
-									if docker info >/dev/null 2>&1; then
-										exit 0
-									fi
-									sleep 1
-								done
-								echo "docker daemon did not become ready in time" >&2
-								exit 1`,
-							},
-							VolumeMounts: []corev1.VolumeMount{
-								{Name: "docker-socket", MountPath: "/var/run/docker"},
 							},
 						},
 					},

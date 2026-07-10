@@ -196,7 +196,7 @@ var _ = Describe("BuildRun Controller", func() {
 			job := newBuildpacksJob(false)
 
 			pack := job.Spec.Template.Spec.Containers[0]
-			docker := job.Spec.Template.Spec.InitContainers[1]
+			docker := job.Spec.Template.Spec.InitContainers[2]
 
 			Expect(pack.Args).NotTo(ContainElement("--insecure-registry"))
 			Expect(docker.Args).NotTo(ContainElement("--insecure-registry=ghcr.io"))
@@ -206,7 +206,7 @@ var _ = Describe("BuildRun Controller", func() {
 			job := newBuildpacksJob(true)
 
 			pack := job.Spec.Template.Spec.Containers[0]
-			docker := job.Spec.Template.Spec.InitContainers[1]
+			docker := job.Spec.Template.Spec.InitContainers[2]
 
 			Expect(pack.Args).To(ContainElement("--insecure-registry"))
 			Expect(pack.Args).To(ContainElement("ghcr.io"))
@@ -218,10 +218,9 @@ var _ = Describe("BuildRun Controller", func() {
 
 			gitClone := job.Spec.Template.Spec.InitContainers[0]
 
-			Expect(gitClone.Args).To(HaveLen(1))
-			Expect(gitClone.Args[0]).To(ContainSubstring("http.https://github.com/.extraHeader=Authorization: Bearer ${GITHUB_TOKEN}"))
-			Expect(gitClone.Args[0]).To(ContainSubstring("https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}.git"))
-			Expect(gitClone.Args[0]).NotTo(ContainSubstring("x-access-token"))
+			Expect(gitClone.Command).To(Equal([]string{"git"}))
+			Expect(gitClone.Args).To(ContainElement("https://github.com/saitamau-maximum/maxicloud.git"))
+			Expect(gitClone.Args).NotTo(ContainElement(ContainSubstring("x-access-token")))
 		})
 	})
 })
