@@ -336,7 +336,7 @@ func newBuildpacksBuildJob(params BuildJobParams) *batchv1.Job {
 							},
 							Command: []string{"sh", "-c"},
 							Args: []string{
-								`git clone --no-checkout "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_OWNER}/${GITHUB_REPO}.git" /workspace && git -C /workspace checkout --detach "${GIT_SHA}"`,
+								`git -c "http.https://github.com/.extraHeader=Authorization: Bearer ${GITHUB_TOKEN}" clone --no-checkout "https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}.git" /workspace && git -C /workspace checkout --detach "${GIT_SHA}"`,
 							},
 							VolumeMounts: []corev1.VolumeMount{{Name: "source", MountPath: "/workspace"}},
 						},

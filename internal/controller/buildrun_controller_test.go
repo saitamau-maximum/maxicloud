@@ -212,5 +212,16 @@ var _ = Describe("BuildRun Controller", func() {
 			Expect(pack.Args).To(ContainElement("ghcr.io"))
 			Expect(docker.Args).To(ContainElement("--insecure-registry=ghcr.io"))
 		})
+
+		It("GitHub tokenをclone URLに含めない", func() {
+			job := newBuildpacksJob(false)
+
+			gitClone := job.Spec.Template.Spec.InitContainers[0]
+
+			Expect(gitClone.Args).To(HaveLen(1))
+			Expect(gitClone.Args[0]).To(ContainSubstring("http.https://github.com/.extraHeader=Authorization: Bearer ${GITHUB_TOKEN}"))
+			Expect(gitClone.Args[0]).To(ContainSubstring("https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}.git"))
+			Expect(gitClone.Args[0]).NotTo(ContainSubstring("x-access-token"))
+		})
 	})
 })
