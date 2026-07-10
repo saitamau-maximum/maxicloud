@@ -138,15 +138,16 @@ func (r *BuildRunReconciler) reconcileJob(ctx context.Context, buildRun *maxiclo
 	if err := r.Get(ctx, types.NamespacedName{Name: buildRun.Name, Namespace: buildRun.Namespace}, &job); err != nil {
 		if errors.IsNotFound(err) {
 			job, err := newBuildJob(BuildJobParams{
-				buildRun:       buildRun,
-				jobName:        buildRun.Name,
-				sha:            buildRun.Spec.Source.SHA,
-				repoSecretName: buildRun.Name,
-				owner:          owner,
-				repo:           repo,
-				destination:    destination,
-				buildOutput:    r.Registry.BuildOutput(destination),
-				packVolumeKey:  r.PackVolumeKey,
+				buildRun:         buildRun,
+				jobName:          buildRun.Name,
+				sha:              buildRun.Spec.Source.SHA,
+				repoSecretName:   buildRun.Name,
+				owner:            owner,
+				repo:             repo,
+				destination:      destination,
+				buildOutput:      r.Registry.BuildOutput(destination),
+				registryInsecure: r.Registry.Insecure(),
+				packVolumeKey:    r.PackVolumeKey,
 			})
 			if err != nil {
 				return err

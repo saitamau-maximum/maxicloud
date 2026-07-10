@@ -157,15 +157,16 @@ func newBuildRunSecret(buildRun *maxicloudv1alpha1.BuildRun, dockerConfig, insta
 }
 
 type BuildJobParams struct {
-	buildRun       *maxicloudv1alpha1.BuildRun
-	jobName        string
-	destination    string
-	buildOutput    string
-	sha            string
-	repoSecretName string
-	owner          string
-	repo           string
-	packVolumeKey  string
+	buildRun         *maxicloudv1alpha1.BuildRun
+	jobName          string
+	destination      string
+	buildOutput      string
+	sha              string
+	repoSecretName   string
+	owner            string
+	repo             string
+	registryInsecure bool
+	packVolumeKey    string
 }
 
 func newBuildJob(params BuildJobParams) (*batchv1.Job, error) {
@@ -284,8 +285,10 @@ func newBuildpacksBuildJob(params BuildJobParams) *batchv1.Job {
 		"--publish",
 		"--trust-builder",
 		"--network", "host",
-		"--insecure-registry", registryHost,
 	)
+	if params.registryInsecure {
+		packArgs = append(packArgs, "--insecure-registry", registryHost)
+	}
 	packEnv := make([]corev1.EnvVar, 0, 3+len(params.buildRun.Spec.Env))
 	packEnv = append(packEnv,
 		corev1.EnvVar{Name: "DOCKER_HOST", Value: "unix:///var/run/docker/docker.sock"},
@@ -341,11 +344,7 @@ func newBuildpacksBuildJob(params BuildJobParams) *batchv1.Job {
 							Name:          "docker",
 							Image:         buildpacksDockerImage,
 							RestartPolicy: &sidecarRestartPolicy,
-							Args: []string{
-								"--host=unix:///var/run/docker/docker.sock",
-								"--tls=false",
-								"--insecure-registry=" + registryHost,
-							},
+							Args:          dockerDaemonArgs(registryHost, params.registryInsecure),
 							SecurityContext: &corev1.SecurityContext{
 								Privileged: boolPtr(true),
 							},
@@ -412,6 +411,17 @@ func newBuildpacksBuildJob(params BuildJobParams) *batchv1.Job {
 			},
 		},
 	}
+}
+
+func dockerDaemonArgs(registryHost string, registryInsecure bool) []string {
+	args := []string{
+		"--host=unix:///var/run/docker/docker.sock",
+		"--tls=false",
+	}
+	if registryInsecure {
+		args = append(args, "--insecure-registry="+registryHost)
+	}
+	return args
 }
 
 func dockerfileConfig(buildRun *maxicloudv1alpha1.BuildRun) (path, inline string) {
