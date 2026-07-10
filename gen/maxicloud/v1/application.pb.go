@@ -1438,7 +1438,7 @@ const file_maxicloud_v1_application_proto_rawDesc = "" +
 	"\x0fdockerfile_path\x18\x02 \x01(\tR\x0edockerfilePath\x12+\n" +
 	"\x11dockerfile_inline\x18\x03 \x01(\tR\x10dockerfileInline\";\n" +
 	"\x15BuildpacksBuildConfig\x12\"\n" +
-	"\abuilder\x18\x01 \x01(\tB\b\xbaH\x05r\x03\x18\xff\x01R\abuilder\"\xd8\x01\n" +
+	"\abuilder\x18\x01 \x01(\tB\b\xbaH\x05r\x03\x18\xff\x01R\abuilder\"\xb7\x03\n" +
 	"\vBuildConfig\x12?\n" +
 	"\bstrategy\x18\x01 \x01(\x0e2\x1b.maxicloud.v1.BuildStrategyB\x06\xbaH\x03\xc8\x01\x01R\bstrategy\x12C\n" +
 	"\n" +
@@ -1446,7 +1446,12 @@ const file_maxicloud_v1_application_proto_rawDesc = "" +
 	"dockerfile\x12C\n" +
 	"\n" +
 	"buildpacks\x18\x03 \x01(\v2#.maxicloud.v1.BuildpacksBuildConfigR\n" +
-	"buildpacks\"\x8d\x01\n" +
+	"buildpacks:\xdc\x01\xbaH\xd8\x01\x1a\xb9\x01\n" +
+	"$build_config.strategy_matches_config\x123build strategy must match the provided build config\x1a\\(this.strategy == 1 && has(this.dockerfile)) || (this.strategy == 2 && has(this.buildpacks))\"\x1a\n" +
+	"\n" +
+	"dockerfile\n" +
+	"\n" +
+	"buildpacks\x10\x01\"\x8d\x01\n" +
 	"\x06Access\x124\n" +
 	"\x04mode\x18\x01 \x01(\x0e2\x18.maxicloud.v1.AccessModeB\x06\xbaH\x03\xc8\x01\x01R\x04mode\x12,\n" +
 	"\x06domain\x18\x02 \x01(\v2\x14.maxicloud.v1.DomainR\x06domain\x12\x1f\n" +
