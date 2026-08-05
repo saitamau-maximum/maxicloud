@@ -200,7 +200,7 @@ export class ApplicationRepository implements IApplicationRepository {
 							: undefined,
 					buildpacks:
 						input.buildStrategy === CREATE_APPLICATION_BUILD_STRATEGY.BUILDPACKS
-							? { builder: "" }
+							? {}
 							: undefined,
 				},
 				access: {

@@ -172,9 +172,7 @@ func toApplicationSpec(s *v1.ApplicationSpec) (domain.ApplicationSpec, error) {
 				return domain.ApplicationSpec{}, errors.New("invalid dockerfile build config")
 			}
 		case v1.BuildStrategy_BUILD_STRATEGY_BUILDPACKS:
-			spec.BuildConfig = domain.BuildConfigBuildpacks{
-				Builder: s.GetBuild().GetBuildpacks().GetBuilder(),
-			}
+			spec.BuildConfig = domain.BuildConfigBuildpacks{}
 		default:
 			return domain.ApplicationSpec{}, errors.New("invalid build strategy")
 		}

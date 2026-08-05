@@ -4,7 +4,6 @@ import "fmt"
 
 const (
 	installationAccessTokenKey = "installation-access-token"
-	dockerfileInlineKey        = "Dockerfile"
 
 	appNameLabel = "app.kubernetes.io/name"
 )

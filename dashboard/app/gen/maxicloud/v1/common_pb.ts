@@ -2,58 +2,63 @@
 // @generated from file maxicloud/v1/common.proto (package maxicloud.v1, syntax proto3)
 /* eslint-disable */
 
+import type { Message } from "@bufbuild/protobuf";
 import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
 import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
-import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file maxicloud/v1/common.proto.
  */
-export const file_maxicloud_v1_common: GenFile = /*@__PURE__*/
-  fileDesc("ChltYXhpY2xvdWQvdjEvY29tbW9uLnByb3RvEgxtYXhpY2xvdWQudjEiOQoKUmVwb3NpdG9yeRIUCgRuYW1lGAEgASgJQga6SAPIAQESFQoFb3duZXIYAiABKAlCBrpIA8gBASJICgZEb21haW4SHQoJc3ViZG9tYWluGAEgASgJQgq6SAfIAQFyAmgBEh8KC3Jvb3RfZG9tYWluGAIgASgJQgq6SAfIAQFyAmgBQrQBChBjb20ubWF4aWNsb3VkLnYxQgtDb21tb25Qcm90b1ABWkJnaXRodWIuY29tL3NhaXRhbWF1LW1heGltdW0vbWF4aWNsb3VkL2dlbi9tYXhpY2xvdWQvdjE7bWF4aWNsb3VkdjGiAgNNWFiqAgxNYXhpY2xvdWQuVjHKAgxNYXhpY2xvdWRcVjHiAhhNYXhpY2xvdWRcVjFcR1BCTWV0YWRhdGHqAg1NYXhpY2xvdWQ6OlYxYgZwcm90bzM", [file_buf_validate_validate]);
+export const file_maxicloud_v1_common: GenFile =
+	/*@__PURE__*/
+	fileDesc(
+		"ChltYXhpY2xvdWQvdjEvY29tbW9uLnByb3RvEgxtYXhpY2xvdWQudjEiOQoKUmVwb3NpdG9yeRIUCgRuYW1lGAEgASgJQga6SAPIAQESFQoFb3duZXIYAiABKAlCBrpIA8gBASJICgZEb21haW4SHQoJc3ViZG9tYWluGAEgASgJQgq6SAfIAQFyAmgBEh8KC3Jvb3RfZG9tYWluGAIgASgJQgq6SAfIAQFyAmgBQrQBChBjb20ubWF4aWNsb3VkLnYxQgtDb21tb25Qcm90b1ABWkJnaXRodWIuY29tL3NhaXRhbWF1LW1heGltdW0vbWF4aWNsb3VkL2dlbi9tYXhpY2xvdWQvdjE7bWF4aWNsb3VkdjGiAgNNWFiqAgxNYXhpY2xvdWQuVjHKAgxNYXhpY2xvdWRcVjHiAhhNYXhpY2xvdWRcVjFcR1BCTWV0YWRhdGHqAg1NYXhpY2xvdWQ6OlYxYgZwcm90bzM",
+		[file_buf_validate_validate],
+	);
 
 /**
  * @generated from message maxicloud.v1.Repository
  */
 export type Repository = Message<"maxicloud.v1.Repository"> & {
-  /**
-   * @generated from field: string name = 1;
-   */
-  name: string;
+	/**
+	 * @generated from field: string name = 1;
+	 */
+	name: string;
 
-  /**
-   * @generated from field: string owner = 2;
-   */
-  owner: string;
+	/**
+	 * @generated from field: string owner = 2;
+	 */
+	owner: string;
 };
 
 /**
  * Describes the message maxicloud.v1.Repository.
  * Use `create(RepositorySchema)` to create a new message.
  */
-export const RepositorySchema: GenMessage<Repository> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_common, 0);
+export const RepositorySchema: GenMessage<Repository> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_common, 0);
 
 /**
  * @generated from message maxicloud.v1.Domain
  */
 export type Domain = Message<"maxicloud.v1.Domain"> & {
-  /**
-   * @generated from field: string subdomain = 1;
-   */
-  subdomain: string;
+	/**
+	 * @generated from field: string subdomain = 1;
+	 */
+	subdomain: string;
 
-  /**
-   * @generated from field: string root_domain = 2;
-   */
-  rootDomain: string;
+	/**
+	 * @generated from field: string root_domain = 2;
+	 */
+	rootDomain: string;
 };
 
 /**
  * Describes the message maxicloud.v1.Domain.
  * Use `create(DomainSchema)` to create a new message.
  */
-export const DomainSchema: GenMessage<Domain> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_common, 1);
-
+export const DomainSchema: GenMessage<Domain> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_common, 1);

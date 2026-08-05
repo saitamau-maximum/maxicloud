@@ -47,11 +47,6 @@ spec:
                   buildpacks:
                     description: Buildpacks contains settings for a Cloud Native Buildpacks
                       build.
-                    properties:
-                      builder:
-                        description: Builder is the builder image. The platform default
-                          is used when empty.
-                        type: string
                     type: object
                   dockerfile:
                     description: Dockerfile contains settings for a Dockerfile build.

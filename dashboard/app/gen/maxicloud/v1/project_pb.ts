@@ -2,292 +2,319 @@
 // @generated from file maxicloud/v1/project.proto (package maxicloud.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
-import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
+import type { Message } from "@bufbuild/protobuf";
+import type {
+	GenFile,
+	GenMessage,
+	GenService,
+} from "@bufbuild/protobuf/codegenv2";
+import {
+	fileDesc,
+	messageDesc,
+	serviceDesc,
+} from "@bufbuild/protobuf/codegenv2";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
-import type { Message } from "@bufbuild/protobuf";
+import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
 
 /**
  * Describes the file maxicloud/v1/project.proto.
  */
-export const file_maxicloud_v1_project: GenFile = /*@__PURE__*/
-  fileDesc("ChptYXhpY2xvdWQvdjEvcHJvamVjdC5wcm90bxIMbWF4aWNsb3VkLnYxIu8BCgdQcm9qZWN0EhcKAmlkGAEgASgJQgu6SAjIAQFyA7ABARIYCgRuYW1lGAIgASgJQgq6SAfIAQFyAhhkEh0KC2Rlc2NyaXB0aW9uGAMgASgJQgi6SAVyAxjIARIiCg1vd25lcl91c2VyX2lkGAQgASgJQgu6SAjIAQFyA7ABARI2CgpjcmVhdGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcEIGukgDyAEBEjYKCnVwZGF0ZWRfYXQYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wQga6SAPIAQEilwEKFENyZWF0ZVByb2plY3RSZXF1ZXN0EkEKBG5hbWUYASABKAlCM7pIMMgBAXIrGEAyJ15bQS1aYS16MC05XVstQS1aYS16MC05Xy5dKltBLVphLXowLTldJBIdCgtkZXNjcmlwdGlvbhgCIAEoCUIIukgFcgMYyAESHQoNb3duZXJfdXNlcl9pZBgDIAEoCUIGukgDyAEBIj8KFUNyZWF0ZVByb2plY3RSZXNwb25zZRImCgdwcm9qZWN0GAEgASgLMhUubWF4aWNsb3VkLnYxLlByb2plY3QiNAoRR2V0UHJvamVjdFJlcXVlc3QSHwoKcHJvamVjdF9pZBgBIAEoCUILukgIyAEBcgOwAQEiPAoSR2V0UHJvamVjdFJlc3BvbnNlEiYKB3Byb2plY3QYASABKAsyFS5tYXhpY2xvdWQudjEuUHJvamVjdCIVChNMaXN0UHJvamVjdHNSZXF1ZXN0Ij8KFExpc3RQcm9qZWN0c1Jlc3BvbnNlEicKCHByb2plY3RzGAEgAygLMhUubWF4aWNsb3VkLnYxLlByb2plY3QiyQEKFFVwZGF0ZVByb2plY3RSZXF1ZXN0Eh8KCnByb2plY3RfaWQYASABKAlCC7pICMgBAXIDsAEBEh0KBG5hbWUYAiABKAlCCrpIB8gBAXICGGRIAIgBARIiCgtkZXNjcmlwdGlvbhgDIAEoCUIIukgFcgMYyAFIAYgBARIiCg1vd25lcl91c2VyX2lkGAQgASgJQga6SAPIAQFIAogBAUIHCgVfbmFtZUIOCgxfZGVzY3JpcHRpb25CEAoOX293bmVyX3VzZXJfaWQiPwoVVXBkYXRlUHJvamVjdFJlc3BvbnNlEiYKB3Byb2plY3QYASABKAsyFS5tYXhpY2xvdWQudjEuUHJvamVjdCI3ChREZWxldGVQcm9qZWN0UmVxdWVzdBIfCgpwcm9qZWN0X2lkGAEgASgJQgu6SAjIAQFyA7ABASIXChVEZWxldGVQcm9qZWN0UmVzcG9uc2UyxgMKDlByb2plY3RTZXJ2aWNlElgKDUNyZWF0ZVByb2plY3QSIi5tYXhpY2xvdWQudjEuQ3JlYXRlUHJvamVjdFJlcXVlc3QaIy5tYXhpY2xvdWQudjEuQ3JlYXRlUHJvamVjdFJlc3BvbnNlEk8KCkdldFByb2plY3QSHy5tYXhpY2xvdWQudjEuR2V0UHJvamVjdFJlcXVlc3QaIC5tYXhpY2xvdWQudjEuR2V0UHJvamVjdFJlc3BvbnNlElUKDExpc3RQcm9qZWN0cxIhLm1heGljbG91ZC52MS5MaXN0UHJvamVjdHNSZXF1ZXN0GiIubWF4aWNsb3VkLnYxLkxpc3RQcm9qZWN0c1Jlc3BvbnNlElgKDVVwZGF0ZVByb2plY3QSIi5tYXhpY2xvdWQudjEuVXBkYXRlUHJvamVjdFJlcXVlc3QaIy5tYXhpY2xvdWQudjEuVXBkYXRlUHJvamVjdFJlc3BvbnNlElgKDURlbGV0ZVByb2plY3QSIi5tYXhpY2xvdWQudjEuRGVsZXRlUHJvamVjdFJlcXVlc3QaIy5tYXhpY2xvdWQudjEuRGVsZXRlUHJvamVjdFJlc3BvbnNlQrUBChBjb20ubWF4aWNsb3VkLnYxQgxQcm9qZWN0UHJvdG9QAVpCZ2l0aHViLmNvbS9zYWl0YW1hdS1tYXhpbXVtL21heGljbG91ZC9nZW4vbWF4aWNsb3VkL3YxO21heGljbG91ZHYxogIDTVhYqgIMTWF4aWNsb3VkLlYxygIMTWF4aWNsb3VkXFYx4gIYTWF4aWNsb3VkXFYxXEdQQk1ldGFkYXRh6gINTWF4aWNsb3VkOjpWMWIGcHJvdG8z", [file_buf_validate_validate, file_google_protobuf_timestamp]);
+export const file_maxicloud_v1_project: GenFile =
+	/*@__PURE__*/
+	fileDesc(
+		"ChptYXhpY2xvdWQvdjEvcHJvamVjdC5wcm90bxIMbWF4aWNsb3VkLnYxIu8BCgdQcm9qZWN0EhcKAmlkGAEgASgJQgu6SAjIAQFyA7ABARIYCgRuYW1lGAIgASgJQgq6SAfIAQFyAhhkEh0KC2Rlc2NyaXB0aW9uGAMgASgJQgi6SAVyAxjIARIiCg1vd25lcl91c2VyX2lkGAQgASgJQgu6SAjIAQFyA7ABARI2CgpjcmVhdGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcEIGukgDyAEBEjYKCnVwZGF0ZWRfYXQYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wQga6SAPIAQEilwEKFENyZWF0ZVByb2plY3RSZXF1ZXN0EkEKBG5hbWUYASABKAlCM7pIMMgBAXIrGEAyJ15bQS1aYS16MC05XVstQS1aYS16MC05Xy5dKltBLVphLXowLTldJBIdCgtkZXNjcmlwdGlvbhgCIAEoCUIIukgFcgMYyAESHQoNb3duZXJfdXNlcl9pZBgDIAEoCUIGukgDyAEBIj8KFUNyZWF0ZVByb2plY3RSZXNwb25zZRImCgdwcm9qZWN0GAEgASgLMhUubWF4aWNsb3VkLnYxLlByb2plY3QiNAoRR2V0UHJvamVjdFJlcXVlc3QSHwoKcHJvamVjdF9pZBgBIAEoCUILukgIyAEBcgOwAQEiPAoSR2V0UHJvamVjdFJlc3BvbnNlEiYKB3Byb2plY3QYASABKAsyFS5tYXhpY2xvdWQudjEuUHJvamVjdCIVChNMaXN0UHJvamVjdHNSZXF1ZXN0Ij8KFExpc3RQcm9qZWN0c1Jlc3BvbnNlEicKCHByb2plY3RzGAEgAygLMhUubWF4aWNsb3VkLnYxLlByb2plY3QiyQEKFFVwZGF0ZVByb2plY3RSZXF1ZXN0Eh8KCnByb2plY3RfaWQYASABKAlCC7pICMgBAXIDsAEBEh0KBG5hbWUYAiABKAlCCrpIB8gBAXICGGRIAIgBARIiCgtkZXNjcmlwdGlvbhgDIAEoCUIIukgFcgMYyAFIAYgBARIiCg1vd25lcl91c2VyX2lkGAQgASgJQga6SAPIAQFIAogBAUIHCgVfbmFtZUIOCgxfZGVzY3JpcHRpb25CEAoOX293bmVyX3VzZXJfaWQiPwoVVXBkYXRlUHJvamVjdFJlc3BvbnNlEiYKB3Byb2plY3QYASABKAsyFS5tYXhpY2xvdWQudjEuUHJvamVjdCI3ChREZWxldGVQcm9qZWN0UmVxdWVzdBIfCgpwcm9qZWN0X2lkGAEgASgJQgu6SAjIAQFyA7ABASIXChVEZWxldGVQcm9qZWN0UmVzcG9uc2UyxgMKDlByb2plY3RTZXJ2aWNlElgKDUNyZWF0ZVByb2plY3QSIi5tYXhpY2xvdWQudjEuQ3JlYXRlUHJvamVjdFJlcXVlc3QaIy5tYXhpY2xvdWQudjEuQ3JlYXRlUHJvamVjdFJlc3BvbnNlEk8KCkdldFByb2plY3QSHy5tYXhpY2xvdWQudjEuR2V0UHJvamVjdFJlcXVlc3QaIC5tYXhpY2xvdWQudjEuR2V0UHJvamVjdFJlc3BvbnNlElUKDExpc3RQcm9qZWN0cxIhLm1heGljbG91ZC52MS5MaXN0UHJvamVjdHNSZXF1ZXN0GiIubWF4aWNsb3VkLnYxLkxpc3RQcm9qZWN0c1Jlc3BvbnNlElgKDVVwZGF0ZVByb2plY3QSIi5tYXhpY2xvdWQudjEuVXBkYXRlUHJvamVjdFJlcXVlc3QaIy5tYXhpY2xvdWQudjEuVXBkYXRlUHJvamVjdFJlc3BvbnNlElgKDURlbGV0ZVByb2plY3QSIi5tYXhpY2xvdWQudjEuRGVsZXRlUHJvamVjdFJlcXVlc3QaIy5tYXhpY2xvdWQudjEuRGVsZXRlUHJvamVjdFJlc3BvbnNlQrUBChBjb20ubWF4aWNsb3VkLnYxQgxQcm9qZWN0UHJvdG9QAVpCZ2l0aHViLmNvbS9zYWl0YW1hdS1tYXhpbXVtL21heGljbG91ZC9nZW4vbWF4aWNsb3VkL3YxO21heGljbG91ZHYxogIDTVhYqgIMTWF4aWNsb3VkLlYxygIMTWF4aWNsb3VkXFYx4gIYTWF4aWNsb3VkXFYxXEdQQk1ldGFkYXRh6gINTWF4aWNsb3VkOjpWMWIGcHJvdG8z",
+		[file_buf_validate_validate, file_google_protobuf_timestamp],
+	);
 
 /**
  * @generated from message maxicloud.v1.Project
  */
 export type Project = Message<"maxicloud.v1.Project"> & {
-  /**
-   * @generated from field: string id = 1;
-   */
-  id: string;
+	/**
+	 * @generated from field: string id = 1;
+	 */
+	id: string;
 
-  /**
-   * @generated from field: string name = 2;
-   */
-  name: string;
+	/**
+	 * @generated from field: string name = 2;
+	 */
+	name: string;
 
-  /**
-   * @generated from field: string description = 3;
-   */
-  description: string;
+	/**
+	 * @generated from field: string description = 3;
+	 */
+	description: string;
 
-  /**
-   * @generated from field: string owner_user_id = 4;
-   */
-  ownerUserId: string;
+	/**
+	 * @generated from field: string owner_user_id = 4;
+	 */
+	ownerUserId: string;
 
-  /**
-   * @generated from field: google.protobuf.Timestamp created_at = 5;
-   */
-  createdAt?: Timestamp | undefined;
+	/**
+	 * @generated from field: google.protobuf.Timestamp created_at = 5;
+	 */
+	createdAt?: Timestamp | undefined;
 
-  /**
-   * @generated from field: google.protobuf.Timestamp updated_at = 6;
-   */
-  updatedAt?: Timestamp | undefined;
+	/**
+	 * @generated from field: google.protobuf.Timestamp updated_at = 6;
+	 */
+	updatedAt?: Timestamp | undefined;
 };
 
 /**
  * Describes the message maxicloud.v1.Project.
  * Use `create(ProjectSchema)` to create a new message.
  */
-export const ProjectSchema: GenMessage<Project> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_project, 0);
+export const ProjectSchema: GenMessage<Project> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_project, 0);
 
 /**
  * @generated from message maxicloud.v1.CreateProjectRequest
  */
-export type CreateProjectRequest = Message<"maxicloud.v1.CreateProjectRequest"> & {
-  /**
-   * @generated from field: string name = 1;
-   */
-  name: string;
+export type CreateProjectRequest =
+	Message<"maxicloud.v1.CreateProjectRequest"> & {
+		/**
+		 * @generated from field: string name = 1;
+		 */
+		name: string;
 
-  /**
-   * @generated from field: string description = 2;
-   */
-  description: string;
+		/**
+		 * @generated from field: string description = 2;
+		 */
+		description: string;
 
-  /**
-   * @generated from field: string owner_user_id = 3;
-   */
-  ownerUserId: string;
-};
+		/**
+		 * @generated from field: string owner_user_id = 3;
+		 */
+		ownerUserId: string;
+	};
 
 /**
  * Describes the message maxicloud.v1.CreateProjectRequest.
  * Use `create(CreateProjectRequestSchema)` to create a new message.
  */
-export const CreateProjectRequestSchema: GenMessage<CreateProjectRequest> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_project, 1);
+export const CreateProjectRequestSchema: GenMessage<CreateProjectRequest> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_project, 1);
 
 /**
  * @generated from message maxicloud.v1.CreateProjectResponse
  */
-export type CreateProjectResponse = Message<"maxicloud.v1.CreateProjectResponse"> & {
-  /**
-   * @generated from field: maxicloud.v1.Project project = 1;
-   */
-  project?: Project | undefined;
-};
+export type CreateProjectResponse =
+	Message<"maxicloud.v1.CreateProjectResponse"> & {
+		/**
+		 * @generated from field: maxicloud.v1.Project project = 1;
+		 */
+		project?: Project | undefined;
+	};
 
 /**
  * Describes the message maxicloud.v1.CreateProjectResponse.
  * Use `create(CreateProjectResponseSchema)` to create a new message.
  */
-export const CreateProjectResponseSchema: GenMessage<CreateProjectResponse> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_project, 2);
+export const CreateProjectResponseSchema: GenMessage<CreateProjectResponse> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_project, 2);
 
 /**
  * @generated from message maxicloud.v1.GetProjectRequest
  */
 export type GetProjectRequest = Message<"maxicloud.v1.GetProjectRequest"> & {
-  /**
-   * @generated from field: string project_id = 1;
-   */
-  projectId: string;
+	/**
+	 * @generated from field: string project_id = 1;
+	 */
+	projectId: string;
 };
 
 /**
  * Describes the message maxicloud.v1.GetProjectRequest.
  * Use `create(GetProjectRequestSchema)` to create a new message.
  */
-export const GetProjectRequestSchema: GenMessage<GetProjectRequest> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_project, 3);
+export const GetProjectRequestSchema: GenMessage<GetProjectRequest> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_project, 3);
 
 /**
  * @generated from message maxicloud.v1.GetProjectResponse
  */
 export type GetProjectResponse = Message<"maxicloud.v1.GetProjectResponse"> & {
-  /**
-   * @generated from field: maxicloud.v1.Project project = 1;
-   */
-  project?: Project | undefined;
+	/**
+	 * @generated from field: maxicloud.v1.Project project = 1;
+	 */
+	project?: Project | undefined;
 };
 
 /**
  * Describes the message maxicloud.v1.GetProjectResponse.
  * Use `create(GetProjectResponseSchema)` to create a new message.
  */
-export const GetProjectResponseSchema: GenMessage<GetProjectResponse> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_project, 4);
+export const GetProjectResponseSchema: GenMessage<GetProjectResponse> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_project, 4);
 
 /**
  * @generated from message maxicloud.v1.ListProjectsRequest
  */
-export type ListProjectsRequest = Message<"maxicloud.v1.ListProjectsRequest"> & {
-};
+export type ListProjectsRequest =
+	Message<"maxicloud.v1.ListProjectsRequest"> & {};
 
 /**
  * Describes the message maxicloud.v1.ListProjectsRequest.
  * Use `create(ListProjectsRequestSchema)` to create a new message.
  */
-export const ListProjectsRequestSchema: GenMessage<ListProjectsRequest> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_project, 5);
+export const ListProjectsRequestSchema: GenMessage<ListProjectsRequest> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_project, 5);
 
 /**
  * @generated from message maxicloud.v1.ListProjectsResponse
  */
-export type ListProjectsResponse = Message<"maxicloud.v1.ListProjectsResponse"> & {
-  /**
-   * @generated from field: repeated maxicloud.v1.Project projects = 1;
-   */
-  projects: Project[];
-};
+export type ListProjectsResponse =
+	Message<"maxicloud.v1.ListProjectsResponse"> & {
+		/**
+		 * @generated from field: repeated maxicloud.v1.Project projects = 1;
+		 */
+		projects: Project[];
+	};
 
 /**
  * Describes the message maxicloud.v1.ListProjectsResponse.
  * Use `create(ListProjectsResponseSchema)` to create a new message.
  */
-export const ListProjectsResponseSchema: GenMessage<ListProjectsResponse> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_project, 6);
+export const ListProjectsResponseSchema: GenMessage<ListProjectsResponse> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_project, 6);
 
 /**
  * @generated from message maxicloud.v1.UpdateProjectRequest
  */
-export type UpdateProjectRequest = Message<"maxicloud.v1.UpdateProjectRequest"> & {
-  /**
-   * @generated from field: string project_id = 1;
-   */
-  projectId: string;
+export type UpdateProjectRequest =
+	Message<"maxicloud.v1.UpdateProjectRequest"> & {
+		/**
+		 * @generated from field: string project_id = 1;
+		 */
+		projectId: string;
 
-  /**
-   * @generated from field: optional string name = 2;
-   */
-  name?: string | undefined;
+		/**
+		 * @generated from field: optional string name = 2;
+		 */
+		name?: string | undefined;
 
-  /**
-   * @generated from field: optional string description = 3;
-   */
-  description?: string | undefined;
+		/**
+		 * @generated from field: optional string description = 3;
+		 */
+		description?: string | undefined;
 
-  /**
-   * @generated from field: optional string owner_user_id = 4;
-   */
-  ownerUserId?: string | undefined;
-};
+		/**
+		 * @generated from field: optional string owner_user_id = 4;
+		 */
+		ownerUserId?: string | undefined;
+	};
 
 /**
  * Describes the message maxicloud.v1.UpdateProjectRequest.
  * Use `create(UpdateProjectRequestSchema)` to create a new message.
  */
-export const UpdateProjectRequestSchema: GenMessage<UpdateProjectRequest> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_project, 7);
+export const UpdateProjectRequestSchema: GenMessage<UpdateProjectRequest> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_project, 7);
 
 /**
  * @generated from message maxicloud.v1.UpdateProjectResponse
  */
-export type UpdateProjectResponse = Message<"maxicloud.v1.UpdateProjectResponse"> & {
-  /**
-   * @generated from field: maxicloud.v1.Project project = 1;
-   */
-  project?: Project | undefined;
-};
+export type UpdateProjectResponse =
+	Message<"maxicloud.v1.UpdateProjectResponse"> & {
+		/**
+		 * @generated from field: maxicloud.v1.Project project = 1;
+		 */
+		project?: Project | undefined;
+	};
 
 /**
  * Describes the message maxicloud.v1.UpdateProjectResponse.
  * Use `create(UpdateProjectResponseSchema)` to create a new message.
  */
-export const UpdateProjectResponseSchema: GenMessage<UpdateProjectResponse> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_project, 8);
+export const UpdateProjectResponseSchema: GenMessage<UpdateProjectResponse> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_project, 8);
 
 /**
  * @generated from message maxicloud.v1.DeleteProjectRequest
  */
-export type DeleteProjectRequest = Message<"maxicloud.v1.DeleteProjectRequest"> & {
-  /**
-   * @generated from field: string project_id = 1;
-   */
-  projectId: string;
-};
+export type DeleteProjectRequest =
+	Message<"maxicloud.v1.DeleteProjectRequest"> & {
+		/**
+		 * @generated from field: string project_id = 1;
+		 */
+		projectId: string;
+	};
 
 /**
  * Describes the message maxicloud.v1.DeleteProjectRequest.
  * Use `create(DeleteProjectRequestSchema)` to create a new message.
  */
-export const DeleteProjectRequestSchema: GenMessage<DeleteProjectRequest> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_project, 9);
+export const DeleteProjectRequestSchema: GenMessage<DeleteProjectRequest> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_project, 9);
 
 /**
  * @generated from message maxicloud.v1.DeleteProjectResponse
  */
-export type DeleteProjectResponse = Message<"maxicloud.v1.DeleteProjectResponse"> & {
-};
+export type DeleteProjectResponse =
+	Message<"maxicloud.v1.DeleteProjectResponse"> & {};
 
 /**
  * Describes the message maxicloud.v1.DeleteProjectResponse.
  * Use `create(DeleteProjectResponseSchema)` to create a new message.
  */
-export const DeleteProjectResponseSchema: GenMessage<DeleteProjectResponse> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_project, 10);
+export const DeleteProjectResponseSchema: GenMessage<DeleteProjectResponse> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_project, 10);
 
 /**
  * @generated from service maxicloud.v1.ProjectService
  */
 export const ProjectService: GenService<{
-  /**
-   * @generated from rpc maxicloud.v1.ProjectService.CreateProject
-   */
-  createProject: {
-    methodKind: "unary";
-    input: typeof CreateProjectRequestSchema;
-    output: typeof CreateProjectResponseSchema;
-  },
-  /**
-   * @generated from rpc maxicloud.v1.ProjectService.GetProject
-   */
-  getProject: {
-    methodKind: "unary";
-    input: typeof GetProjectRequestSchema;
-    output: typeof GetProjectResponseSchema;
-  },
-  /**
-   * @generated from rpc maxicloud.v1.ProjectService.ListProjects
-   */
-  listProjects: {
-    methodKind: "unary";
-    input: typeof ListProjectsRequestSchema;
-    output: typeof ListProjectsResponseSchema;
-  },
-  /**
-   * @generated from rpc maxicloud.v1.ProjectService.UpdateProject
-   */
-  updateProject: {
-    methodKind: "unary";
-    input: typeof UpdateProjectRequestSchema;
-    output: typeof UpdateProjectResponseSchema;
-  },
-  /**
-   * @generated from rpc maxicloud.v1.ProjectService.DeleteProject
-   */
-  deleteProject: {
-    methodKind: "unary";
-    input: typeof DeleteProjectRequestSchema;
-    output: typeof DeleteProjectResponseSchema;
-  },
-}> = /*@__PURE__*/
-  serviceDesc(file_maxicloud_v1_project, 0);
-
+	/**
+	 * @generated from rpc maxicloud.v1.ProjectService.CreateProject
+	 */
+	createProject: {
+		methodKind: "unary";
+		input: typeof CreateProjectRequestSchema;
+		output: typeof CreateProjectResponseSchema;
+	};
+	/**
+	 * @generated from rpc maxicloud.v1.ProjectService.GetProject
+	 */
+	getProject: {
+		methodKind: "unary";
+		input: typeof GetProjectRequestSchema;
+		output: typeof GetProjectResponseSchema;
+	};
+	/**
+	 * @generated from rpc maxicloud.v1.ProjectService.ListProjects
+	 */
+	listProjects: {
+		methodKind: "unary";
+		input: typeof ListProjectsRequestSchema;
+		output: typeof ListProjectsResponseSchema;
+	};
+	/**
+	 * @generated from rpc maxicloud.v1.ProjectService.UpdateProject
+	 */
+	updateProject: {
+		methodKind: "unary";
+		input: typeof UpdateProjectRequestSchema;
+		output: typeof UpdateProjectResponseSchema;
+	};
+	/**
+	 * @generated from rpc maxicloud.v1.ProjectService.DeleteProject
+	 */
+	deleteProject: {
+		methodKind: "unary";
+		input: typeof DeleteProjectRequestSchema;
+		output: typeof DeleteProjectResponseSchema;
+	};
+}> = /*@__PURE__*/ serviceDesc(file_maxicloud_v1_project, 0);

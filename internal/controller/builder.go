@@ -20,7 +20,7 @@ const (
 	defaultBuildpacksBuilderImage = "paketobuildpacks/builder-jammy-base:latest"
 	buildpacksPackImage           = "buildpacksio/pack:0.40.6"
 	buildpacksGitImage            = "alpine/git:2.47.2"
-	buildpacksDockerImage         = "docker:28-dind"
+	buildpacksDockerImage         = "docker:29-dind"
 )
 
 func newAppRegistrySecret(app *maxicloudv1alpha1.Application, dockerConfig string) *corev1.Secret {
@@ -148,20 +148,12 @@ func newBuildRunSecret(buildRun *maxicloudv1alpha1.BuildRun, dockerConfig, insta
 				*metav1.NewControllerRef(buildRun, maxicloudv1alpha1.GroupVersion.WithKind(BuildRunCRKind)),
 			},
 		},
-		Data: buildRunSecretData(buildRun, dockerConfig, installationAccessToken),
+		Data: map[string][]byte{
+			corev1.DockerConfigJsonKey: []byte(dockerConfig),
+			installationAccessTokenKey: []byte(installationAccessToken),
+		},
 		Type: corev1.SecretTypeOpaque,
 	}
-}
-
-func buildRunSecretData(buildRun *maxicloudv1alpha1.BuildRun, dockerConfig, installationAccessToken string) map[string][]byte {
-	data := map[string][]byte{
-		corev1.DockerConfigJsonKey: []byte(dockerConfig),
-		installationAccessTokenKey: []byte(installationAccessToken),
-	}
-	if _, dockerfileInline := dockerfileConfig(buildRun); dockerfileInline != "" {
-		data[dockerfileInlineKey] = []byte(dockerfileInline)
-	}
-	return data
 }
 
 type BuildJobParams struct {
@@ -194,80 +186,6 @@ func newBuildJob(params BuildJobParams) (*batchv1.Job, error) {
 
 // TODO: 非特権コンテナでビルドできるようにする
 func newDockerfileBuildJob(params BuildJobParams) *batchv1.Job {
-	dockerfilePath, dockerfileInline := dockerfileConfig(params.buildRun)
-	command := []string{
-		"buildctl-daemonless.sh",
-		"build",
-		"--frontend=dockerfile.v0",
-		"--opt", fmt.Sprintf("context=https://x-access-token:$(GITHUB_TOKEN)@github.com/%s/%s.git#%s", params.owner, params.repo, params.sha),
-		"--opt", fmt.Sprintf("filename=%s", dockerfilePath),
-		"--output", params.buildOutput,
-	}
-	containerEnv := []corev1.EnvVar{
-		{
-			Name: "GITHUB_TOKEN",
-			ValueFrom: &corev1.EnvVarSource{
-				SecretKeyRef: &corev1.SecretKeySelector{
-					LocalObjectReference: corev1.LocalObjectReference{Name: params.repoSecretName},
-					Key:                  installationAccessTokenKey,
-				},
-			},
-		},
-		{Name: "XDG_RUNTIME_DIR", Value: "/tmp"},
-		{Name: "DOCKER_CONFIG", Value: "/root/.docker"},
-	}
-	volumeMounts := []corev1.VolumeMount{
-		{
-			Name:      "registry-auth",
-			MountPath: "/root/.docker",
-		},
-	}
-	volumes := []corev1.Volume{
-		{
-			Name: "registry-auth",
-			VolumeSource: corev1.VolumeSource{
-				Secret: &corev1.SecretVolumeSource{
-					SecretName: params.repoSecretName,
-					Items: []corev1.KeyToPath{
-						{
-							Key:  corev1.DockerConfigJsonKey,
-							Path: "config.json",
-						},
-					},
-				},
-			},
-		},
-	}
-	if dockerfileInline != "" {
-		command = []string{
-			"buildctl-daemonless.sh",
-			"build",
-			"--frontend=dockerfile.v0",
-			"--opt", fmt.Sprintf("context=https://x-access-token:$(GITHUB_TOKEN)@github.com/%s/%s.git#%s", params.owner, params.repo, params.sha),
-			"--local", "dockerfile=/tmp/dockerfile",
-			"--opt", "filename=Dockerfile",
-			"--output", params.buildOutput,
-		}
-		volumeMounts = append(volumeMounts, corev1.VolumeMount{
-			Name:      "dockerfile-inline",
-			MountPath: "/tmp/dockerfile",
-			ReadOnly:  true,
-		})
-		volumes = append(volumes, corev1.Volume{
-			Name: "dockerfile-inline",
-			VolumeSource: corev1.VolumeSource{
-				Secret: &corev1.SecretVolumeSource{
-					SecretName: params.repoSecretName,
-					Items: []corev1.KeyToPath{
-						{
-							Key:  dockerfileInlineKey,
-							Path: "Dockerfile",
-						},
-					},
-				},
-			},
-		})
-	}
 	return &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      params.jobName,
@@ -283,20 +201,65 @@ func newDockerfileBuildJob(params BuildJobParams) *batchv1.Job {
 					RestartPolicy: corev1.RestartPolicyNever,
 					Containers: []corev1.Container{
 						{
-							Name:    "buildkit",
-							Image:   "moby/buildkit:latest",
-							Env:     containerEnv,
-							Command: command,
+							Name:  "buildkit",
+							Image: "moby/buildkit:latest",
+							Env: []corev1.EnvVar{
+								{
+									Name: "GITHUB_TOKEN",
+									ValueFrom: &corev1.EnvVarSource{
+										SecretKeyRef: &corev1.SecretKeySelector{
+											LocalObjectReference: corev1.LocalObjectReference{Name: params.repoSecretName},
+											Key:                  installationAccessTokenKey,
+										},
+									},
+								},
+								{
+									Name:  "XDG_RUNTIME_DIR",
+									Value: "/tmp",
+								},
+								{
+									Name:  "DOCKER_CONFIG",
+									Value: "/root/.docker",
+								},
+							},
+							Command: []string{
+								"buildctl-daemonless.sh",
+								"build",
+								"--frontend=dockerfile.v0",
+								"--opt", fmt.Sprintf("context=https://x-access-token:$(GITHUB_TOKEN)@github.com/%s/%s.git#%s", params.owner, params.repo, params.sha),
+								"--opt", fmt.Sprintf("filename=%s", params.buildRun.Spec.Source.DockerfilePath),
+								"--output", params.buildOutput,
+							},
 							SecurityContext: &corev1.SecurityContext{
 								Privileged: boolPtr(true),
 								SeccompProfile: &corev1.SeccompProfile{
 									Type: corev1.SeccompProfileTypeUnconfined,
 								},
 							},
-							VolumeMounts: volumeMounts,
+							VolumeMounts: []corev1.VolumeMount{
+								{
+									Name:      "registry-auth",
+									MountPath: "/root/.docker",
+								},
+							},
 						},
 					},
-					Volumes: volumes,
+					Volumes: []corev1.Volume{
+						{
+							Name: "registry-auth",
+							VolumeSource: corev1.VolumeSource{
+								Secret: &corev1.SecretVolumeSource{
+									SecretName: params.repoSecretName,
+									Items: []corev1.KeyToPath{
+										{
+											Key:  corev1.DockerConfigJsonKey,
+											Path: "config.json",
+										},
+									},
+								},
+							},
+						},
+					},
 				},
 			},
 		},
@@ -304,17 +267,12 @@ func newDockerfileBuildJob(params BuildJobParams) *batchv1.Job {
 }
 
 func newBuildpacksBuildJob(params BuildJobParams) *batchv1.Job {
-	builderImage := defaultBuildpacksBuilderImage
-	if config := params.buildRun.Spec.Build.Buildpacks; config != nil && strings.TrimSpace(config.Builder) != "" {
-		builderImage = config.Builder
-	}
-
 	registryHost := strings.SplitN(params.destination, "/", 2)[0]
 	packArgs := make([]string, 0, 10+len(params.buildRun.Spec.Env)*2)
 	packArgs = append(packArgs,
 		"build", params.destination,
 		"--path", "/workspace",
-		"--builder", builderImage,
+		"--builder", defaultBuildpacksBuilderImage,
 		"--publish",
 		"--trust-builder",
 		"--network", "host",
@@ -444,26 +402,6 @@ func dockerDaemonArgs(registryHost string, registryInsecure bool) []string {
 		args = append(args, "--insecure-registry="+registryHost)
 	}
 	return args
-}
-
-func dockerfileConfig(buildRun *maxicloudv1alpha1.BuildRun) (path, inline string) {
-	path = buildRun.Spec.Source.DockerfilePath
-	if path == "" {
-		path = "./Dockerfile"
-	}
-	if buildRun.Spec.Build == nil || buildRun.Spec.Build.Dockerfile == nil {
-		return path, ""
-	}
-	dockerfile := buildRun.Spec.Build.Dockerfile
-	switch dockerfile.Source {
-	case maxicloudv1alpha1.DockerfileSourcePath:
-		if dockerfile.Path != "" {
-			path = dockerfile.Path
-		}
-	case maxicloudv1alpha1.DockerfileSourceInline:
-		inline = dockerfile.Inline
-	}
-	return path, inline
 }
 
 func boolPtr(b bool) *bool { return &b }

@@ -2,103 +2,120 @@
 // @generated from file maxicloud/v1/github.proto (package maxicloud.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { Message } from "@bufbuild/protobuf";
+import type {
+	GenFile,
+	GenMessage,
+	GenService,
+} from "@bufbuild/protobuf/codegenv2";
+import {
+	fileDesc,
+	messageDesc,
+	serviceDesc,
+} from "@bufbuild/protobuf/codegenv2";
 import { file_maxicloud_v1_application } from "./application_pb";
 import type { Repository } from "./common_pb";
 import { file_maxicloud_v1_common } from "./common_pb";
-import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file maxicloud/v1/github.proto.
  */
-export const file_maxicloud_v1_github: GenFile = /*@__PURE__*/
-  fileDesc("ChltYXhpY2xvdWQvdjEvZ2l0aHViLnByb3RvEgxtYXhpY2xvdWQudjEiGQoXTGlzdFJlcG9zaXRvcmllc1JlcXVlc3QiSgoYTGlzdFJlcG9zaXRvcmllc1Jlc3BvbnNlEi4KDHJlcG9zaXRvcmllcxgBIAMoCzIYLm1heGljbG91ZC52MS5SZXBvc2l0b3J5IkMKE0xpc3RCcmFuY2hlc1JlcXVlc3QSLAoKcmVwb3NpdG9yeRgBIAEoCzIYLm1heGljbG91ZC52MS5SZXBvc2l0b3J5IigKFExpc3RCcmFuY2hlc1Jlc3BvbnNlEhAKCGJyYW5jaGVzGAEgAygJMskBCg1HaXRIdWJTZXJ2aWNlEmEKEExpc3RSZXBvc2l0b3JpZXMSJS5tYXhpY2xvdWQudjEuTGlzdFJlcG9zaXRvcmllc1JlcXVlc3QaJi5tYXhpY2xvdWQudjEuTGlzdFJlcG9zaXRvcmllc1Jlc3BvbnNlElUKDExpc3RCcmFuY2hlcxIhLm1heGljbG91ZC52MS5MaXN0QnJhbmNoZXNSZXF1ZXN0GiIubWF4aWNsb3VkLnYxLkxpc3RCcmFuY2hlc1Jlc3BvbnNlQrQBChBjb20ubWF4aWNsb3VkLnYxQgtHaXRodWJQcm90b1ABWkJnaXRodWIuY29tL3NhaXRhbWF1LW1heGltdW0vbWF4aWNsb3VkL2dlbi9tYXhpY2xvdWQvdjE7bWF4aWNsb3VkdjGiAgNNWFiqAgxNYXhpY2xvdWQuVjHKAgxNYXhpY2xvdWRcVjHiAhhNYXhpY2xvdWRcVjFcR1BCTWV0YWRhdGHqAg1NYXhpY2xvdWQ6OlYxYgZwcm90bzM", [file_maxicloud_v1_application, file_maxicloud_v1_common]);
+export const file_maxicloud_v1_github: GenFile =
+	/*@__PURE__*/
+	fileDesc(
+		"ChltYXhpY2xvdWQvdjEvZ2l0aHViLnByb3RvEgxtYXhpY2xvdWQudjEiGQoXTGlzdFJlcG9zaXRvcmllc1JlcXVlc3QiSgoYTGlzdFJlcG9zaXRvcmllc1Jlc3BvbnNlEi4KDHJlcG9zaXRvcmllcxgBIAMoCzIYLm1heGljbG91ZC52MS5SZXBvc2l0b3J5IkMKE0xpc3RCcmFuY2hlc1JlcXVlc3QSLAoKcmVwb3NpdG9yeRgBIAEoCzIYLm1heGljbG91ZC52MS5SZXBvc2l0b3J5IigKFExpc3RCcmFuY2hlc1Jlc3BvbnNlEhAKCGJyYW5jaGVzGAEgAygJMskBCg1HaXRIdWJTZXJ2aWNlEmEKEExpc3RSZXBvc2l0b3JpZXMSJS5tYXhpY2xvdWQudjEuTGlzdFJlcG9zaXRvcmllc1JlcXVlc3QaJi5tYXhpY2xvdWQudjEuTGlzdFJlcG9zaXRvcmllc1Jlc3BvbnNlElUKDExpc3RCcmFuY2hlcxIhLm1heGljbG91ZC52MS5MaXN0QnJhbmNoZXNSZXF1ZXN0GiIubWF4aWNsb3VkLnYxLkxpc3RCcmFuY2hlc1Jlc3BvbnNlQrQBChBjb20ubWF4aWNsb3VkLnYxQgtHaXRodWJQcm90b1ABWkJnaXRodWIuY29tL3NhaXRhbWF1LW1heGltdW0vbWF4aWNsb3VkL2dlbi9tYXhpY2xvdWQvdjE7bWF4aWNsb3VkdjGiAgNNWFiqAgxNYXhpY2xvdWQuVjHKAgxNYXhpY2xvdWRcVjHiAhhNYXhpY2xvdWRcVjFcR1BCTWV0YWRhdGHqAg1NYXhpY2xvdWQ6OlYxYgZwcm90bzM",
+		[file_maxicloud_v1_application, file_maxicloud_v1_common],
+	);
 
 /**
  * @generated from message maxicloud.v1.ListRepositoriesRequest
  */
-export type ListRepositoriesRequest = Message<"maxicloud.v1.ListRepositoriesRequest"> & {
-};
+export type ListRepositoriesRequest =
+	Message<"maxicloud.v1.ListRepositoriesRequest"> & {};
 
 /**
  * Describes the message maxicloud.v1.ListRepositoriesRequest.
  * Use `create(ListRepositoriesRequestSchema)` to create a new message.
  */
-export const ListRepositoriesRequestSchema: GenMessage<ListRepositoriesRequest> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_github, 0);
+export const ListRepositoriesRequestSchema: GenMessage<ListRepositoriesRequest> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_github, 0);
 
 /**
  * @generated from message maxicloud.v1.ListRepositoriesResponse
  */
-export type ListRepositoriesResponse = Message<"maxicloud.v1.ListRepositoriesResponse"> & {
-  /**
-   * @generated from field: repeated maxicloud.v1.Repository repositories = 1;
-   */
-  repositories: Repository[];
-};
+export type ListRepositoriesResponse =
+	Message<"maxicloud.v1.ListRepositoriesResponse"> & {
+		/**
+		 * @generated from field: repeated maxicloud.v1.Repository repositories = 1;
+		 */
+		repositories: Repository[];
+	};
 
 /**
  * Describes the message maxicloud.v1.ListRepositoriesResponse.
  * Use `create(ListRepositoriesResponseSchema)` to create a new message.
  */
-export const ListRepositoriesResponseSchema: GenMessage<ListRepositoriesResponse> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_github, 1);
+export const ListRepositoriesResponseSchema: GenMessage<ListRepositoriesResponse> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_github, 1);
 
 /**
  * @generated from message maxicloud.v1.ListBranchesRequest
  */
-export type ListBranchesRequest = Message<"maxicloud.v1.ListBranchesRequest"> & {
-  /**
-   * @generated from field: maxicloud.v1.Repository repository = 1;
-   */
-  repository?: Repository | undefined;
-};
+export type ListBranchesRequest =
+	Message<"maxicloud.v1.ListBranchesRequest"> & {
+		/**
+		 * @generated from field: maxicloud.v1.Repository repository = 1;
+		 */
+		repository?: Repository | undefined;
+	};
 
 /**
  * Describes the message maxicloud.v1.ListBranchesRequest.
  * Use `create(ListBranchesRequestSchema)` to create a new message.
  */
-export const ListBranchesRequestSchema: GenMessage<ListBranchesRequest> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_github, 2);
+export const ListBranchesRequestSchema: GenMessage<ListBranchesRequest> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_github, 2);
 
 /**
  * @generated from message maxicloud.v1.ListBranchesResponse
  */
-export type ListBranchesResponse = Message<"maxicloud.v1.ListBranchesResponse"> & {
-  /**
-   * @generated from field: repeated string branches = 1;
-   */
-  branches: string[];
-};
+export type ListBranchesResponse =
+	Message<"maxicloud.v1.ListBranchesResponse"> & {
+		/**
+		 * @generated from field: repeated string branches = 1;
+		 */
+		branches: string[];
+	};
 
 /**
  * Describes the message maxicloud.v1.ListBranchesResponse.
  * Use `create(ListBranchesResponseSchema)` to create a new message.
  */
-export const ListBranchesResponseSchema: GenMessage<ListBranchesResponse> = /*@__PURE__*/
-  messageDesc(file_maxicloud_v1_github, 3);
+export const ListBranchesResponseSchema: GenMessage<ListBranchesResponse> =
+	/*@__PURE__*/
+	messageDesc(file_maxicloud_v1_github, 3);
 
 /**
  * @generated from service maxicloud.v1.GitHubService
  */
 export const GitHubService: GenService<{
-  /**
-   * @generated from rpc maxicloud.v1.GitHubService.ListRepositories
-   */
-  listRepositories: {
-    methodKind: "unary";
-    input: typeof ListRepositoriesRequestSchema;
-    output: typeof ListRepositoriesResponseSchema;
-  },
-  /**
-   * @generated from rpc maxicloud.v1.GitHubService.ListBranches
-   */
-  listBranches: {
-    methodKind: "unary";
-    input: typeof ListBranchesRequestSchema;
-    output: typeof ListBranchesResponseSchema;
-  },
-}> = /*@__PURE__*/
-  serviceDesc(file_maxicloud_v1_github, 0);
-
+	/**
+	 * @generated from rpc maxicloud.v1.GitHubService.ListRepositories
+	 */
+	listRepositories: {
+		methodKind: "unary";
+		input: typeof ListRepositoriesRequestSchema;
+		output: typeof ListRepositoriesResponseSchema;
+	};
+	/**
+	 * @generated from rpc maxicloud.v1.GitHubService.ListBranches
+	 */
+	listBranches: {
+		methodKind: "unary";
+		input: typeof ListBranchesRequestSchema;
+		output: typeof ListBranchesResponseSchema;
+	};
+}> = /*@__PURE__*/ serviceDesc(file_maxicloud_v1_github, 0);

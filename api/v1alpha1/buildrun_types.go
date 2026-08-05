@@ -52,11 +52,7 @@ type DockerfileBuildConfig struct {
 }
 
 // BuildpacksBuildConfig defines Cloud Native Buildpacks settings.
-type BuildpacksBuildConfig struct {
-	// Builder is the builder image. The platform default is used when empty.
-	// +optional
-	Builder string `json:"builder,omitempty"`
-}
+type BuildpacksBuildConfig struct{}
 
 // BuildConfig is a snapshot of the user-selected build configuration.
 type BuildConfig struct {

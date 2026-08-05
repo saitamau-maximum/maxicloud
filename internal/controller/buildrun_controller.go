@@ -93,7 +93,8 @@ func (r *BuildRunReconciler) reconcileSecret(ctx context.Context, buildRun *maxi
 	}
 
 	key := types.NamespacedName{Name: secretName, Namespace: buildRun.Namespace}
-	desiredData := buildRunSecretData(buildRun, r.Registry.DockerConfig(), token)
+	dockerConfig := []byte(r.Registry.DockerConfig())
+	installationAccessToken := []byte(token)
 
 	err = retry.RetryOnConflict(retry.DefaultRetry, func() error {
 		var secret corev1.Secret
@@ -110,11 +111,14 @@ func (r *BuildRunReconciler) reconcileSecret(ctx context.Context, buildRun *maxi
 		if secret.Data == nil {
 			secret.Data = map[string][]byte{}
 		}
-		if secretDataEqual(secret.Data, desiredData) {
+		unchanged := bytes.Equal(secret.Data[installationAccessTokenKey], installationAccessToken) &&
+			bytes.Equal(secret.Data[corev1.DockerConfigJsonKey], dockerConfig)
+		if unchanged {
 			return nil
 		}
 
-		secret.Data = desiredData
+		secret.Data[installationAccessTokenKey] = installationAccessToken
+		secret.Data[corev1.DockerConfigJsonKey] = dockerConfig
 		return r.Update(ctx, &secret)
 	})
 	if err != nil {
@@ -163,18 +167,6 @@ func ignoreAlreadyExists(err error) error {
 		return nil
 	}
 	return err
-}
-
-func secretDataEqual(current, desired map[string][]byte) bool {
-	if len(current) != len(desired) {
-		return false
-	}
-	for key, desiredValue := range desired {
-		if !bytes.Equal(current[key], desiredValue) {
-			return false
-		}
-	}
-	return true
 }
 
 func (r *BuildRunReconciler) reconcileStatus(ctx context.Context, buildRun *maxicloudv1alpha1.BuildRun) error {

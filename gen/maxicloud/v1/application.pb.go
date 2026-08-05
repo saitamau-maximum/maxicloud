@@ -507,7 +507,6 @@ func (x *DockerfileBuildConfig) GetDockerfileInline() string {
 
 type BuildpacksBuildConfig struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Builder       string                 `protobuf:"bytes,1,opt,name=builder,proto3" json:"builder,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -540,13 +539,6 @@ func (x *BuildpacksBuildConfig) ProtoReflect() protoreflect.Message {
 // Deprecated: Use BuildpacksBuildConfig.ProtoReflect.Descriptor instead.
 func (*BuildpacksBuildConfig) Descriptor() ([]byte, []int) {
 	return file_maxicloud_v1_application_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *BuildpacksBuildConfig) GetBuilder() string {
-	if x != nil {
-		return x.Builder
-	}
-	return ""
 }
 
 type BuildConfig struct {
@@ -1436,9 +1428,8 @@ const file_maxicloud_v1_application_proto_rawDesc = "" +
 	"\x15DockerfileBuildConfig\x12>\n" +
 	"\x06source\x18\x01 \x01(\x0e2\x1e.maxicloud.v1.DockerfileSourceB\x06\xbaH\x03\xc8\x01\x01R\x06source\x12'\n" +
 	"\x0fdockerfile_path\x18\x02 \x01(\tR\x0edockerfilePath\x12+\n" +
-	"\x11dockerfile_inline\x18\x03 \x01(\tR\x10dockerfileInline\";\n" +
-	"\x15BuildpacksBuildConfig\x12\"\n" +
-	"\abuilder\x18\x01 \x01(\tB\b\xbaH\x05r\x03\x18\xff\x01R\abuilder\"\xb7\x03\n" +
+	"\x11dockerfile_inline\x18\x03 \x01(\tR\x10dockerfileInline\"\x17\n" +
+	"\x15BuildpacksBuildConfig\"\xb7\x03\n" +
 	"\vBuildConfig\x12?\n" +
 	"\bstrategy\x18\x01 \x01(\x0e2\x1b.maxicloud.v1.BuildStrategyB\x06\xbaH\x03\xc8\x01\x01R\bstrategy\x12C\n" +
 	"\n" +
