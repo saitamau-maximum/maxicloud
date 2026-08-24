@@ -23,6 +23,7 @@ enum AccessMode {
 enum BuildStrategy {
   BUILD_STRATEGY_UNSPECIFIED = 0;
   BUILD_STRATEGY_DOCKERFILE = 1;
+  BUILD_STRATEGY_BUILDPACKS = 2;
 }
 
 enum DockerfileSource {
@@ -60,9 +61,25 @@ message DockerfileBuildConfig {
   string dockerfile_inline = 3;
 }
 
+message BuildpacksBuildConfig {}
+
 message BuildConfig {
+  option (buf.validate.message).oneof = {
+    fields: [
+      "dockerfile",
+      "buildpacks"
+    ]
+    required: true
+  };
+  option (buf.validate.message).cel = {
+    id: "build_config.strategy_matches_config"
+    message: "build strategy must match the provided build config"
+    expression: "(this.strategy == 1 && has(this.dockerfile)) || (this.strategy == 2 && has(this.buildpacks))"
+  };
+
   BuildStrategy strategy = 1 [(buf.validate.field).required = true];
-  DockerfileBuildConfig dockerfile = 2 [(buf.validate.field).required = true];
+  DockerfileBuildConfig dockerfile = 2;
+  BuildpacksBuildConfig buildpacks = 3;
 }
 
 

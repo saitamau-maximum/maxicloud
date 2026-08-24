@@ -53,6 +53,42 @@ spec:
                 description: ApplicationName is the name of the Application CR to
                   deploy.
                 type: string
+              build:
+                description: Build is the build configuration snapshot taken when
+                  the deployment starts.
+                properties:
+                  buildpacks:
+                    description: Buildpacks contains settings for a Cloud Native Buildpacks
+                      build.
+                    type: object
+                  dockerfile:
+                    description: Dockerfile contains settings for a Dockerfile build.
+                    properties:
+                      inline:
+                        description: Inline is the Dockerfile content supplied by
+                          the user.
+                        type: string
+                      path:
+                        description: Path is the path to the Dockerfile in the repository.
+                        type: string
+                      source:
+                        description: Source selects whether Path or Inline is used.
+                        enum:
+                        - Path
+                        - Inline
+                        type: string
+                    required:
+                    - source
+                    type: object
+                  strategy:
+                    description: Strategy selects the image build implementation.
+                    enum:
+                    - Dockerfile
+                    - Buildpacks
+                    type: string
+                required:
+                - strategy
+                type: object
               owner:
                 description: Owner is the GitHub repository owner (org or user).
                 type: string
