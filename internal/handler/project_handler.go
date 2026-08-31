@@ -24,7 +24,7 @@ func NewProjectHandler(svc service.ProjectService) *ProjectHandler {
 func (h *ProjectHandler) CreateProject(ctx context.Context, req *v1.CreateProjectRequest) (*v1.CreateProjectResponse, error) {
 	project, err := h.service.Create(ctx, req.Name, req.Description, auth.UserID(ctx))
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, connectError(err)
 	}
 	return &v1.CreateProjectResponse{Project: toProtoProject(project)}, nil
 }
@@ -59,14 +59,14 @@ func (h *ProjectHandler) UpdateProject(ctx context.Context, req *v1.UpdateProjec
 		Description: req.Description,
 	})
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, connectError(err)
 	}
 	return &v1.UpdateProjectResponse{Project: toProtoProject(project)}, nil
 }
 
 func (h *ProjectHandler) DeleteProject(ctx context.Context, req *v1.DeleteProjectRequest) (*v1.DeleteProjectResponse, error) {
 	if err := h.service.Delete(ctx, req.ProjectId); err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, connectError(err)
 	}
 	return &v1.DeleteProjectResponse{}, nil
 }
