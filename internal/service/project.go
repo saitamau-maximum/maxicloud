@@ -56,14 +56,7 @@ type UpdateProjectParams struct {
 }
 
 func (u *projectService) Update(ctx context.Context, params UpdateProjectParams) (*domain.Project, error) {
-	project, err := u.repo.Get(ctx, params.ID)
-	if err != nil {
-		return nil, err
-	}
-	if project == nil {
-		return nil, domain.ValidationError{Message: "project not found"}
-	}
-	if err := u.authz.Authorize(ctx, project, domain.PermissionWriteProject); err != nil {
+	if err := u.authz.Authorize(ctx, params.ID, domain.PermissionWriteProject); err != nil {
 		return nil, err
 	}
 	if err := u.repo.Update(ctx, domain.UpdateProjectParams{
@@ -78,14 +71,7 @@ func (u *projectService) Update(ctx context.Context, params UpdateProjectParams)
 }
 
 func (u *projectService) Delete(ctx context.Context, id string) error {
-	project, err := u.repo.Get(ctx, id)
-	if err != nil {
-		return err
-	}
-	if project == nil {
-		return nil
-	}
-	if err := u.authz.Authorize(ctx, project, domain.PermissionDeleteProject); err != nil {
+	if err := u.authz.Authorize(ctx, id, domain.PermissionDeleteProject); err != nil {
 		return err
 	}
 	return u.repo.Delete(ctx, id)

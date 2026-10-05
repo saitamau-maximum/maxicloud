@@ -102,16 +102,16 @@ func runGateway(cmd *cobra.Command, args []string) error {
 		AllowedRedirects: allowedRedirects,
 	}, userRepo, oidcClient)
 
-	deploySvc := deployment.NewDeploymentService(historyRepo, deployRepo)
+	authzSvc := authz.New(prjRepo, memberRepo, groupRoleRepo)
+	deploySvc := deployment.NewDeploymentService(historyRepo, deployRepo, appRepo, authzSvc)
 	deployEventSvc := deployment.NewDeploymentEventService(appRepo, prjRepo, deploySvc)
 	deployHistory := deployment.NewHistory(historyRepo)
 	deployWatcher := deployment.NewWatcher(deployHistory, deployRepo)
-	authzSvc := authz.New(memberRepo, groupRoleRepo)
 	userSvc := service.NewUserService(userRepo)
 	prjSvc := service.NewProjectService(prjRepo, authzSvc)
 	domainSvc := service.NewDomainService(appRepo, strings.Split(cfg.AvailableDomains, ","))
 	srcSvc := service.NewSourceService(srcRepo)
-	appSvc := service.NewApplicationService(appRepo, prjRepo, deploySvc, srcSvc, authzSvc)
+	appSvc := service.NewApplicationService(appRepo, deploySvc, srcSvc, authzSvc)
 
 	authHandler := handler.NewAuthHandler(authSvc)
 	ghHandler := handler.NewGitHubHandler(deployEventSvc, srcSvc, handler.GitHubHandlerConfig{

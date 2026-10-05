@@ -19,26 +19,23 @@ type ApplicationService interface {
 }
 
 type applicationService struct {
-	appRepo     domain.ApplicationRepository
-	projectRepo domain.ProjectRepository
-	deploySvc   deployment.DeploymentService
-	sourceSvc   SourceService
-	authz       authz.Authorizer
+	appRepo   domain.ApplicationRepository
+	deploySvc deployment.DeploymentService
+	sourceSvc SourceService
+	authz     authz.Authorizer
 }
 
 func NewApplicationService(
 	appRepo domain.ApplicationRepository,
-	projectRepo domain.ProjectRepository,
 	deploySvc deployment.DeploymentService,
 	sourceSvc SourceService,
 	authorizer authz.Authorizer,
 ) ApplicationService {
 	return &applicationService{
-		appRepo:     appRepo,
-		projectRepo: projectRepo,
-		deploySvc:   deploySvc,
-		sourceSvc:   sourceSvc,
-		authz:       authorizer,
+		appRepo:   appRepo,
+		deploySvc: deploySvc,
+		sourceSvc: sourceSvc,
+		authz:     authorizer,
 	}
 }
 
@@ -59,14 +56,7 @@ func (u *applicationService) Create(ctx context.Context, params CreateApplicatio
 	if err := params.Spec.Validate(); err != nil {
 		return nil, err
 	}
-	project, err := u.projectRepo.Get(ctx, params.Spec.ProjectID)
-	if err != nil {
-		return nil, err
-	}
-	if project == nil {
-		return nil, domain.ValidationError{Message: "project not found"}
-	}
-	if err := u.authz.Authorize(ctx, project, domain.PermissionWriteApplication); err != nil {
+	if err := u.authz.Authorize(ctx, params.Spec.ProjectID, domain.PermissionWriteApplication); err != nil {
 		return nil, err
 	}
 	createdApp, err := u.appRepo.Create(ctx, domain.CreateApplicationParams{
@@ -131,14 +121,17 @@ func (u *applicationService) Update(ctx context.Context, params UpdateApplicatio
 	if err := params.Spec.Validate(); err != nil {
 		return nil, err
 	}
-	project, err := u.projectRepo.Get(ctx, params.Spec.ProjectID)
+	current, err := u.appRepo.Get(ctx, params.ID)
 	if err != nil {
 		return nil, err
 	}
-	if project == nil {
-		return nil, domain.ValidationError{Message: "project not found"}
+	if current == nil {
+		return nil, domain.ValidationError{Message: "application not found"}
 	}
-	if err := u.authz.Authorize(ctx, project, domain.PermissionWriteApplication); err != nil {
+	if params.Spec.ProjectID != current.Spec.ProjectID {
+		return nil, domain.ValidationError{Message: "project of application cannot be changed"}
+	}
+	if err := u.authz.Authorize(ctx, current.Spec.ProjectID, domain.PermissionWriteApplication); err != nil {
 		return nil, err
 	}
 	if err := u.appRepo.Update(ctx, domain.UpdateApplicationParams{
@@ -160,14 +153,7 @@ func (u *applicationService) Delete(ctx context.Context, id string) error {
 	if app == nil {
 		return nil
 	}
-	project, err := u.projectRepo.Get(ctx, app.Spec.ProjectID)
-	if err != nil {
-		return err
-	}
-	if project == nil {
-		return domain.ValidationError{Message: "project not found"}
-	}
-	if err := u.authz.Authorize(ctx, project, domain.PermissionDeleteApplication); err != nil {
+	if err := u.authz.Authorize(ctx, app.Spec.ProjectID, domain.PermissionDeleteApplication); err != nil {
 		return err
 	}
 	return u.appRepo.Delete(ctx, id)

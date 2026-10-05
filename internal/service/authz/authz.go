@@ -8,26 +8,39 @@ import (
 )
 
 // Authorizer は「caller がそのプロジェクトで permission を持つか」を判定する。
-// project の存在判定は呼び出し側（Service）の責務とし、ここでは判定のみを純粋に行う。
 type Authorizer interface {
-	Authorize(ctx context.Context, project *domain.Project, perm domain.Permission) error
+	Authorize(ctx context.Context, projectID string, perm domain.Permission) error
 }
 
 type authorizer struct {
+	projectRepo   domain.ProjectRepository
 	memberRepo    domain.ProjectMemberRepository
 	groupRoleRepo domain.ProjectGroupRoleRepository
 }
 
 var _ Authorizer = (*authorizer)(nil)
 
-func New(memberRepo domain.ProjectMemberRepository, groupRoleRepo domain.ProjectGroupRoleRepository) Authorizer {
+func New(
+	projectRepo domain.ProjectRepository,
+	memberRepo domain.ProjectMemberRepository,
+	groupRoleRepo domain.ProjectGroupRoleRepository,
+) Authorizer {
 	return &authorizer{
+		projectRepo:   projectRepo,
 		memberRepo:    memberRepo,
 		groupRoleRepo: groupRoleRepo,
 	}
 }
 
-func (a *authorizer) Authorize(ctx context.Context, project *domain.Project, perm domain.Permission) error {
+func (a *authorizer) Authorize(ctx context.Context, projectID string, perm domain.Permission) error {
+	project, err := a.projectRepo.Get(ctx, projectID)
+	if err != nil {
+		return err
+	}
+	if project == nil {
+		return domain.ValidationError{Message: "project not found"}
+	}
+
 	p := domain.Principal{
 		ID:    auth.UserID(ctx),
 		Roles: auth.Roles(ctx),
