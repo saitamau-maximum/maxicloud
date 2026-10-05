@@ -106,6 +106,15 @@ func (q *Queries) RemoveProjectMember(ctx context.Context, id string) error {
 	return err
 }
 
+const removeProjectMembersByProject = `-- name: RemoveProjectMembersByProject :exec
+DELETE FROM project_members WHERE project_id = $1
+`
+
+func (q *Queries) RemoveProjectMembersByProject(ctx context.Context, projectID string) error {
+	_, err := q.db.Exec(ctx, removeProjectMembersByProject, projectID)
+	return err
+}
+
 const updateProjectMemberRole = `-- name: UpdateProjectMemberRole :exec
 UPDATE project_members SET role = $2 WHERE id = $1
 `

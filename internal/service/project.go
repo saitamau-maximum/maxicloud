@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -18,12 +19,24 @@ type ProjectService interface {
 }
 
 type projectService struct {
-	repo  domain.ProjectRepository
-	authz authz.Authorizer
+	repo          domain.ProjectRepository
+	memberRepo    domain.ProjectMemberRepository
+	groupRoleRepo domain.ProjectGroupRoleRepository
+	authz         authz.Authorizer
 }
 
-func NewProjectService(repo domain.ProjectRepository, authorizer authz.Authorizer) ProjectService {
-	return &projectService{repo: repo, authz: authorizer}
+func NewProjectService(
+	repo domain.ProjectRepository,
+	memberRepo domain.ProjectMemberRepository,
+	groupRoleRepo domain.ProjectGroupRoleRepository,
+	authorizer authz.Authorizer,
+) ProjectService {
+	return &projectService{
+		repo:          repo,
+		memberRepo:    memberRepo,
+		groupRoleRepo: groupRoleRepo,
+		authz:         authorizer,
+	}
 }
 
 func (u *projectService) Create(ctx context.Context, name, description, ownerID string) (*domain.Project, error) {
@@ -77,5 +90,14 @@ func (u *projectService) Delete(ctx context.Context, id string) error {
 		}
 		return err
 	}
-	return u.repo.Delete(ctx, id)
+	if err := u.repo.Delete(ctx, id); err != nil {
+		return err
+	}
+	if err := u.memberRepo.RemoveByProject(ctx, id); err != nil {
+		return fmt.Errorf("remove project members: %w", err)
+	}
+	if err := u.groupRoleRepo.RemoveByProject(ctx, id); err != nil {
+		return fmt.Errorf("remove project group roles: %w", err)
+	}
+	return nil
 }

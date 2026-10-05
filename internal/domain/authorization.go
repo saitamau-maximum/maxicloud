@@ -125,6 +125,7 @@ type ProjectMemberRepository interface {
 	ListByProject(ctx context.Context, projectID string) ([]ProjectMember, error)
 	Add(ctx context.Context, member ProjectMember) error
 	Remove(ctx context.Context, id string) error
+	RemoveByProject(ctx context.Context, projectID string) error
 	UpdateRole(ctx context.Context, id string, role Role) error
 }
 
@@ -143,5 +144,6 @@ type ProjectGroupRoleRepository interface {
 	ListByProject(ctx context.Context, projectID string) ([]ProjectGroupRole, error)
 	Add(ctx context.Context, g ProjectGroupRole) error
 	Remove(ctx context.Context, id string) error
+	RemoveByProject(ctx context.Context, projectID string) error
 	UpdateRole(ctx context.Context, id string, role Role) error
 }

@@ -14,3 +14,6 @@ DELETE FROM project_members WHERE id = $1;
 
 -- name: UpdateProjectMemberRole :exec
 UPDATE project_members SET role = $2 WHERE id = $1;
+
+-- name: RemoveProjectMembersByProject :exec
+DELETE FROM project_members WHERE project_id = $1;

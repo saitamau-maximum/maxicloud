@@ -14,3 +14,6 @@ DELETE FROM project_group_roles WHERE id = $1;
 
 -- name: UpdateProjectGroupRoleRole :exec
 UPDATE project_group_roles SET role = $2 WHERE id = $1;
+
+-- name: RemoveProjectGroupRolesByProject :exec
+DELETE FROM project_group_roles WHERE project_id = $1;

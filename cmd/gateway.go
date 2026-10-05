@@ -108,7 +108,7 @@ func runGateway(cmd *cobra.Command, args []string) error {
 	deployHistory := deployment.NewHistory(historyRepo)
 	deployWatcher := deployment.NewWatcher(deployHistory, deployRepo)
 	userSvc := service.NewUserService(userRepo)
-	prjSvc := service.NewProjectService(prjRepo, authzSvc)
+	prjSvc := service.NewProjectService(prjRepo, memberRepo, groupRoleRepo, authzSvc)
 	domainSvc := service.NewDomainService(appRepo, strings.Split(cfg.AvailableDomains, ","))
 	srcSvc := service.NewSourceService(srcRepo)
 	appSvc := service.NewApplicationService(appRepo, deploySvc, srcSvc, authzSvc)

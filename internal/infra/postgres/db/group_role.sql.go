@@ -119,6 +119,15 @@ func (q *Queries) RemoveProjectGroupRole(ctx context.Context, id string) error {
 	return err
 }
 
+const removeProjectGroupRolesByProject = `-- name: RemoveProjectGroupRolesByProject :exec
+DELETE FROM project_group_roles WHERE project_id = $1
+`
+
+func (q *Queries) RemoveProjectGroupRolesByProject(ctx context.Context, projectID string) error {
+	_, err := q.db.Exec(ctx, removeProjectGroupRolesByProject, projectID)
+	return err
+}
+
 const updateProjectGroupRoleRole = `-- name: UpdateProjectGroupRoleRole :exec
 UPDATE project_group_roles SET role = $2 WHERE id = $1
 `

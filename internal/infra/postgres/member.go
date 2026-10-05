@@ -70,6 +70,10 @@ func (r *projectMemberRepository) Remove(ctx context.Context, id string) error {
 	return r.q.RemoveProjectMember(ctx, id)
 }
 
+func (r *projectMemberRepository) RemoveByProject(ctx context.Context, projectID string) error {
+	return r.q.RemoveProjectMembersByProject(ctx, projectID)
+}
+
 func (r *projectMemberRepository) UpdateRole(ctx context.Context, id string, role domain.Role) error {
 	return r.q.UpdateProjectMemberRole(ctx, db.UpdateProjectMemberRoleParams{
 		ID:   id,

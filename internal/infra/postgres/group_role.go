@@ -53,6 +53,10 @@ func (r *projectGroupRoleRepository) Remove(ctx context.Context, id string) erro
 	return r.q.RemoveProjectGroupRole(ctx, id)
 }
 
+func (r *projectGroupRoleRepository) RemoveByProject(ctx context.Context, projectID string) error {
+	return r.q.RemoveProjectGroupRolesByProject(ctx, projectID)
+}
+
 func (r *projectGroupRoleRepository) UpdateRole(ctx context.Context, id string, role domain.Role) error {
 	return r.q.UpdateProjectGroupRoleRole(ctx, db.UpdateProjectGroupRoleRoleParams{
 		ID:   id,
