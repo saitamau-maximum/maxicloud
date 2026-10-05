@@ -82,10 +82,11 @@ func runController(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	if err := (&controller.BuildRunReconciler{
-		Client:       mgr.GetClient(),
-		Scheme:       mgr.GetScheme(),
-		Registry:     registryClient,
-		GitHubClient: ghClient,
+		Client:        mgr.GetClient(),
+		Scheme:        mgr.GetScheme(),
+		Registry:      registryClient,
+		GitHubClient:  ghClient,
+		PackVolumeKey: cfg.PackVolumeKey,
 	}).SetupWithManager(mgr); err != nil {
 		return err
 	}

@@ -36,6 +36,10 @@ type DeployRunSpec struct {
 	// +required
 	ApplicationName string `json:"applicationName"`
 
+	// Build is the build configuration snapshot taken when the deployment starts.
+	// +optional
+	Build *BuildConfig `json:"build,omitempty"`
+
 	// Owner is the GitHub repository owner (org or user).
 	// +required
 	Owner string `json:"owner"`

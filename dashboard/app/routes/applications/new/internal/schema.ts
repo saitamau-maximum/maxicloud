@@ -1,6 +1,7 @@
 import * as v from "valibot";
 import {
 	CREATE_APPLICATION_ACCESS_MODE,
+	CREATE_APPLICATION_BUILD_STRATEGY,
 	CREATE_APPLICATION_DOCKERFILE_SOURCE,
 } from "~/constants";
 
@@ -23,6 +24,10 @@ export const CreateApplicationSchema = v.object({
 		v.minLength(1, "リポジトリを選択してください"),
 	),
 	branch: v.pipe(v.string(), v.minLength(1, "ブランチを選択してください")),
+	buildStrategy: v.union([
+		v.literal(CREATE_APPLICATION_BUILD_STRATEGY.BUILDPACKS),
+		v.literal(CREATE_APPLICATION_BUILD_STRATEGY.DOCKERFILE),
+	]),
 	dockerfileSource: v.union([
 		v.literal(CREATE_APPLICATION_DOCKERFILE_SOURCE.PATH),
 		v.literal(CREATE_APPLICATION_DOCKERFILE_SOURCE.INLINE),

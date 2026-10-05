@@ -40,6 +40,7 @@ func (f *fakeRegistry) Token() string        { return "token" }
 func (f *fakeRegistry) BuildOutput(destination string) string {
 	return "type=image,name=" + destination + ",push=true"
 }
+func (f *fakeRegistry) Insecure() bool { return false }
 
 type fakeGitHubClient struct{}
 
@@ -169,6 +170,57 @@ var _ = Describe("BuildRun Controller", func() {
 				NamespacedName: types.NamespacedName{Name: "nonexistent", Namespace: ns},
 			})
 			Expect(err).NotTo(HaveOccurred())
+		})
+	})
+
+	Context("Buildpacks Jobの作成", func() {
+		newBuildpacksJob := func(registryInsecure bool) *batchv1.Job {
+			buildRun := newTestBuildRun("buildpacks-job", ns, "my-app")
+			buildRun.Spec.Build = &maxicloudv1alpha1.BuildConfig{
+				Strategy:   maxicloudv1alpha1.BuildStrategyBuildpacks,
+				Buildpacks: &maxicloudv1alpha1.BuildpacksBuildConfig{},
+			}
+			return newBuildpacksBuildJob(BuildJobParams{
+				buildRun:         buildRun,
+				jobName:          buildRun.Name,
+				destination:      "ghcr.io/test/maxicloud:abc1234",
+				repoSecretName:   buildRun.Name,
+				owner:            "saitamau-maximum",
+				repo:             "maxicloud",
+				sha:              buildRun.Spec.Source.SHA,
+				registryInsecure: registryInsecure,
+			})
+		}
+
+		It("registryがsecureの場合はinsecure registryを指定しない", func() {
+			job := newBuildpacksJob(false)
+
+			pack := job.Spec.Template.Spec.Containers[0]
+			docker := job.Spec.Template.Spec.InitContainers[2]
+
+			Expect(pack.Args).NotTo(ContainElement("--insecure-registry"))
+			Expect(docker.Args).NotTo(ContainElement("--insecure-registry=ghcr.io"))
+		})
+
+		It("registryがinsecureの場合はinsecure registryを指定する", func() {
+			job := newBuildpacksJob(true)
+
+			pack := job.Spec.Template.Spec.Containers[0]
+			docker := job.Spec.Template.Spec.InitContainers[2]
+
+			Expect(pack.Args).To(ContainElement("--insecure-registry"))
+			Expect(pack.Args).To(ContainElement("ghcr.io"))
+			Expect(docker.Args).To(ContainElement("--insecure-registry=ghcr.io"))
+		})
+
+		It("GitHub tokenをclone URLに含めない", func() {
+			job := newBuildpacksJob(false)
+
+			gitClone := job.Spec.Template.Spec.InitContainers[0]
+
+			Expect(gitClone.Command).To(Equal([]string{"git"}))
+			Expect(gitClone.Args).To(ContainElement("https://github.com/saitamau-maximum/maxicloud.git"))
+			Expect(gitClone.Args).NotTo(ContainElement(ContainSubstring("x-access-token")))
 		})
 	})
 })

@@ -42,6 +42,10 @@ type ApplicationSpec struct {
 	// +required
 	Image string `json:"image"`
 
+	// Build is the user-selected image build configuration.
+	// +optional
+	Build *BuildConfig `json:"build,omitempty"`
+
 	// Env is a list of environment variables for the runtime container.
 	// +optional
 	Env []corev1.EnvVar `json:"env,omitempty"`

@@ -10,6 +10,7 @@ type Registry interface {
 	Host() string
 	Token() string
 	BuildOutput(destination string) string
+	Insecure() bool
 }
 
 type Provider string
@@ -66,6 +67,10 @@ func (r *ghcr) BuildOutput(destination string) string {
 	return fmt.Sprintf("type=image,name=%s,push=true", destination)
 }
 
+func (r *ghcr) Insecure() bool {
+	return false
+}
+
 type localRegistry struct {
 	host     string
 	username string
@@ -96,4 +101,8 @@ func (r *localRegistry) Token() string {
 // Localではhttpで通信したいので、insecure=trueにする
 func (r *localRegistry) BuildOutput(destination string) string {
 	return fmt.Sprintf("type=image,name=%s,push=true,registry.insecure=true", destination)
+}
+
+func (r *localRegistry) Insecure() bool {
+	return true
 }

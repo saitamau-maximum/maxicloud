@@ -46,6 +46,7 @@ func (r *deployRunRepository) Create(ctx context.Context, deployment domain.Depl
 		},
 		Spec: maxicloudv1alpha1.DeployRunSpec{
 			ApplicationName: appList.Items[0].Name,
+			Build:           appList.Items[0].Spec.Build.DeepCopy(),
 			Owner:           spec.Repo.Owner,
 			Repo:            spec.Repo.Name,
 			SHA:             spec.Commit.SHA,

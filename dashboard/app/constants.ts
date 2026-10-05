@@ -34,6 +34,11 @@ export const CREATE_APPLICATION_DOCKERFILE_SOURCE = {
 	INLINE: "inline",
 } as const;
 
+export const CREATE_APPLICATION_BUILD_STRATEGY = {
+	BUILDPACKS: "buildpacks",
+	DOCKERFILE: "dockerfile",
+} as const;
+
 export const GIT_PROVIDER = {
 	GITHUB: "github",
 } as const;

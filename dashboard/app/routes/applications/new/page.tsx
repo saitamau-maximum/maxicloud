@@ -4,6 +4,7 @@ import { css } from "styled-system/css";
 import { Panel } from "~/components/ui/panel";
 import {
 	CREATE_APPLICATION_ACCESS_MODE,
+	CREATE_APPLICATION_BUILD_STRATEGY,
 	CREATE_APPLICATION_DOCKERFILE_SOURCE,
 } from "~/constants";
 import { useSession } from "~/hooks/use-session";
@@ -68,6 +69,7 @@ export default function NewApplicationPage() {
 			applicationName: "",
 			repositoryId: "",
 			branch: DEFAULT_BRANCH,
+			buildStrategy: CREATE_APPLICATION_BUILD_STRATEGY.BUILDPACKS,
 			dockerfileSource: CREATE_APPLICATION_DOCKERFILE_SOURCE.PATH,
 			dockerfilePath: "Dockerfile",
 			dockerfileInline: "",
@@ -114,6 +116,7 @@ export default function NewApplicationPage() {
 			repositoryOwner: owner,
 			repositoryName: name,
 			branch: data.branch,
+			buildStrategy: data.buildStrategy,
 			dockerfileSource: data.dockerfileSource,
 			dockerfilePath: data.dockerfilePath,
 			dockerfileInline: data.dockerfileInline,

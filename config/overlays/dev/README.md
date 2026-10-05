@@ -22,3 +22,15 @@ GitHub Appを作成したら、秘密鍵をこのディレクトリに`private-k
 cp config.example.env config.env
 cp secret.example.env secret.env
 ```
+
+`secret.env` の `PACK_VOLUME_KEY` には、Buildpacks の volume cache を安定して利用するための秘密値を任意で設定できます。
+未設定でも Buildpacks のビルドは実行できますが、キャッシュを安定して再利用できないためビルドが遅くなることがあります。
+例えば以下のコマンドで生成できます。
+```bash
+PACK_VOLUME_KEY=$(openssl rand -hex 32)
+```
+
+生成した値を `secret.env` に書き込みます。
+```env
+PACK_VOLUME_KEY=<生成した値>
+```
