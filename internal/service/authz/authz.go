@@ -38,7 +38,7 @@ func (a *authorizer) Authorize(ctx context.Context, projectID string, perm domai
 		return err
 	}
 	if project == nil {
-		return domain.ValidationError{Message: "project not found"}
+		return domain.NotFoundError{Message: "project not found"}
 	}
 
 	p := domain.Principal{

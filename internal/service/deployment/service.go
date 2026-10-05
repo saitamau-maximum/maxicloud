@@ -66,7 +66,7 @@ func (s *service) Retry(ctx context.Context, deploymentID string) (*domain.Deplo
 		return nil, fmt.Errorf("get deployment history: %w", err)
 	}
 	if current == nil {
-		return nil, domain.ValidationError{Message: "deployment not found"}
+		return nil, domain.NotFoundError{Message: "deployment not found"}
 	}
 
 	app, err := s.appRepo.Get(ctx, current.Spec.ApplicationID)
@@ -74,7 +74,7 @@ func (s *service) Retry(ctx context.Context, deploymentID string) (*domain.Deplo
 		return nil, fmt.Errorf("get application: %w", err)
 	}
 	if app == nil {
-		return nil, domain.ValidationError{Message: "application not found"}
+		return nil, domain.NotFoundError{Message: "application not found"}
 	}
 	if err := s.authz.Authorize(ctx, app.Spec.ProjectID, domain.PermissionTriggerDeploy); err != nil {
 		return nil, err

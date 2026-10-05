@@ -72,6 +72,9 @@ func (u *projectService) Update(ctx context.Context, params UpdateProjectParams)
 
 func (u *projectService) Delete(ctx context.Context, id string) error {
 	if err := u.authz.Authorize(ctx, id, domain.PermissionDeleteProject); err != nil {
+		if domain.IsNotFoundError(err) {
+			return nil
+		}
 		return err
 	}
 	return u.repo.Delete(ctx, id)

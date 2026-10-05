@@ -126,7 +126,7 @@ func (u *applicationService) Update(ctx context.Context, params UpdateApplicatio
 		return nil, err
 	}
 	if current == nil {
-		return nil, domain.ValidationError{Message: "application not found"}
+		return nil, domain.NotFoundError{Message: "application not found"}
 	}
 	if params.Spec.ProjectID != current.Spec.ProjectID {
 		return nil, domain.ValidationError{Message: "project of application cannot be changed"}
