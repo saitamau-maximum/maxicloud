@@ -20,3 +20,7 @@ CREATE TABLE project_group_roles (
     UNIQUE (project_id, oidc_role)
 );
 CREATE INDEX idx_project_group_roles_project_id ON project_group_roles(project_id);
+
+-- migrate:down
+DROP TABLE project_group_roles;
+DROP TABLE project_members;
