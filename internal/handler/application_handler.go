@@ -72,10 +72,9 @@ func (h *ApplicationHandler) UpdateApplication(ctx context.Context, req *v1.Upda
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 	app, err := h.service.Update(ctx, service.UpdateApplicationParams{
-		ID:      req.ApplicationId,
-		Name:    req.Name,
-		OwnerID: req.OwnerId,
-		Spec:    spec,
+		ID:   req.ApplicationId,
+		Name: req.Name,
+		Spec: spec,
 	})
 	if err != nil {
 		return nil, connectError(err)

@@ -111,10 +111,9 @@ func (u *applicationService) List(ctx context.Context, projectID string) ([]doma
 }
 
 type UpdateApplicationParams struct {
-	ID      string
-	Name    string
-	OwnerID string
-	Spec    domain.ApplicationSpec
+	ID   string
+	Name string
+	Spec domain.ApplicationSpec
 }
 
 func (u *applicationService) Update(ctx context.Context, params UpdateApplicationParams) (*domain.Application, error) {
@@ -137,7 +136,7 @@ func (u *applicationService) Update(ctx context.Context, params UpdateApplicatio
 	if err := u.appRepo.Update(ctx, domain.UpdateApplicationParams{
 		ID:      params.ID,
 		Name:    params.Name,
-		OwnerID: params.OwnerID,
+		OwnerID: current.OwnerID,
 		Spec:    params.Spec,
 	}); err != nil {
 		return nil, err
