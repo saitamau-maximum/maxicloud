@@ -3,8 +3,6 @@ package authz
 import (
 	"context"
 
-	"golang.org/x/sync/errgroup"
-
 	"github.com/saitamau-maximum/maxicloud/internal/auth"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
 )
