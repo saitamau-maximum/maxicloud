@@ -14,7 +14,7 @@ import (
 
 const (
 	podWaitTimeout    = 45 * time.Second
-	streamOpenTimeout = 45 * time.Second
+	streamOpenTimeout = 10 * time.Minute
 )
 
 type logStreamOptions struct {
@@ -92,18 +92,22 @@ func (s *logStreamer) waitForPod(ctx context.Context, opts logStreamOptions) (st
 }
 
 func (s *logStreamer) openLogStream(ctx context.Context, namespace, podName string) (io.ReadCloser, error) {
-	openCtx, cancel := context.WithTimeout(ctx, streamOpenTimeout)
-	defer cancel()
+	deadline := time.Now().Add(streamOpenTimeout)
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
 	for {
+		// ストリームのbodyは親ctxに束縛する。タイムアウトはリトライの予算としてのみ使い、
+		// 子ctxを req.Stream に渡すと defer cancel で開いた直後にストリームが閉じてしまう。
 		req := s.clientset.CoreV1().Pods(namespace).GetLogs(podName, &corev1.PodLogOptions{Follow: true})
-		if stream, err := req.Stream(openCtx); err == nil {
+		if stream, err := req.Stream(ctx); err == nil {
 			return stream, nil
 		}
-		select {
-		case <-openCtx.Done():
+		if time.Now().After(deadline) {
 			return nil, fmt.Errorf("timed out opening log stream for pod %s/%s", namespace, podName)
+		}
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
 		case <-ticker.C:
 		}
 	}
