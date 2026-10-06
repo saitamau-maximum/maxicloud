@@ -30,6 +30,7 @@ import (
 	"github.com/saitamau-maximum/maxicloud/internal/infra/oidc"
 	"github.com/saitamau-maximum/maxicloud/internal/infra/postgres"
 	"github.com/saitamau-maximum/maxicloud/internal/service"
+	"github.com/saitamau-maximum/maxicloud/internal/service/authz"
 	"github.com/saitamau-maximum/maxicloud/internal/service/deployment"
 )
 
@@ -80,6 +81,8 @@ func runGateway(cmd *cobra.Command, args []string) error {
 	prjRepo := k8s.NewProjectRepository(k8sClient)
 	historyRepo := postgres.NewDeploymentHistoryRepository(pool)
 	userRepo := postgres.NewUserRepository(pool)
+	memberRepo := postgres.NewProjectMemberRepository(pool)
+	groupRoleRepo := postgres.NewProjectGroupRoleRepository(pool)
 	logStreamer := k8s.NewLogStreamer(clientset)
 	deployRepo := k8s.NewDeployRunRepository(k8sClient, logStreamer)
 	srcRepo := github.NewClient(cfg.GitHubAppID, privateKey, cfg.InstallationID)
@@ -99,15 +102,16 @@ func runGateway(cmd *cobra.Command, args []string) error {
 		AllowedRedirects: allowedRedirects,
 	}, userRepo, oidcClient)
 
-	deploySvc := deployment.NewDeploymentService(historyRepo, deployRepo)
+	authzSvc := authz.New(prjRepo, memberRepo, groupRoleRepo)
+	deploySvc := deployment.NewDeploymentService(historyRepo, deployRepo, appRepo, authzSvc)
 	deployEventSvc := deployment.NewDeploymentEventService(appRepo, prjRepo, deploySvc)
 	deployHistory := deployment.NewHistory(historyRepo)
 	deployWatcher := deployment.NewWatcher(deployHistory, deployRepo)
 	userSvc := service.NewUserService(userRepo)
-	prjSvc := service.NewProjectService(prjRepo)
+	prjSvc := service.NewProjectService(prjRepo, memberRepo, groupRoleRepo, authzSvc)
 	domainSvc := service.NewDomainService(appRepo, strings.Split(cfg.AvailableDomains, ","))
 	srcSvc := service.NewSourceService(srcRepo)
-	appSvc := service.NewApplicationService(appRepo, deploySvc, srcSvc)
+	appSvc := service.NewApplicationService(appRepo, deploySvc, srcSvc, authzSvc)
 
 	authHandler := handler.NewAuthHandler(authSvc)
 	ghHandler := handler.NewGitHubHandler(deployEventSvc, srcSvc, handler.GitHubHandlerConfig{

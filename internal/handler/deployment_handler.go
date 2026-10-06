@@ -35,7 +35,7 @@ func NewDeploymentHandler(
 func (h *DeploymentHandler) RetryDeployment(ctx context.Context, req *v1.RetryDeploymentRequest) (*v1.RetryDeploymentResponse, error) {
 	deploy, err := h.service.Retry(ctx, req.GetDeploymentId())
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, connectError(err)
 	}
 	if deploy == nil {
 		return nil, connect.NewError(connect.CodeNotFound, nil)

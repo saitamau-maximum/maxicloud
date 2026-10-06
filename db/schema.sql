@@ -2,9 +2,9 @@
 -- PostgreSQL database dump
 --
 
-\restrict ToRBlKtkmDPraVQlRSsOLWCY9xTGaoQoRxMXHf1ADIkfHDXaoObYSps7Hdbc99B
+\restrict bK4L4Gyfb1EpXJVScxWxCntmwAh3KPuCNienQgGxlW80gJ7ugr5H9lvekCatlfY
 
--- Dumped from database version 15.18 (Debian 15.18-1.pgdg13+1)
+-- Dumped from database version 15.19 (Debian 15.19-1.pgdg13+2)
 -- Dumped by pg_dump version 18.4
 
 SET statement_timeout = 0;
@@ -48,6 +48,36 @@ CREATE TABLE public.deployment_histories (
 
 
 --
+-- Name: project_group_roles; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.project_group_roles (
+    id text NOT NULL,
+    project_id text NOT NULL,
+    oidc_role text NOT NULL,
+    role text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    created_by text NOT NULL,
+    CONSTRAINT project_group_roles_role_check CHECK ((role = ANY (ARRAY['editor'::text, 'admin'::text])))
+);
+
+
+--
+-- Name: project_members; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.project_members (
+    id text NOT NULL,
+    project_id text NOT NULL,
+    user_id text NOT NULL,
+    role text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    created_by text NOT NULL,
+    CONSTRAINT project_members_role_check CHECK ((role = ANY (ARRAY['editor'::text, 'admin'::text])))
+);
+
+
+--
 -- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -75,6 +105,38 @@ CREATE TABLE public.users (
 
 ALTER TABLE ONLY public.deployment_histories
     ADD CONSTRAINT deployment_histories_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: project_group_roles project_group_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project_group_roles
+    ADD CONSTRAINT project_group_roles_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: project_group_roles project_group_roles_project_id_oidc_role_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project_group_roles
+    ADD CONSTRAINT project_group_roles_project_id_oidc_role_key UNIQUE (project_id, oidc_role);
+
+
+--
+-- Name: project_members project_members_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project_members
+    ADD CONSTRAINT project_members_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: project_members project_members_project_id_user_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project_members
+    ADD CONSTRAINT project_members_project_id_user_id_key UNIQUE (project_id, user_id);
 
 
 --
@@ -115,8 +177,22 @@ CREATE INDEX deployment_histories_repo_owner_repo_name_commit_sha_idx ON public.
 
 
 --
+-- Name: idx_project_group_roles_project_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_project_group_roles_project_id ON public.project_group_roles USING btree (project_id);
+
+
+--
+-- Name: idx_project_members_project_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_project_members_project_id ON public.project_members USING btree (project_id);
+
+
+--
 -- PostgreSQL database dump complete
 --
 
-\unrestrict ToRBlKtkmDPraVQlRSsOLWCY9xTGaoQoRxMXHf1ADIkfHDXaoObYSps7Hdbc99B
+\unrestrict bK4L4Gyfb1EpXJVScxWxCntmwAh3KPuCNienQgGxlW80gJ7ugr5H9lvekCatlfY
 

@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
+	"github.com/saitamau-maximum/maxicloud/internal/service/authz"
 )
 
 type DeploymentService interface {
@@ -16,15 +17,21 @@ type DeploymentService interface {
 type service struct {
 	history   *history
 	deployRun domain.DeployRunRepository
+	appRepo   domain.ApplicationRepository
+	authz     authz.Authorizer
 }
 
 func NewDeploymentService(
 	historyRepo domain.DeploymentHistoryRepository,
 	deployRunRepo domain.DeployRunRepository,
+	appRepo domain.ApplicationRepository,
+	authorizer authz.Authorizer,
 ) DeploymentService {
 	return &service{
 		history:   &history{repo: historyRepo},
 		deployRun: deployRunRepo,
+		appRepo:   appRepo,
+		authz:     authorizer,
 	}
 }
 
@@ -59,7 +66,18 @@ func (s *service) Retry(ctx context.Context, deploymentID string) (*domain.Deplo
 		return nil, fmt.Errorf("get deployment history: %w", err)
 	}
 	if current == nil {
-		return nil, domain.ValidationError{Message: "deployment not found"}
+		return nil, domain.NotFoundError{Message: "deployment not found"}
+	}
+
+	app, err := s.appRepo.Get(ctx, current.Spec.ApplicationID)
+	if err != nil {
+		return nil, fmt.Errorf("get application: %w", err)
+	}
+	if app == nil {
+		return nil, domain.NotFoundError{Message: "application not found"}
+	}
+	if err := s.authz.Authorize(ctx, app.Spec.ProjectID, domain.PermissionTriggerDeploy); err != nil {
+		return nil, err
 	}
 
 	newID, err := s.Deploy(ctx, current.Spec)

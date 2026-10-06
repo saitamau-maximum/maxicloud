@@ -2,10 +2,12 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
+	"github.com/saitamau-maximum/maxicloud/internal/service/authz"
 )
 
 type ProjectService interface {
@@ -17,11 +19,24 @@ type ProjectService interface {
 }
 
 type projectService struct {
-	repo domain.ProjectRepository
+	repo          domain.ProjectRepository
+	memberRepo    domain.ProjectMemberRepository
+	groupRoleRepo domain.ProjectGroupRoleRepository
+	authz         authz.Authorizer
 }
 
-func NewProjectService(repo domain.ProjectRepository) ProjectService {
-	return &projectService{repo: repo}
+func NewProjectService(
+	repo domain.ProjectRepository,
+	memberRepo domain.ProjectMemberRepository,
+	groupRoleRepo domain.ProjectGroupRoleRepository,
+	authorizer authz.Authorizer,
+) ProjectService {
+	return &projectService{
+		repo:          repo,
+		memberRepo:    memberRepo,
+		groupRoleRepo: groupRoleRepo,
+		authz:         authorizer,
+	}
 }
 
 func (u *projectService) Create(ctx context.Context, name, description, ownerID string) (*domain.Project, error) {
@@ -54,6 +69,9 @@ type UpdateProjectParams struct {
 }
 
 func (u *projectService) Update(ctx context.Context, params UpdateProjectParams) (*domain.Project, error) {
+	if err := u.authz.Authorize(ctx, params.ID, domain.PermissionWriteProject); err != nil {
+		return nil, err
+	}
 	if err := u.repo.Update(ctx, domain.UpdateProjectParams{
 		ID:          params.ID,
 		Name:        params.Name,
@@ -66,5 +84,20 @@ func (u *projectService) Update(ctx context.Context, params UpdateProjectParams)
 }
 
 func (u *projectService) Delete(ctx context.Context, id string) error {
-	return u.repo.Delete(ctx, id)
+	if err := u.authz.Authorize(ctx, id, domain.PermissionDeleteProject); err != nil {
+		if domain.IsNotFoundError(err) {
+			return nil
+		}
+		return err
+	}
+	if err := u.repo.Delete(ctx, id); err != nil {
+		return err
+	}
+	if err := u.memberRepo.RemoveByProject(ctx, id); err != nil {
+		return fmt.Errorf("remove project members: %w", err)
+	}
+	if err := u.groupRoleRepo.RemoveByProject(ctx, id); err != nil {
+		return fmt.Errorf("remove project group roles: %w", err)
+	}
+	return nil
 }

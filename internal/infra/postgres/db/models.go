@@ -24,6 +24,24 @@ type DeploymentHistory struct {
 	FinishedAt    pgtype.Timestamptz
 }
 
+type ProjectGroupRole struct {
+	ID        string
+	ProjectID string
+	OidcRole  string
+	Role      string
+	CreatedAt pgtype.Timestamptz
+	CreatedBy string
+}
+
+type ProjectMember struct {
+	ID        string
+	ProjectID string
+	UserID    string
+	Role      string
+	CreatedAt pgtype.Timestamptz
+	CreatedBy string
+}
+
 type User struct {
 	ID          string
 	DisplayID   string

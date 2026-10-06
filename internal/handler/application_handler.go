@@ -33,7 +33,7 @@ func (h *ApplicationHandler) CreateApplication(ctx context.Context, req *v1.Crea
 		Spec:    spec,
 	})
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, connectError(err)
 	}
 	return &v1.CreateApplicationResponse{
 		Application:              toProtoApplication(result.Application),
@@ -72,20 +72,19 @@ func (h *ApplicationHandler) UpdateApplication(ctx context.Context, req *v1.Upda
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 	app, err := h.service.Update(ctx, service.UpdateApplicationParams{
-		ID:      req.ApplicationId,
-		Name:    req.Name,
-		OwnerID: req.OwnerId,
-		Spec:    spec,
+		ID:   req.ApplicationId,
+		Name: req.Name,
+		Spec: spec,
 	})
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, connectError(err)
 	}
 	return &v1.UpdateApplicationResponse{Application: toProtoApplication(app)}, nil
 }
 
 func (h *ApplicationHandler) DeleteApplication(ctx context.Context, req *v1.DeleteApplicationRequest) (*v1.DeleteApplicationResponse, error) {
 	if err := h.service.Delete(ctx, req.ApplicationId); err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, connectError(err)
 	}
 	return &v1.DeleteApplicationResponse{}, nil
 }
