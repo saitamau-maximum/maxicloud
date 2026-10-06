@@ -7,7 +7,6 @@ import (
 	"github.com/saitamau-maximum/maxicloud/internal/domain"
 )
 
-// Authorizer は「caller がそのプロジェクトで permission を持つか」を判定する。
 type Authorizer interface {
 	Authorize(ctx context.Context, projectID string, perm domain.Permission) error
 }

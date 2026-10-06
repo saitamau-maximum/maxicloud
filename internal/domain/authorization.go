@@ -58,8 +58,6 @@ const (
 	PermissionManageMembers
 )
 
-// rolePermissions は各 role が持つ permission の束（独立した権限マトリクス）。
-// 束同士の上下関係は前提しないので、非単調な権限にしたければ各行をいじるだけでよい。
 var rolePermissions = map[Role][]Permission{
 	RoleEditor: {
 		PermissionWriteApplication,
@@ -88,7 +86,6 @@ func RoleHasPermission(role Role, perm Permission) bool {
 	return slices.Contains(rolePermissions[role], perm)
 }
 
-// Principal は認可判定の主体を表す。OIDC 由来かどうかは domain は関知しない。
 type Principal struct {
 	ID    string
 	Roles []string // OIDC グループ等の外部 role 名
